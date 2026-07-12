@@ -1,0 +1,13 @@
+# Visual Studio / .NET privremeni fajlovi
+.vs/
+[Bb]in/
+[Oo]bj/
+*.user
+*.suo
+*.slnx.user
+
+# Angular / Node privremeni fajlovi
+node_modules/
+.angular/
+dist/
+.env.local
