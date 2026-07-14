@@ -2,6 +2,8 @@
 using Microsoft.EntityFrameworkCore;
 using MultiAI.Models.Data;
 using MultiAI.Models.Entities;
+using MultiAI.Services;
+using MultiAI.Services.Interface;
 
 namespace MultiAI.Config
 {
@@ -17,10 +19,13 @@ namespace MultiAI.Config
             })
             .AddRoles<IdentityRole>()
             .AddEntityFrameworkStores<AppDbContext>()
+            .AddSignInManager()
             .AddApiEndpoints(); 
 
-            services.AddAuthentication(IdentityConstants.BearerScheme)
-                .AddBearerToken(IdentityConstants.BearerScheme);
+            //services.AddAuthentication(IdentityConstants.BearerScheme)
+            //    .AddBearerToken(IdentityConstants.BearerScheme);
+
+            services.AddScoped<IJwtService, JwtService>();
 
             return services;
         }

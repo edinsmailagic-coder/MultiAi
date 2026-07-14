@@ -20,7 +20,6 @@
   <ItemGroup>
     <Folder Include="Models\Response\" />
     <Folder Include="Models\Request\" />
-    <Folder Include="Services\" />
   </ItemGroup>
 
 </Project>
