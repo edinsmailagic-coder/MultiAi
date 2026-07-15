@@ -4,6 +4,7 @@ using MultiAI.Models.Data;
 using MultiAI.Models.Entities;
 using MultiAI.Services;
 using MultiAI.Services.Interface;
+using MultiAI.Services.Providers;
 
 namespace MultiAI.Config
 {
@@ -20,12 +21,20 @@ namespace MultiAI.Config
             .AddRoles<IdentityRole>()
             .AddEntityFrameworkStores<AppDbContext>()
             .AddSignInManager()
-            .AddApiEndpoints(); 
+            .AddApiEndpoints();
 
             //services.AddAuthentication(IdentityConstants.BearerScheme)
             //    .AddBearerToken(IdentityConstants.BearerScheme);
+            services.AddHttpClient<IAIProvider, OpenAIProvider>(client =>
+            {
+                client.BaseAddress = new Uri("https://api.openai.com/v1/");
+                client.Timeout = TimeSpan.FromSeconds(60);
+            });
 
             services.AddScoped<IJwtService, JwtService>();
+
+            //services.AddScoped<IAIProvider, OpenAIProvider>();
+            services.AddScoped<IAIProviderFactory, AIProviderFactory>();
 
             return services;
         }
