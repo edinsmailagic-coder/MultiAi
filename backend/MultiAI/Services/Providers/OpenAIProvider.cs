@@ -61,7 +61,7 @@ namespace MultiAI.Services.Providers
             }).ToList();
         }
 
-        public async Task<ChatResponseDto> Chat(ChatRequestDto request,string key)
+        public async Task<ChatResponseDto> Chat(List<ChatMessageDto> messages,string model,string key)
         {
             throw new NotImplementedException();
         }

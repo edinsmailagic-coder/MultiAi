@@ -5,6 +5,6 @@ namespace MultiAI.Services.Interface
 {
     public interface IChatService
     {
-        Task<ChatResponseDto> SendAsync(int userId, ChatRequestDto request);
+        Task<string> SendAsync(int userId, ChatRequestDto request);
     }
 }

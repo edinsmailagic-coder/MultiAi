@@ -9,6 +9,6 @@ namespace MultiAI.Services.Interface
         string Name {  get; }
         Task<bool> ValidateKey(string apiKey);
         Task<List<AIModelDto>> GetModels(string apiKey);
-        Task<ChatResponseDto> Chat(ChatRequestDto request,string apiKey);
+        Task<ChatResponseDto> Chat(List<ChatMessageDto> messages, string model, string key);
     }
 }

@@ -18,6 +18,20 @@ namespace MultiAI.Models.Data
         {
 
         }
+        public DbSet<AIProvider> AIProviders { get; set; }
+
+        public DbSet<UserAIProvider> UserAIProviders { get; set; }
+
+        public DbSet<Conversation> Conversations { get; set; }
+
+        public DbSet<UserMessage> UserMessages { get; set; }
+
+        public DbSet<AIResponse> AIResponses { get; set; }
+        public DbSet<Workflow> Workflows { get; set; }
+
+        public DbSet<WorkflowNode> WorkflowNodes { get; set; }
+
+        public DbSet<WorkflowConnection> WorkflowConnections { get; set; }
         protected override void OnModelCreating(ModelBuilder builder)
         {
             // VEOMA VAŽNO: Prvo pozivamo baznu konfiguraciju
@@ -31,6 +45,16 @@ namespace MultiAI.Models.Data
             builder.Entity<IdentityUserClaim<string>>().ToTable("UserClaims");
             builder.Entity<IdentityUserLogin<string>>().ToTable("UserLogins");
             builder.Entity<IdentityUserToken<string>>().ToTable("UserTokens");
+            builder.Entity<AIProvider>().ToTable("AIProviders");
+            builder.Entity<AIResponse>().ToTable("AIResponses");
+            builder.Entity<Conversation>().ToTable("Conversations");
+            builder.Entity<UserAIProvider>().ToTable("UserAIProviders");
+            builder.Entity<UserMessage>().ToTable("UserMessages");
+            builder.Entity<Workflow>().ToTable("Workflows");
+
+            builder.Entity<WorkflowNode>().ToTable("WorkflowNodes");
+
+            builder.Entity<WorkflowConnection>().ToTable("WorkflowConnections");
         }
     }
 }

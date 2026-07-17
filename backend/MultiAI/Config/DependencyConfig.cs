@@ -30,7 +30,7 @@ namespace MultiAI.Config
                 client.BaseAddress = new Uri("https://api.openai.com/v1/");
                 client.Timeout = TimeSpan.FromSeconds(60);
             });
-
+            
             services.AddScoped<IJwtService, JwtService>();
 
             //services.AddScoped<IAIProvider, OpenAIProvider>();
