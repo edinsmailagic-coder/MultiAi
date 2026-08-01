@@ -35,6 +35,7 @@ namespace MultiAI.Config
 
             //services.AddScoped<IAIProvider, OpenAIProvider>();
             services.AddScoped<IAIProviderFactory, AIProviderFactory>();
+            services.AddScoped<IChatService, ChatService>();
 
             return services;
         }

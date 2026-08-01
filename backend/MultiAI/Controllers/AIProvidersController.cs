@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using MultiAI.Models.Request;
 using MultiAI.Services.Interface;
+using System.Security.Claims;
 
 namespace MultiAI.Controllers
 {
@@ -34,6 +35,18 @@ namespace MultiAI.Controllers
             var models = await provider.GetModels(request.ApiKey);
 
             return Ok(models);
+        }
+
+        [HttpGet("connect")]
+        public async Task<IActionResult> AddUserAIProvider(int providerId, string key)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+            var response = await providerFactory.AddUserAIProvider(userId,providerId,key);
+
+            return Ok(response);
         }
     }
 }

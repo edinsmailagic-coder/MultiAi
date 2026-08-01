@@ -5,7 +5,6 @@ namespace MultiAI.Models.Entities
     public class AIResponse:BaseEntity
     {
         public int UserMessageId {  get; set; }
-        public int ProviderId {  get; set; }
         public string Model {  get; set; }
         public string Content {  get; set; }
         public int PromptTokens {  get; set; }
@@ -15,5 +14,7 @@ namespace MultiAI.Models.Entities
         public long DurationMs {  get; set; }
         public bool IsStreamingCompleted {  get; set; }
         public int? WorkflowNodeId {  get; set; }
+        public int UserAIProvideId {  get; set; }
+        public UserAIProvider UserAIProvider { get; set; }
     }
 }
