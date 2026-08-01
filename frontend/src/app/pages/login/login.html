@@ -1,0 +1,47 @@
+<div class="auth-wrapper">
+  <div class="auth-container">
+    
+    <div class="lang-selector">
+  <button
+    (click)="changeLanguage('bs')"
+    [class.active]="currentLanguage === 'bs'">
+    🇧🇦 Bosanski
+  </button>
+
+  <button
+    (click)="changeLanguage('en')"
+    [class.active]="currentLanguage === 'en'">
+    🇬🇧 English
+  </button>
+</div>
+
+    <div *ngIf="errorMessage" class="error-alert">
+      <i class="alert-icon">⚠️</i>
+      <span>{{ errorMessage }}</span>
+    </div>
+
+    <form (ngSubmit)="onLogin()" #loginForm="ngForm" class="auth-form">
+      <div class="form-group">
+        <label>{{ 'login.email' | translate }}</label>
+        <div class="input-wrapper">
+          <input type="email" name="email" [(ngModel)]="loginData.email" required placeholder="ime@kompanija.com">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>{{ 'login.password' | translate }}</label>
+        <div class="input-wrapper">
+          <input type="password" name="password" [(ngModel)]="loginData.password" required placeholder="••••••••">
+        </div>
+      </div>
+
+      <button type="submit" class="btn-primary" [disabled]="!loginForm.form.valid">
+        {{ 'login.button' | translate }}
+      </button>
+    </form>
+
+    <div class="auth-footer">
+      <p>{{ 'login.no_account' | translate }} <a routerLink="/register">{{ 'login.register' | translate }}</a></p>
+    </div>
+  </div>
+</div>

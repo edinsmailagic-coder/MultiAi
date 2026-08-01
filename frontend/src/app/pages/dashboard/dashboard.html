@@ -1,0 +1,149 @@
+<div class="dashboard">
+  <aside class="sidebar">
+    <div class="sidebar__logo">
+      <span class="logo-icon">⚡</span>
+      <span class="logo-text">Multi<span>AI</span></span>
+    </div>
+
+    <nav class="sidebar__nav">
+      <a href="#" class="nav-item active">
+        <i class="icon-dashboard"></i> Dashboard
+      </a>
+      <a href="#" class="nav-item">
+        <i class="icon-models"></i> AI Models
+      </a>
+      <a href="#" class="nav-item">
+        <i class="icon-chat"></i> Sessions
+      </a>
+      <a href="#" class="nav-item">
+        <i class="icon-analytics"></i> Analytics
+      </a>
+      <a href="#" class="nav-item">
+        <i class="icon-settings"></i> Settings
+      </a>
+    </nav>
+
+    <div class="sidebar__user">
+      <div class="avatar">JD</div>
+      <div class="user-info">
+        <p class="name">John Doe</p>
+        <p class="role">Developer</p>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main-content">
+    <header class="header">
+      <div class="header__title">
+        <h1>Welcome back, Developer</h1>
+        <p>Manage and monitor your multi-agent AI workflows.</p>
+      </div>
+      <div class="header__actions">
+        <button class="btn btn--secondary">
+          <span>API Keys</span>
+        </button>
+        <button class="btn btn--primary">
+          <span>+ New Agent</span>
+        </button>
+      </div>
+    </header>
+
+    <section class="metrics-grid">
+      <div class="metric-card">
+        <div class="metric-card__header">
+          <span class="title">Active Agents</span>
+          <span class="badge badge--success">Live</span>
+        </div>
+        <h3 class="value">12 / 15</h3>
+        <p class="desc">3 currently idle</p>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-card__header">
+          <span class="title">Total Tokens (Today)</span>
+          <span class="badge badge--info">Usage</span>
+        </div>
+        <h3 class="value">342.8k</h3>
+        <p class="desc">+12% from yesterday</p>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-card__header">
+          <span class="title">Est. Cost</span>
+          <span class="badge badge--warning">Billing</span>
+        </div>
+        <h3 class="value">$4.12</h3>
+        <p class="desc">Budget cap: $50.00</p>
+      </div>
+    </section>
+
+    <section class="content-grid">
+      <div class="panel models-panel">
+        <div class="panel__header">
+          <h2>Most Used AI Models</h2>
+          <span class="action-link">View all</span>
+        </div>
+        <div class="model-list">
+          <div class="model-item">
+            <div class="model-info">
+              <div class="model-status status--online"></div>
+              <div>
+                <h4>GPT-4o</h4>
+                <p>OpenAI • Primary Chat Agent</p>
+              </div>
+            </div>
+            <div class="model-meta">
+              <span class="latency">45ms</span>
+            </div>
+          </div>
+
+          <div class="model-item">
+            <div class="model-info">
+              <div class="model-status status--online"></div>
+              <div>
+                <h4>Claude 3.5 Sonnet</h4>
+                <p>Anthropic • Coding & Reasoning</p>
+              </div>
+            </div>
+            <div class="model-meta">
+              <span class="latency">82ms</span>
+            </div>
+          </div>
+
+          <div class="model-item">
+            <div class="model-info">
+              <div class="model-status status--offline"></div>
+              <div>
+                <h4>Llama 3 (Local)</h4>
+                <p>Ollama • Offline Fallback</p>
+              </div>
+            </div>
+            <div class="model-meta">
+              <span class="latency">Offline</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel activity-panel">
+        <div class="panel__header">
+          <h2>Recent Orchestrations</h2>
+        </div>
+        <div class="activity-timeline">
+          <div class="activity-item">
+            <span class="time">Just now</span>
+            <p><strong>Agent-1 (Writer)</strong> requested review from <strong>Agent-2 (Editor)</strong></p>
+          </div>
+          <div class="activity-item">
+            <span class="time">10m ago</span>
+            <p>Token threshold exceeded on <strong>Claude 3.5</strong>. Switched to backup.</p>
+          </div>
+          <div class="activity-item">
+            <span class="time">1h ago</span>
+            <p>Successfully processed batch job <code>#9281</code> with 3 models.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>

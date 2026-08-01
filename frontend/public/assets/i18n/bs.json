@@ -1,0 +1,17 @@
+{
+  "login": {
+    "title": "Dobrodošli nazad",
+    "subtitle": "Prijavite se na svoj MultiAI račun",
+    "email": "Email adresa",
+    "password": "Lozinka",
+    "button": "Prijavi se",
+    "no_account": "Nemate korisnički račun?",
+    "register": "Registrujte se"
+  },
+  "toast": {
+    "loginSuccess": "Uspješno ste se prijavili!",
+    "loginError": "Došlo je do greške prilikom prijave. Provjerite svoje podatke i pokušajte ponovo.",
+    "registerSuccess": "Uspješno ste se registrovali! Sada se možete prijaviti.",
+    "registerError": "Došlo je do greške prilikom registracije. Provjerite svoje podatke i pokušajte ponovo."
+  }
+}

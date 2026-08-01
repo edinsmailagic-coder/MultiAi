@@ -1,0 +1,17 @@
+{
+  "login": {
+    "title": "Welcome back",
+    "subtitle": "Log in to your MultiAI account",
+    "email": "Email address",
+    "password": "Password",
+    "button": "Log in",
+    "no_account": "Don't have an account?",
+    "register": "Register"
+  },
+  "toast": {
+    "loginSuccess": "You have been logged in successfully!",
+    "loginError": "An error occurred while logging in. Please check your credentials and try again.",
+    "registerSuccess": "You have been registered successfully! You can now log in.",
+    "registerError": "An error occurred while registering. Please check your information and try again."
+  }
+}
