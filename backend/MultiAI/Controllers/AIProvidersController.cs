@@ -37,16 +37,6 @@ namespace MultiAI.Controllers
             return Ok(models);
         }
 
-        [HttpGet("connect")]
-        public async Task<IActionResult> AddUserAIProvider(int providerId, string key)
-        {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
-            if (string.IsNullOrEmpty(userId))
-                return Unauthorized();
-            var response = await providerFactory.AddUserAIProvider(userId,providerId,key);
-
-            return Ok(response);
-        }
+        
     }
 }

@@ -30,35 +30,6 @@ namespace MultiAI.Services
             return provider;
         }
 
-        public async Task<UserAIProvider> AddUserAIProvider(string userId,int providerId, string key)
-        {
-            var valid=aIProvider.ValidateKey(key);
-
-            if (valid.IsFaulted)
-            {
-                throw new Exception("API key is not valid");
-                
-            }
-            var encrypt = encryptionService.Encrypt(key);
-
-            var user = await dbContext.Users.FirstOrDefaultAsync(x=>x.Id == userId);
-
-            var userAIProvider = new UserAIProvider
-            {
-                UserId = userId,
-                ProviderId = providerId,
-                EncryptedApiKey = encrypt,
-                CreatedAt=DateTime.UtcNow,
-                CreatedBy = user.UserName,
-                UpdatedAt = DateTime.UtcNow,
-                UpdatedBy = user.UserName,
-                IsDeleted = 0
-            };
-
-            dbContext.UserAIProviders.Add(userAIProvider);
-            await dbContext.SaveChangesAsync();
-
-            return userAIProvider;
-        }
+        
     }
 }
