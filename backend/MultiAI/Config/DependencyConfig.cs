@@ -36,6 +36,11 @@ namespace MultiAI.Config
             //services.AddScoped<IAIProvider, OpenAIProvider>();
             services.AddScoped<IAIProviderFactory, AIProviderFactory>();
             services.AddScoped<IChatService, ChatService>();
+            services.AddScoped<INodeExecutorService, AINodeExecutorService>();
+            services.AddScoped<IWorkflowEngine, WorkflowEngineService>();
+            services.AddScoped<IWorkflowExecutionService, WorkflowExecutionService>();
+            services.AddScoped<IWorkflowEngine, WorkflowEngineService>();
+            services.AddScoped<IWorkflowExecutionService, WorkflowExecutionService>();
 
             return services;
         }
