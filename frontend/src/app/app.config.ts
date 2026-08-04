@@ -1,34 +1,10 @@
-import { ApplicationConfig, importProvidersFrom, provideBrowserGlobalErrorListeners, provideZonelessChangeDetection } from '@angular/core';
+import { provideHttpClient, withInterceptors } from '@angular/common/http';
+import { ApplicationConfig, provideBrowserGlobalErrorListeners, provideZonelessChangeDetection } from '@angular/core';
+import { provideAnimations } from '@angular/platform-browser/animations';
 import { provideRouter } from '@angular/router';
-import {provideHttpClient,HttpClient} from '@angular/common/http';
-import { provideTranslateService, TranslateLoader } from '@ngx-translate/core';
-import { provideTranslateHttpLoader, TranslateHttpLoader } from '@ngx-translate/http-loader';
-import { routes } from './app.routes';
-import { map } from 'rxjs/operators';
-import {provideAnimations} from '@angular/platform-browser/animations';
+import { provideTranslateService } from '@ngx-translate/core';
+import { provideTranslateHttpLoader } from '@ngx-translate/http-loader';
 import { provideToastr } from 'ngx-toastr';
-
-export const appConfig: ApplicationConfig = {
-  providers: [
-    provideBrowserGlobalErrorListeners(),
-    provideZonelessChangeDetection(),
-    provideRouter(routes),
-    provideHttpClient(),
-    provideAnimations(),
-
-  provideToastr({
-    positionClass: 'toast-top-right',
-    preventDuplicates: true,
-    closeButton: true,
-    progressBar: true,
-    newestOnTop: true,
-    timeOut: 3000
-  }),
-    provideTranslateService({
-      loader: provideTranslateHttpLoader({
-        prefix: './assets/i18n/',
-        suffix: '.json'
-      })
-    })
-  ]
-};
+import { routes } from './app.routes';
+import { authInterceptor } from './core/interceptors/auth.interceptor';
+export const appConfig: ApplicationConfig = { providers: [provideBrowserGlobalErrorListeners(), provideZonelessChangeDetection(), provideRouter(routes), provideHttpClient(withInterceptors([authInterceptor])), provideAnimations(), provideToastr({ positionClass: 'toast-top-right', preventDuplicates: true, closeButton: true, progressBar: true, timeOut: 3000 }), provideTranslateService({ loader: provideTranslateHttpLoader({ prefix: './assets/i18n/', suffix: '.json' }) })] };

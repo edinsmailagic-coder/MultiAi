@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using MultiAI.Models.Data;
-using MultiAI.Models.Workflow;
+using MultiAI.Models.Workflows;
 using MultiAI.Services.Interface;
 
 namespace MultiAI.Services

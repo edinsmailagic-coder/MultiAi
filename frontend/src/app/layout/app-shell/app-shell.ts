@@ -1,0 +1,6 @@
+import { ChangeDetectionStrategy, Component, OnInit, computed, signal } from '@angular/core';
+import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
+import { AuthService } from '../../core/services/auth.service';
+@Component({ selector: 'app-shell', imports: [RouterOutlet, RouterLink, RouterLinkActive, TranslatePipe], templateUrl: './app-shell.html', styleUrl: './app-shell.scss', changeDetection: ChangeDetectionStrategy.OnPush })
+export class AppShell implements OnInit { readonly mobileOpen = signal(false); readonly initials = computed(() => { const u = this.auth.currentUser(); return u ? `${u.firstName[0] ?? ''}${u.lastName[0] ?? ''}`.toUpperCase() : 'MA'; }); constructor(readonly auth: AuthService, private readonly translate: TranslateService) {} ngOnInit(): void { if (!this.auth.currentUser()) this.auth.loadCurrentUser().subscribe({ error: () => this.auth.logout() }); } toggleMenu(): void { this.mobileOpen.update(value => !value); } closeMenu(): void { this.mobileOpen.set(false); } logout(): void { this.auth.logout(); } changeLanguage(): void { const lang = this.translate.currentLang() === 'bs' ? 'en' : 'bs'; localStorage.setItem('lang', lang); this.translate.use(lang); } }

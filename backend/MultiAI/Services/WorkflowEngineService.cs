@@ -1,5 +1,5 @@
 ﻿using MultiAI.Models.Entities;
-using MultiAI.Models.Workflow;
+using MultiAI.Models.Workflows;
 using MultiAI.Services.Interface;
 
 namespace MultiAI.Services
@@ -12,7 +12,7 @@ namespace MultiAI.Services
         {
             this.nodeExecutors = nodeExecutors;
         }
-        public async Task ExecuteAsync(WorkflowExecutionContext executionContext, List<WorkflowNode> nodes,List<WorkflowConnection> connections)
+        public async Task ExecutionAsync(WorkflowExecutionContext executionContext, List<WorkflowNode> nodes,List<WorkflowConnection> connections)
         {
             if (!nodes.Any())
             {

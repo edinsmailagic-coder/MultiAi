@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using MultiAI.Models.Entities;
+using WorkflowEntity = MultiAI.Models.Entities.Workflow;
 
 namespace MultiAI.Models.Data
 {
@@ -27,7 +28,7 @@ namespace MultiAI.Models.Data
         public DbSet<UserMessage> UserMessages { get; set; }
 
         public DbSet<AIResponse> AIResponses { get; set; }
-        public DbSet<Workflow> Workflows { get; set; }
+        public DbSet<WorkflowEntity> Workflows { get; set; }
 
         public DbSet<WorkflowNode> WorkflowNodes { get; set; }
 
@@ -50,7 +51,7 @@ namespace MultiAI.Models.Data
             builder.Entity<Conversation>().ToTable("Conversations");
             builder.Entity<UserAIProvider>().ToTable("UserAIProviders");
             builder.Entity<UserMessage>().ToTable("UserMessages");
-            builder.Entity<Workflow>().ToTable("Workflows");
+            builder.Entity<WorkflowEntity>().ToTable("Workflows");
 
             builder.Entity<WorkflowNode>().ToTable("WorkflowNodes");
 

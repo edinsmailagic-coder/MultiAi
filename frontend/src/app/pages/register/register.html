@@ -1,1 +1,49 @@
-<p>register works!</p>
+<main class="auth-page">
+  <section class="auth-card register-card">
+    <div class="language">
+      <button type="button" [class.active]="currentLanguage() === 'bs'" (click)="changeLanguage('bs')">BS</button>
+      <button type="button" [class.active]="currentLanguage() === 'en'" (click)="changeLanguage('en')">EN</button>
+    </div>
+
+    <a class="brand" routerLink="/">Multi<span>AI</span></a>
+    <h1>{{ 'auth.registerTitle' | translate }}</h1>
+    <p class="subtitle">{{ 'auth.registerSubtitle' | translate }}</p>
+
+    <form [formGroup]="form" (ngSubmit)="submit()">
+      <div class="form-row">
+        <label>{{ 'auth.firstName' | translate }}
+          <input formControlName="firstName" autocomplete="given-name">
+        </label>
+        <label>{{ 'auth.lastName' | translate }}
+          <input formControlName="lastName" autocomplete="family-name">
+        </label>
+      </div>
+
+      <label>{{ 'auth.email' | translate }}
+        <input type="email" formControlName="email" autocomplete="email">
+      </label>
+
+      <div class="form-row">
+        <label>{{ 'auth.password' | translate }}
+          <input type="password" formControlName="password" autocomplete="new-password">
+        </label>
+        <label>{{ 'auth.confirmPassword' | translate }}
+          <input type="password" formControlName="confirmPassword" autocomplete="new-password">
+        </label>
+      </div>
+
+      @if (form.touched && form.hasError('passwordMismatch')) {
+        <small>{{ 'auth.passwordMismatch' | translate }}</small>
+      }
+
+      <button class="primary full" type="submit" [disabled]="loading()">
+        {{ (loading() ? 'common.loading' : 'auth.createAccount') | translate }}
+      </button>
+    </form>
+
+    <p class="auth-link">
+      {{ 'auth.hasAccount' | translate }}
+      <a routerLink="/login">{{ 'auth.login' | translate }}</a>
+    </p>
+  </section>
+</main>

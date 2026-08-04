@@ -1,0 +1,35 @@
+<section class="page-heading">
+  <div>
+    <p class="eyebrow">{{ 'nav.workflows' | translate }}</p>
+    <h1>{{ 'workflow.allTitle' | translate }}</h1>
+    <p>{{ 'workflow.allSubtitle' | translate }}</p>
+  </div>
+  <a class="primary" routerLink="/dashboard">{{ 'workflow.createOnDashboard' | translate }}</a>
+</section>
+
+<section class="panel">
+  @if (loading()) {
+    <div class="empty-state">{{ 'common.loading' | translate }}</div>
+  } @else if (!workflows().length) {
+    <div class="empty-state">
+      <h3>{{ 'workflow.emptyTitle' | translate }}</h3>
+      <a class="primary" routerLink="/dashboard">{{ 'workflow.createFirst' | translate }}</a>
+    </div>
+  } @else {
+    <div class="workflow-grid">
+      @for (workflow of workflows(); track workflow.id) {
+        <a class="workflow-card" [routerLink]="['/workflows', workflow.id]">
+          <div class="workflow-icon" aria-hidden="true">◈</div>
+          <div>
+            <h3>{{ workflow.name }}</h3>
+            <p>{{ workflow.description }}</p>
+            <span class="status" [class.inactive]="!workflow.isActive">
+              {{ (workflow.isActive ? 'common.active' : 'common.inactive') | translate }}
+            </span>
+          </div>
+          <button class="icon-button danger" type="button" (click)="delete(workflow, $event)" [attr.aria-label]="'common.delete' | translate">×</button>
+        </a>
+      }
+    </div>
+  }
+</section>

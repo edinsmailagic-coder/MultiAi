@@ -20,6 +20,7 @@ namespace MultiAI.Services
             var claims = new[]
             {
                 new Claim(JwtRegisteredClaimNames.Sub,users.Id),
+                new Claim(ClaimTypes.NameIdentifier, users.Id),
                 new Claim(JwtRegisteredClaimNames.Email,users.Email!),
                 new Claim(ClaimTypes.Name,users.UserName!)
             };

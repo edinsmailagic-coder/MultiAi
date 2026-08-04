@@ -2,20 +2,20 @@
 using MultiAI.Models.Data;
 using MultiAI.Models.Entities;
 using MultiAI.Services.Interface;
-using System.Data.Common;
 
 namespace MultiAI.Services
 {
     public class UserAIProviderService : IUserAIProviderService
     {
-        private readonly IAIProvider aIProvider;
         private readonly AppDbContext dbContext;
-        private readonly ApiKeyEncryptionService encryptionService;
+        private readonly IApiKeyEncryptionService encryptionService;
         private readonly IAIProviderFactory providerFactory;
 
-        public UserAIProviderService(IAIProvider aIProvider, AppDbContext dbContext, ApiKeyEncryptionService encryptionService,IAIProviderFactory providerFactory)
+        public UserAIProviderService(
+            AppDbContext dbContext,
+            IApiKeyEncryptionService encryptionService,
+            IAIProviderFactory providerFactory)
         {
-            this.aIProvider = aIProvider;
             this.dbContext = dbContext;
             this.encryptionService = encryptionService;
             this.providerFactory = providerFactory;
@@ -47,7 +47,8 @@ namespace MultiAI.Services
             }
             var encrypt = encryptionService.Encrypt(key);
 
-            var user = await dbContext.Users.FirstOrDefaultAsync(x => x.Id == userId);
+            var user = await dbContext.Users.FirstOrDefaultAsync(x => x.Id == userId)
+                ?? throw new Exception("User not found.");
 
             var userAIProvider = new UserAIProvider
             {
@@ -65,6 +66,15 @@ namespace MultiAI.Services
             await dbContext.SaveChangesAsync();
 
             return userAIProvider;
+        }
+
+        public Task<List<UserAIProvider>> GetConnectedAsync(string userId)
+        {
+            return dbContext.UserAIProviders
+                .AsNoTracking()
+                .Include(x => x.Provider)
+                .Where(x => x.UserId == userId && x.IsDeleted == 0)
+                .ToListAsync();
         }
     }
 }

@@ -1,5 +1,5 @@
 ﻿using MultiAI.Models.Entities;
-using MultiAI.Models.Workflow;
+using MultiAI.Models.Workflows;
 
 namespace MultiAI.Services.Interface
 {

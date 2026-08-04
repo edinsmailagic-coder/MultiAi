@@ -29,6 +29,9 @@ namespace MultiAI.Services
                 throw new Exception("Workflow not found");
             }
 
+            var user = await context.Users.FirstOrDefaultAsync(x => x.Id == workflow.UserId);
+            var actor = user?.UserName ?? workflow.UserId;
+
             var node = new WorkflowNode
             {
                 WorkflowId = dto.WorkflowId,
@@ -42,9 +45,9 @@ namespace MultiAI.Services
                 PositionY = dto.PositionY,
                 NodeType = dto.NodeType,
                 CreatedAt = DateTime.UtcNow,
-                CreatedBy = workflow.User.UserName,
+                CreatedBy = actor,
                 UpdatedAt = DateTime.UtcNow,
-                UpdatedBy = workflow.User.UserName
+                UpdatedBy = actor
             };
 
             context.WorkflowNodes.Add(node);

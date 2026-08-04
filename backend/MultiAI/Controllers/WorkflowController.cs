@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MultiAI.Models.Entities;
 using MultiAI.Services.Interface;
@@ -8,6 +8,7 @@ namespace MultiAI.Controllers
 {
     [Route("api/workflow")]
     [ApiController]
+    [Authorize]
     public class WorkflowController : ControllerBase
     {
         private readonly IWorkflowService service;
@@ -30,14 +31,14 @@ namespace MultiAI.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetById(int workflowId)
+        public async Task<IActionResult> GetById(int id)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
             if (string.IsNullOrEmpty(userId))
                 return Unauthorized();
 
-            var response = await service.GetByIdAsync(workflowId, userId);
+            var response = await service.GetByIdAsync(id, userId);
 
             return Ok(response);
         }

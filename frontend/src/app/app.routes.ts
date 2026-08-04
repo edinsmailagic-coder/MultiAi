@@ -1,12 +1,15 @@
 import { Routes } from '@angular/router';
-import {Login} from './pages/login/login';
-import {Register} from './pages/register/register';
-import { Dashboard } from './pages/dashboard/dashboard';
-
-
+import { authGuard } from './core/guards/auth.guard';
+import { guestGuard } from './core/guards/guest.guard';
 export const routes: Routes = [
-    {path:'',redirectTo:'login', pathMatch:'full'},
-    {path:'login',component:Login},
-    {path:'register',component:Register},
-    {path:'dashboard',component:Dashboard},
+  { path: '', pathMatch: 'full', redirectTo: 'login' },
+  { path: 'login', canActivate: [guestGuard], loadComponent: () => import('./pages/login/login').then(m => m.Login) },
+  { path: 'register', canActivate: [guestGuard], loadComponent: () => import('./pages/register/register').then(m => m.Register) },
+  { path: '', canActivate: [authGuard], loadComponent: () => import('./layout/app-shell/app-shell').then(m => m.AppShell), children: [
+    { path: 'dashboard', loadComponent: () => import('./pages/dashboard/dashboard').then(m => m.Dashboard) },
+    { path: 'workflows', loadComponent: () => import('./pages/workflows/workflow-list/workflow-list').then(m => m.WorkflowList) },
+    { path: 'workflows/:id', loadComponent: () => import('./pages/workflows/workflow-editor/workflow-editor').then(m => m.WorkflowEditor) },
+    { path: 'profile', loadComponent: () => import('./pages/profile/profile').then(m => m.Profile) }
+  ] },
+  { path: '**', redirectTo: 'login' }
 ];

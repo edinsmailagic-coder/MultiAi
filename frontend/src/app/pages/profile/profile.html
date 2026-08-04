@@ -1,0 +1,68 @@
+<section class="page-heading">
+  <div>
+    <p class="eyebrow">{{ 'nav.profile' | translate }}</p>
+    <h1>{{ 'profile.title' | translate }}</h1>
+    <p>{{ 'profile.subtitle' | translate }}</p>
+  </div>
+</section>
+
+<div class="profile-grid">
+  <section class="panel">
+    <h2>{{ 'profile.personal' | translate }}</h2>
+    <p class="muted">{{ auth.currentUser()?.email }}</p>
+    <form [formGroup]="profileForm" (ngSubmit)="saveProfile()">
+      <div class="form-row">
+        <label>{{ 'auth.firstName' | translate }}
+          <input formControlName="firstName">
+        </label>
+        <label>{{ 'auth.lastName' | translate }}
+          <input formControlName="lastName">
+        </label>
+      </div>
+      <button class="primary" type="submit">{{ 'common.save' | translate }}</button>
+    </form>
+  </section>
+
+  <section class="panel">
+    <h2>{{ 'profile.password' | translate }}</h2>
+    <form [formGroup]="passwordForm" (ngSubmit)="changePassword()">
+      <label>{{ 'profile.currentPassword' | translate }}
+        <input type="password" formControlName="currentPassword" autocomplete="current-password">
+      </label>
+      <label>{{ 'profile.newPassword' | translate }}
+        <input type="password" formControlName="newPassword" autocomplete="new-password">
+      </label>
+      <button class="primary" type="submit">{{ 'profile.changePassword' | translate }}</button>
+    </form>
+  </section>
+
+  <section class="panel providers-panel">
+    <h2>{{ 'profile.providers' | translate }}</h2>
+    <div class="connected-list">
+      @for (item of connected(); track item.id) {
+        <span class="provider-chip">● {{ item.providerName }}</span>
+      } @empty {
+        <p class="muted">{{ 'profile.noProviders' | translate }}</p>
+      }
+    </div>
+    <form [formGroup]="providerForm" (ngSubmit)="connect()">
+      <label>{{ 'profile.provider' | translate }}
+        <select formControlName="providerId">
+          <option [value]="0">{{ 'profile.selectProvider' | translate }}</option>
+          @for (provider of providers(); track provider.id) {
+            <option [value]="provider.id">{{ provider.name }}</option>
+          }
+        </select>
+      </label>
+      <label>{{ 'profile.apiKey' | translate }}
+        <input type="password" formControlName="apiKey" autocomplete="off">
+      </label>
+      <button class="primary" type="submit">{{ 'profile.connect' | translate }}</button>
+    </form>
+  </section>
+
+  <section class="panel danger-zone">
+    <h2>{{ 'profile.session' | translate }}</h2>
+    <button class="danger-button" type="button" (click)="auth.logout()">{{ 'nav.logout' | translate }}</button>
+  </section>
+</div>

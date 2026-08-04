@@ -1,23 +1,5 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
-
+import { provideHttpClientTesting } from '@angular/common/http/testing';
+import { TestBed } from '@angular/core/testing';
+import { appConfig } from '../../app.config';
 import { Dashboard } from './dashboard';
-
-describe('Dashboard', () => {
-  let component: Dashboard;
-  let fixture: ComponentFixture<Dashboard>;
-
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
-      imports: [Dashboard]
-    })
-    .compileComponents();
-
-    fixture = TestBed.createComponent(Dashboard);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
-  });
-
-  it('should create', () => {
-    expect(component).toBeTruthy();
-  });
-});
+describe('Dashboard', () => { it('should create', async () => { await TestBed.configureTestingModule({ imports: [Dashboard], providers: [...appConfig.providers, provideHttpClientTesting()] }).compileComponents(); expect(TestBed.createComponent(Dashboard).componentInstance).toBeTruthy(); }); });

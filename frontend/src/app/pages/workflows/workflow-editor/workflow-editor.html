@@ -1,0 +1,187 @@
+<div class="editor" [class.connecting]="isConnecting()">
+  <header class="editor-toolbar">
+    <a class="secondary compact" routerLink="/workflows">← {{ 'common.back' | translate }}</a>
+    <div>
+      <h1>{{ workflow()?.name }}</h1>
+      <p>{{ workflow()?.description }}</p>
+    </div>
+    <span class="toolbar-space"></span>
+    <button class="secondary" type="button" (click)="showAdd.set(true)">+ {{ 'workflow.addNode' | translate }}</button>
+    <button class="primary" type="button" (click)="showExecute.set(true)">▶ {{ 'workflow.execute' | translate }}</button>
+  </header>
+
+  @if (isConnecting()) {
+    <div class="connect-hint" role="status">
+      {{ 'workflow.connectHint' | translate }}
+      <button type="button" class="secondary compact" (click)="cancelConnection()">{{ 'common.cancel' | translate }}</button>
+    </div>
+  }
+
+  <div
+    #canvas
+    class="canvas"
+    (pointermove)="onCanvasPointerMove($event)"
+    (pointerdown)="onCanvasPointerDown($event)"
+    (pointerup)="endDrag()"
+    (pointercancel)="endDrag()"
+  >
+    <div class="canvas-inner" [style.width.px]="canvasWidth()" [style.height.px]="canvasHeight()">
+      <svg
+        class="connections"
+        [attr.width]="canvasWidth()"
+        [attr.height]="canvasHeight()"
+        [attr.viewBox]="viewBox()"
+        preserveAspectRatio="none"
+      >
+        <defs>
+          <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="#a78bfa"></path>
+          </marker>
+        </defs>
+
+        @for (connection of connections(); track connection.id) {
+          <path class="edge" [attr.d]="path(connection)" marker-end="url(#arrow)" />
+        }
+
+        @if (previewPath()) {
+          <path class="edge preview" [attr.d]="previewPath()" />
+        }
+      </svg>
+
+      @for (node of nodes(); track node.id) {
+        <article
+          class="node-card"
+          [class.selected]="selected()?.id === node.id"
+          [class.source]="sourceNodeId() === node.id"
+          [style.left.px]="node.positionX"
+          [style.top.px]="node.positionY"
+          (pointerdown)="startDrag(node, $event)"
+          (click)="selectNode(node)"
+        >
+          <button
+            class="port input-port"
+            type="button"
+            (pointerdown)="$event.stopPropagation()"
+            (click)="finishConnection(node.id, $event)"
+            [attr.aria-label]="'workflow.inputPort' | translate"
+          ></button>
+          <div class="node-head">
+            <span class="node-badge">{{ node.nodeType }}</span>
+            <span class="drag-handle" aria-hidden="true">⋮⋮</span>
+          </div>
+          <h3>{{ node.name }}</h3>
+          <p>{{ node.model }}</p>
+          <button
+            class="port output-port"
+            [class.connecting]="sourceNodeId() === node.id"
+            type="button"
+            (pointerdown)="startConnection(node.id, $event)"
+            (click)="$event.stopPropagation()"
+            [attr.aria-label]="'workflow.outputPort' | translate"
+          ></button>
+        </article>
+      }
+
+      @if (!nodes().length) {
+        <div class="canvas-empty">
+          <h2>{{ 'workflow.noNodes' | translate }}</h2>
+          <p>{{ 'workflow.noNodesText' | translate }}</p>
+          <button class="primary" type="button" (click)="showAdd.set(true)">+ {{ 'workflow.addNode' | translate }}</button>
+        </div>
+      }
+    </div>
+  </div>
+
+  @if (selected()) {
+    <aside class="side-panel">
+      <button class="panel-close" type="button" (click)="closePanel()" aria-label="Close">×</button>
+      <h2>{{ 'workflow.editNode' | translate }}</h2>
+      <form [formGroup]="editForm" (ngSubmit)="saveNode()">
+        <label>{{ 'workflow.nodeName' | translate }}
+          <input formControlName="name">
+        </label>
+        <label>{{ 'workflow.model' | translate }}
+          <input formControlName="model">
+        </label>
+        <label>{{ 'workflow.provider' | translate }}
+          <select formControlName="userAIProviderId">
+            @for (provider of providers(); track provider.id) {
+              <option [value]="provider.id">{{ provider.providerName }}</option>
+            }
+          </select>
+        </label>
+        <label>{{ 'workflow.prompt' | translate }}
+          <textarea formControlName="prompt" rows="7"></textarea>
+        </label>
+        <label>{{ 'workflow.inputMapping' | translate }}
+          <input formControlName="inputMapping">
+        </label>
+        <button class="primary full" type="submit">{{ 'common.save' | translate }}</button>
+        <button class="danger-button full" type="button" (click)="deleteSelected()">{{ 'common.delete' | translate }}</button>
+      </form>
+    </aside>
+  }
+
+  @if (showAdd()) {
+    <div class="modal-backdrop" (click)="showAdd.set(false)">
+      <section class="modal" (click)="$event.stopPropagation()" role="dialog" aria-modal="true">
+        <h2>{{ 'workflow.addNode' | translate }}</h2>
+        @if (!providers().length) {
+          <div class="notice">
+            {{ 'workflow.connectFirst' | translate }}
+            <a routerLink="/profile">{{ 'nav.profile' | translate }}</a>
+          </div>
+        } @else {
+          <form [formGroup]="addForm" (ngSubmit)="addNode()">
+            <label>{{ 'workflow.nodeName' | translate }}
+              <input formControlName="name">
+            </label>
+            <label>{{ 'workflow.provider' | translate }}
+              <select formControlName="userAIProviderId">
+                @for (provider of providers(); track provider.id) {
+                  <option [value]="provider.id">{{ provider.providerName }}</option>
+                }
+              </select>
+            </label>
+            <label>{{ 'workflow.model' | translate }}
+              <input formControlName="model">
+            </label>
+            <label>{{ 'workflow.prompt' | translate }}
+              <textarea formControlName="prompt" rows="5"></textarea>
+            </label>
+            <div class="modal-actions">
+              <button class="secondary" type="button" (click)="showAdd.set(false)">{{ 'common.cancel' | translate }}</button>
+              <button class="primary" type="submit">{{ 'common.add' | translate }}</button>
+            </div>
+          </form>
+        }
+      </section>
+    </div>
+  }
+
+  @if (showExecute()) {
+    <aside class="side-panel execute-panel">
+      <button class="panel-close" type="button" (click)="showExecute.set(false)" aria-label="Close">×</button>
+      <h2>{{ 'workflow.execute' | translate }}</h2>
+      <form [formGroup]="executeForm" (ngSubmit)="execute()">
+        <label>{{ 'workflow.executionInput' | translate }}
+          <textarea formControlName="input" rows="5"></textarea>
+        </label>
+        <button class="primary full" type="submit" [disabled]="executing()">
+          {{ (executing() ? 'workflow.executing' : 'workflow.run') | translate }}
+        </button>
+      </form>
+      <div class="results">
+        @for (result of results(); track result.nodeId) {
+          <article [class.failed]="!result.success">
+            <div>
+              <strong>#{{ result.nodeId }}</strong>
+              <span>{{ result.durationMs }}ms · {{ result.totalTokens }} tokens</span>
+            </div>
+            <pre>{{ result.success ? result.output : result.error }}</pre>
+          </article>
+        }
+      </div>
+    </aside>
+  }
+</div>

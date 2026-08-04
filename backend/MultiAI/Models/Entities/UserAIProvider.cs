@@ -1,4 +1,5 @@
 ﻿using MultiAI.Models.Entities.Base;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace MultiAI.Models.Entities
 {
@@ -9,6 +10,7 @@ namespace MultiAI.Models.Entities
         public AIProvider Provider { get; set; }
         public string EncryptedApiKey {  get; set; }
         public bool IsDefault { get; set; }
-        public string DisplayName {  get; set; }
+        [NotMapped]
+        public string? DisplayName { get; set; }
     }
 }

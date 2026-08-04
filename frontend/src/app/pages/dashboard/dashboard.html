@@ -1,149 +1,82 @@
-<div class="dashboard">
-  <aside class="sidebar">
-    <div class="sidebar__logo">
-      <span class="logo-icon">⚡</span>
-      <span class="logo-text">Multi<span>AI</span></span>
+<section class="page-heading">
+  <div>
+    <p class="eyebrow">{{ 'dashboard.overview' | translate }}</p>
+    <h1>{{ 'dashboard.welcome' | translate }}, {{ auth.currentUser()?.firstName }}</h1>
+    <p>{{ 'dashboard.subtitle' | translate }}</p>
+  </div>
+  <button class="primary" type="button" (click)="showCreate.set(true)">+ {{ 'workflow.new' | translate }}</button>
+</section>
+
+<section class="metrics">
+  <article>
+    <span>{{ 'dashboard.totalWorkflows' | translate }}</span>
+    <strong>{{ workflows().length }}</strong>
+  </article>
+  <article>
+    <span>{{ 'dashboard.activeWorkflows' | translate }}</span>
+    <strong>{{ activeCount() }}</strong>
+  </article>
+  <article>
+    <span>{{ 'dashboard.connectedProviders' | translate }}</span>
+    <strong>{{ connectedCount() }}</strong>
+  </article>
+</section>
+
+<section class="panel">
+  <div class="panel-header">
+    <h2>{{ 'dashboard.recentWorkflows' | translate }}</h2>
+    <a routerLink="/workflows">{{ 'common.viewAll' | translate }}</a>
+  </div>
+
+  @if (loading()) {
+    <div class="empty-state">{{ 'common.loading' | translate }}</div>
+  } @else if (!workflows().length) {
+    <div class="empty-state">
+      <div class="empty-icon" aria-hidden="true">◈</div>
+      <h3>{{ 'workflow.emptyTitle' | translate }}</h3>
+      <p>{{ 'workflow.emptyText' | translate }}</p>
+      <button class="primary" type="button" (click)="showCreate.set(true)">{{ 'workflow.createFirst' | translate }}</button>
     </div>
-
-    <nav class="sidebar__nav">
-      <a href="#" class="nav-item active">
-        <i class="icon-dashboard"></i> Dashboard
-      </a>
-      <a href="#" class="nav-item">
-        <i class="icon-models"></i> AI Models
-      </a>
-      <a href="#" class="nav-item">
-        <i class="icon-chat"></i> Sessions
-      </a>
-      <a href="#" class="nav-item">
-        <i class="icon-analytics"></i> Analytics
-      </a>
-      <a href="#" class="nav-item">
-        <i class="icon-settings"></i> Settings
-      </a>
-    </nav>
-
-    <div class="sidebar__user">
-      <div class="avatar">JD</div>
-      <div class="user-info">
-        <p class="name">John Doe</p>
-        <p class="role">Developer</p>
-      </div>
+  } @else {
+    <div class="workflow-grid">
+      @for (workflow of workflows().slice(0, 6); track workflow.id) {
+        <article class="workflow-card" [routerLink]="['/workflows', workflow.id]">
+          <div class="workflow-icon" aria-hidden="true">◈</div>
+          <div>
+            <h3>{{ workflow.name }}</h3>
+            <p>{{ workflow.description }}</p>
+            <span class="status" [class.inactive]="!workflow.isActive">
+              {{ (workflow.isActive ? 'common.active' : 'common.inactive') | translate }}
+            </span>
+          </div>
+          <button
+            class="icon-button danger"
+            type="button"
+            (click)="delete(workflow, $event)"
+            [attr.aria-label]="'common.delete' | translate"
+          >×</button>
+        </article>
+      }
     </div>
-  </aside>
+  }
+</section>
 
-  <main class="main-content">
-    <header class="header">
-      <div class="header__title">
-        <h1>Welcome back, Developer</h1>
-        <p>Manage and monitor your multi-agent AI workflows.</p>
-      </div>
-      <div class="header__actions">
-        <button class="btn btn--secondary">
-          <span>API Keys</span>
-        </button>
-        <button class="btn btn--primary">
-          <span>+ New Agent</span>
-        </button>
-      </div>
-    </header>
-
-    <section class="metrics-grid">
-      <div class="metric-card">
-        <div class="metric-card__header">
-          <span class="title">Active Agents</span>
-          <span class="badge badge--success">Live</span>
+@if (showCreate()) {
+  <div class="modal-backdrop" (click)="showCreate.set(false)">
+    <section class="modal" (click)="$event.stopPropagation()" role="dialog" aria-modal="true">
+      <h2>{{ 'workflow.createTitle' | translate }}</h2>
+      <form [formGroup]="createForm" (ngSubmit)="create()">
+        <label>{{ 'workflow.name' | translate }}
+          <input formControlName="name">
+        </label>
+        <label>{{ 'workflow.description' | translate }}
+          <textarea formControlName="description" rows="3"></textarea>
+        </label>
+        <div class="modal-actions">
+          <button class="secondary" type="button" (click)="showCreate.set(false)">{{ 'common.cancel' | translate }}</button>
+          <button class="primary" type="submit">{{ 'common.create' | translate }}</button>
         </div>
-        <h3 class="value">12 / 15</h3>
-        <p class="desc">3 currently idle</p>
-      </div>
-
-      <div class="metric-card">
-        <div class="metric-card__header">
-          <span class="title">Total Tokens (Today)</span>
-          <span class="badge badge--info">Usage</span>
-        </div>
-        <h3 class="value">342.8k</h3>
-        <p class="desc">+12% from yesterday</p>
-      </div>
-
-      <div class="metric-card">
-        <div class="metric-card__header">
-          <span class="title">Est. Cost</span>
-          <span class="badge badge--warning">Billing</span>
-        </div>
-        <h3 class="value">$4.12</h3>
-        <p class="desc">Budget cap: $50.00</p>
-      </div>
+      </form>
     </section>
-
-    <section class="content-grid">
-      <div class="panel models-panel">
-        <div class="panel__header">
-          <h2>Most Used AI Models</h2>
-          <span class="action-link">View all</span>
-        </div>
-        <div class="model-list">
-          <div class="model-item">
-            <div class="model-info">
-              <div class="model-status status--online"></div>
-              <div>
-                <h4>GPT-4o</h4>
-                <p>OpenAI • Primary Chat Agent</p>
-              </div>
-            </div>
-            <div class="model-meta">
-              <span class="latency">45ms</span>
-            </div>
-          </div>
-
-          <div class="model-item">
-            <div class="model-info">
-              <div class="model-status status--online"></div>
-              <div>
-                <h4>Claude 3.5 Sonnet</h4>
-                <p>Anthropic • Coding & Reasoning</p>
-              </div>
-            </div>
-            <div class="model-meta">
-              <span class="latency">82ms</span>
-            </div>
-          </div>
-
-          <div class="model-item">
-            <div class="model-info">
-              <div class="model-status status--offline"></div>
-              <div>
-                <h4>Llama 3 (Local)</h4>
-                <p>Ollama • Offline Fallback</p>
-              </div>
-            </div>
-            <div class="model-meta">
-              <span class="latency">Offline</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="panel activity-panel">
-        <div class="panel__header">
-          <h2>Recent Orchestrations</h2>
-        </div>
-        <div class="activity-timeline">
-          <div class="activity-item">
-            <span class="time">Just now</span>
-            <p><strong>Agent-1 (Writer)</strong> requested review from <strong>Agent-2 (Editor)</strong></p>
-          </div>
-          <div class="activity-item">
-            <span class="time">10m ago</span>
-            <p>Token threshold exceeded on <strong>Claude 3.5</strong>. Switched to backup.</p>
-          </div>
-          <div class="activity-item">
-            <span class="time">1h ago</span>
-            <p>Successfully processed batch job <code>#9281</code> with 3 models.</p>
-          </div>
-        </div>
-      </div>
-    </section>
-  </main>
-</div>
+  </div>
+}

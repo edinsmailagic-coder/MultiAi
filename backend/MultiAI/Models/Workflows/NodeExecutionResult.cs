@@ -1,4 +1,4 @@
-﻿namespace MultiAI.Models.Workflow
+﻿namespace MultiAI.Models.Workflows
 {
     public class NodeExecutionResult
     {

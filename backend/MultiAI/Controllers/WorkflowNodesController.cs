@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MultiAI.Models.DTOs;
 using MultiAI.Services.Interface;
@@ -7,6 +7,7 @@ namespace MultiAI.Controllers
 {
     [Route("api/workflow-nodes")]
     [ApiController]
+    [Authorize]
     public class WorkflowNodesController : ControllerBase
     {
         private readonly IWorkflowNodeService service;

@@ -43,16 +43,20 @@ namespace MultiAI.Services
             if (exists)
                 throw new Exception("Connection already exists.");
 
+            var user = await context.Users.FirstOrDefaultAsync(x => x.Id == workflow.UserId);
+            var actor = user?.UserName ?? workflow.UserId;
+
             var connection = new WorkflowConnection
             {
                 WorkflowId = dto.WorkflowId,
                 SourceNodeId = dto.SourceNodeId,
                 TargetNodeId = dto.TargetNodeId,
-
+                SourceOutput = "output",
+                TargetInput = "input",
                 CreatedAt = DateTime.UtcNow,
-                CreatedBy = workflow.User.UserName,
+                CreatedBy = actor,
                 UpdatedAt = DateTime.UtcNow,
-                UpdatedBy = workflow.User.UserName
+                UpdatedBy = actor
             };
 
             context.WorkflowConnections.Add(connection);

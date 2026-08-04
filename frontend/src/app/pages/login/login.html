@@ -1,47 +1,44 @@
-<div class="auth-wrapper">
-  <div class="auth-container">
-    
-    <div class="lang-selector">
-  <button
-    (click)="changeLanguage('bs')"
-    [class.active]="currentLanguage === 'bs'">
-    🇧🇦 Bosanski
-  </button>
-
-  <button
-    (click)="changeLanguage('en')"
-    [class.active]="currentLanguage === 'en'">
-    🇬🇧 English
-  </button>
-</div>
-
-    <div *ngIf="errorMessage" class="error-alert">
-      <i class="alert-icon">⚠️</i>
-      <span>{{ errorMessage }}</span>
+<main class="auth-page">
+  <section class="auth-card">
+    <div class="language">
+      <button type="button" [class.active]="currentLanguage() === 'bs'" (click)="changeLanguage('bs')">BS</button>
+      <button type="button" [class.active]="currentLanguage() === 'en'" (click)="changeLanguage('en')">EN</button>
     </div>
 
-    <form (ngSubmit)="onLogin()" #loginForm="ngForm" class="auth-form">
-      <div class="form-group">
-        <label>{{ 'login.email' | translate }}</label>
-        <div class="input-wrapper">
-          <input type="email" name="email" [(ngModel)]="loginData.email" required placeholder="ime@kompanija.com">
-        </div>
-      </div>
+    <a class="brand" routerLink="/">Multi<span>AI</span></a>
+    <h1>{{ 'auth.loginTitle' | translate }}</h1>
+    <p class="subtitle">{{ 'auth.loginSubtitle' | translate }}</p>
 
-      <div class="form-group">
-        <label>{{ 'login.password' | translate }}</label>
-        <div class="input-wrapper">
-          <input type="password" name="password" [(ngModel)]="loginData.password" required placeholder="••••••••">
-        </div>
-      </div>
+    <form [formGroup]="form" (ngSubmit)="submit()">
+      <label>
+        {{ 'auth.email' | translate }}
+        <input
+          type="email"
+          formControlName="email"
+          autocomplete="email"
+          [placeholder]="'auth.emailPlaceholder' | translate"
+        >
+      </label>
+      @if (form.controls.email.touched && form.controls.email.invalid) {
+        <small>{{ 'auth.validEmail' | translate }}</small>
+      }
 
-      <button type="submit" class="btn-primary" [disabled]="!loginForm.form.valid">
-        {{ 'login.button' | translate }}
+      <label>
+        {{ 'auth.password' | translate }}
+        <input type="password" formControlName="password" autocomplete="current-password">
+      </label>
+      @if (form.controls.password.touched && form.controls.password.invalid) {
+        <small>{{ 'auth.passwordMin' | translate }}</small>
+      }
+
+      <button class="primary full" type="submit" [disabled]="loading()">
+        {{ (loading() ? 'common.loading' : 'auth.login') | translate }}
       </button>
     </form>
 
-    <div class="auth-footer">
-      <p>{{ 'login.no_account' | translate }} <a routerLink="/register">{{ 'login.register' | translate }}</a></p>
-    </div>
-  </div>
-</div>
+    <p class="auth-link">
+      {{ 'auth.noAccount' | translate }}
+      <a routerLink="/register">{{ 'auth.register' | translate }}</a>
+    </p>
+  </section>
+</main>

@@ -1,4 +1,6 @@
-﻿namespace MultiAI.Models.Workflow
+﻿using System.Text.Json.Serialization;
+
+namespace MultiAI.Models.Workflows
 {
     public class WorkflowExecutionContext
     {
@@ -14,6 +16,7 @@
         public Dictionary<string, object> Variables { get; set; }
             = new();
 
+        [JsonIgnore]
         public CancellationToken CancellationToken { get; set; }
     }
 }

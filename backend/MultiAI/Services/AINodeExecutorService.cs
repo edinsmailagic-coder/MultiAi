@@ -2,7 +2,7 @@
 using MultiAI.Models.Data;
 using MultiAI.Models.DTOs;
 using MultiAI.Models.Entities;
-using MultiAI.Models.Workflow;
+using MultiAI.Models.Workflows;
 using MultiAI.Services.Interface;
 
 namespace MultiAI.Services
