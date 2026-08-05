@@ -29,7 +29,7 @@
               class="top-bar__link"
               [routerLink]="item.href || '/login'"
               routerLinkActive="is-active"
-              [routerLinkActiveOptions]="{ exact: item.href === '/dashboard' }"
+              [routerLinkActiveOptions]="{ exact: item.href === '/' || item.href === '/dashboard' }"
               (click)="closeMenus()"
             >
               {{ item.labelKey | translate }}

@@ -159,19 +159,9 @@
   },
   "landing": {
     "nav": {
+      "overview": "Overview",
       "meet": "Meet Nodexa",
-      "meetClaude": "Meet the models",
-      "meetTeam": "Company",
-      "platform": "Platform",
-      "api": "API access",
-      "workflows": "Workflow canvas",
-      "solutions": "Solutions",
-      "enterprise": "Enterprise",
-      "startup": "Startups",
-      "pricing": "Pricing",
-      "resources": "Resources",
-      "docs": "Developer docs",
-      "blog": "Blog",
+      "docs": "Docs",
       "login": "Log in",
       "contact": "Contact sales",
       "try": "Try Nodexa",
@@ -187,6 +177,33 @@
       "subtitle": "Connect providers, compose visual workflows, and chat with the models you choose — in one warm, focused workspace.",
       "start": "Start building",
       "docs": "See developer docs"
+    },
+    "overview": {
+      "eyebrow": "Overview",
+      "title": "What Nodexa does",
+      "lede": "Nodexa is an AI workspace where you connect multiple providers, chat with the models you pick, and build visual workflows — without switching tools.",
+      "s1": {
+        "title": "Connect AI providers",
+        "body": "Add API keys for OpenAI, Anthropic, and other providers. Set a default model per connection and reuse it across the app."
+      },
+      "s2": {
+        "title": "Chat with the model you choose",
+        "body": "Send messages in chat, pick provider and model per turn, and keep conversation history in the sidebar — familiar AI chat, on your connections."
+      },
+      "s3": {
+        "title": "Compose visual workflows",
+        "body": "On the canvas you wire steps into a flow: inputs, model calls, and logic between them. Run the flow and get the final result in one place."
+      },
+      "s4": {
+        "title": "One focused workspace",
+        "body": "Dashboard, chat, workflows, and settings live in the same warm UI. Less glue work by hand — more clear work with AI models."
+      }
+    },
+    "docs": {
+      "eyebrow": "Docs",
+      "title": "Documentation",
+      "lede": "Guides, API notes, and other documents you add will live here.",
+      "empty": "No documents added yet. This space is ready — drop in links or content whenever you want."
     },
     "partners": {
       "label": "Partners",

@@ -44,7 +44,7 @@
   "workflow": {
     "new": "Novi tok",
     "emptyTitle": "Još nema tokova",
-    "emptyText": "Kreirajte tok i dodajte prvi AI čvor.",
+    "emptyText": "Kreirajte tok i dodajte prvi AI Node.",
     "createFirst": "Kreiraj prvi tok",
     "createTitle": "Kreiraj tok",
     "name": "Naziv",
@@ -159,19 +159,9 @@
   },
   "landing": {
     "nav": {
+      "overview": "Overview",
       "meet": "Upoznaj Nodexa",
-      "meetClaude": "Upoznaj modele",
-      "meetTeam": "Kompanija",
-      "platform": "Platforma",
-      "api": "API pristup",
-      "workflows": "Workflow canvas",
-      "solutions": "Rješenja",
-      "enterprise": "Enterprise",
-      "startup": "Startupi",
-      "pricing": "Cijene",
-      "resources": "Resursi",
-      "docs": "Developer docs",
-      "blog": "Blog",
+      "docs": "Docs",
       "login": "Prijava",
       "contact": "Kontaktiraj sales",
       "try": "Isprobaj Nodexa",
@@ -187,6 +177,33 @@
       "subtitle": "Povežite providere, složite vizuelne workflowe i chatajte s modelima koje odaberete — u jednom toplom, fokusiranom radnom prostoru.",
       "start": "Počni graditi",
       "docs": "Pogledaj docs"
+    },
+    "overview": {
+      "eyebrow": "Overview",
+      "title": "Šta Nodexa radi",
+      "lede": "Nodexa je radni prostor za AI gdje povezuješ više providera, razgovaraš s modelima koje odabereš i gradiš vizuelne tokove — bez mijenjanja alata.",
+      "s1": {
+        "title": "Poveži AI provajdere",
+        "body": "Dodaj API ključeve za OpenAI, Anthropic i ostale providere. Za svakog postaviš podrazumijevani model i koristiš ga kroz cijelu aplikaciju."
+      },
+      "s2": {
+        "title": "Chat s odabranim modelom",
+        "body": "Piši poruke u chatu, biraj providera i model po poruci, i čuvaj historiju razgovora u sidebaru — kao u poznatim AI alatima, ali na tvojim konekcijama."
+      },
+      "s3": {
+        "title": "Složi vizuelne workflowe",
+        "body": "Na canvasu povezuješ korake u tok: ulaz, pozivi modela i logika između njih. Pokreneš tok i dobiješ finalni rezultat na jednom mjestu."
+      },
+      "s4": {
+        "title": "Jedan fokusiran workspace",
+        "body": "Dashboard, chat, workflowi i postavke žive u istom toplom UI-u. Cilj je manje orkestracije „ručno“, više jasnog rada s AI modelima."
+      }
+    },
+    "docs": {
+      "eyebrow": "Docs",
+      "title": "Dokumentacija",
+      "lede": "Ovdje će stati vodiči, API napomene i ostali dokumenti koje dodaš.",
+      "empty": "Dokumenti još nisu dodani. Ovaj prostor je spreman — ubaci linkove ili sadržaj kad budeš spreman/na."
     },
     "partners": {
       "label": "Partneri",

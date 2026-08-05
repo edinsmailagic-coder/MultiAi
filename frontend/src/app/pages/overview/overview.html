@@ -1,0 +1,38 @@
+<div class="landing-page">
+  <app-top-bar [showSubBar]="false" />
+  <section class="page">
+    <div class="page__inner">
+      <p class="eyebrow">{{ 'landing.overview.eyebrow' | translate }}</p>
+      <h1>{{ 'landing.overview.title' | translate }}</h1>
+      <p class="lede">{{ 'landing.overview.lede' | translate }}</p>
+
+      <div class="steps">
+        <article class="step">
+          <span class="step__index">01</span>
+          <h2>{{ 'landing.overview.s1.title' | translate }}</h2>
+          <p>{{ 'landing.overview.s1.body' | translate }}</p>
+        </article>
+        <article class="step">
+          <span class="step__index">02</span>
+          <h2>{{ 'landing.overview.s2.title' | translate }}</h2>
+          <p>{{ 'landing.overview.s2.body' | translate }}</p>
+        </article>
+        <article class="step">
+          <span class="step__index">03</span>
+          <h2>{{ 'landing.overview.s3.title' | translate }}</h2>
+          <p>{{ 'landing.overview.s3.body' | translate }}</p>
+        </article>
+        <article class="step">
+          <span class="step__index">04</span>
+          <h2>{{ 'landing.overview.s4.title' | translate }}</h2>
+          <p>{{ 'landing.overview.s4.body' | translate }}</p>
+        </article>
+      </div>
+
+      <div class="page__cta">
+        <a class="btn btn--solid" routerLink="/login">{{ 'landing.nav.try' | translate }}</a>
+        <a class="btn btn--ghost" routerLink="/">{{ 'landing.nav.meet' | translate }}</a>
+      </div>
+    </div>
+  </section>
+</div>

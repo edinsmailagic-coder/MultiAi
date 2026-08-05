@@ -9,6 +9,14 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/landing/landing').then((m) => m.Landing),
   },
   {
+    path: 'overview',
+    loadComponent: () => import('./pages/overview/overview').then((m) => m.Overview),
+  },
+  {
+    path: 'docs',
+    loadComponent: () => import('./pages/docs/docs').then((m) => m.Docs),
+  },
+  {
     path: 'login',
     canActivate: [guestGuard],
     loadComponent: () => import('./pages/login/login').then((m) => m.Login),

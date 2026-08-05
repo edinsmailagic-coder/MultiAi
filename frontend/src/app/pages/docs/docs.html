@@ -1,0 +1,20 @@
+<div class="landing-page">
+  <app-top-bar [showSubBar]="false" />
+  <section class="page">
+    <div class="page__inner">
+      <p class="eyebrow">{{ 'landing.docs.eyebrow' | translate }}</p>
+      <h1>{{ 'landing.docs.title' | translate }}</h1>
+      <p class="lede">{{ 'landing.docs.lede' | translate }}</p>
+
+      <div class="docs-slot" aria-live="polite">
+        <p>{{ 'landing.docs.empty' | translate }}</p>
+        <!-- Add documentation links / content here -->
+      </div>
+
+      <div class="page__cta">
+        <a class="btn btn--solid" routerLink="/login">{{ 'landing.nav.try' | translate }}</a>
+        <a class="btn btn--ghost" routerLink="/overview">{{ 'landing.nav.overview' | translate }}</a>
+      </div>
+    </div>
+  </section>
+</div>

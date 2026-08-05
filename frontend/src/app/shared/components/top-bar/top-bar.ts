@@ -30,35 +30,9 @@ export class TopBar {
   readonly openDropdown = signal<string | null>(null);
 
   readonly marketingNav: TopBarNavItem[] = [
-    {
-      labelKey: 'landing.nav.meet',
-      children: [
-        { labelKey: 'landing.nav.meetClaude', href: '/login' },
-        { labelKey: 'landing.nav.meetTeam', href: '/login' },
-      ],
-    },
-    {
-      labelKey: 'landing.nav.platform',
-      children: [
-        { labelKey: 'landing.nav.api', href: '/login' },
-        { labelKey: 'landing.nav.workflows', href: '/login' },
-      ],
-    },
-    {
-      labelKey: 'landing.nav.solutions',
-      children: [
-        { labelKey: 'landing.nav.enterprise', href: '/login' },
-        { labelKey: 'landing.nav.startup', href: '/login' },
-      ],
-    },
-    { labelKey: 'landing.nav.pricing', href: '/login' },
-    {
-      labelKey: 'landing.nav.resources',
-      children: [
-        { labelKey: 'landing.nav.docs', href: '/login' },
-        { labelKey: 'landing.nav.blog', href: '/login' },
-      ],
-    },
+    { labelKey: 'landing.nav.overview', href: '/overview' },
+    { labelKey: 'landing.nav.docs', href: '/docs' },
+    { labelKey: 'landing.nav.meet', href: '/' },
   ];
 
   readonly appNav: TopBarNavItem[] = [
