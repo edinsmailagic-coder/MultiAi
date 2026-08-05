@@ -1,5 +1,3 @@
-using MultiAI.Models.Log;
-
 namespace MultiAI.Services.Interface
 {
     public interface IUserLogService

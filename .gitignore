@@ -5,6 +5,7 @@
 *.user
 *.suo
 *.slnx.user
+_build_check/
 
 # Angular / Node privremeni fajlovi
 node_modules/
