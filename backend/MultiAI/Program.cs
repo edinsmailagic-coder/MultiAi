@@ -31,6 +31,8 @@ if (app.Environment.IsDevelopment())
 app.UseCors("AllowAngular");
 app.UseHttpsRedirection();
 
+app.UseMiddleware<MultiAI.Middleware.ExceptionLoggingMiddleware>();
+
 app.UseAuthentication();
 app.UseAuthorization();
 

@@ -24,7 +24,7 @@ namespace MultiAI.Config
             runner.MigrateUp();
 
             var logDb = scope.ServiceProvider.GetRequiredService<LogDbContext>();
-            logDb.Database.EnsureCreated();
+            LogSchemaBootstrap.EnsureSchema(logDb);
         }
     }
 }

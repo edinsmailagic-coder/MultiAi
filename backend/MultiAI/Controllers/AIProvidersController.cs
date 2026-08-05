@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MultiAI.Models.Data;
+using MultiAI.Models.Log;
 using MultiAI.Models.Request;
 using MultiAI.Services.Interface;
 using System.Security.Claims;
@@ -16,15 +17,18 @@ namespace MultiAI.Controllers
         private readonly IAIProviderFactory providerFactory;
         private readonly AppDbContext dbContext;
         private readonly IUserAIProviderService userAIProviderService;
+        private readonly IUserLogService userLog;
 
         public AIProvidersController(
             IAIProviderFactory providerFactory,
             AppDbContext dbContext,
-            IUserAIProviderService userAIProviderService)
+            IUserAIProviderService userAIProviderService,
+            IUserLogService userLog)
         {
             this.providerFactory = providerFactory;
             this.dbContext = dbContext;
             this.userAIProviderService = userAIProviderService;
+            this.userLog = userLog;
         }
 
         [HttpGet]
@@ -64,9 +68,6 @@ namespace MultiAI.Controllers
             }));
         }
 
-        /// <summary>
-        /// Lists models for a connected provider using the stored API key.
-        /// </summary>
         [HttpGet("connected/{id:int}/models")]
         public async Task<IActionResult> GetConnectedModels(int id)
         {
@@ -85,9 +86,6 @@ namespace MultiAI.Controllers
             }
         }
 
-        /// <summary>
-        /// Sets the default model for a connected provider.
-        /// </summary>
         [HttpPut("connected/{id:int}/default-model")]
         public async Task<IActionResult> SetDefaultModel(int id, [FromBody] SetDefaultModelRequest request)
         {
@@ -98,6 +96,12 @@ namespace MultiAI.Controllers
             try
             {
                 var connected = await userAIProviderService.SetDefaultModelAsync(userId, id, request.DefaultModel);
+                await userLog.LogAsync(
+                    userId,
+                    UserLogActions.DefaultModelChanged,
+                    $"ProviderId={connected.ProviderId}; Provider={connected.Provider.Name}; Model={connected.DefaultModel}",
+                    HttpContext.Connection.RemoteIpAddress?.ToString());
+
                 return Ok(new
                 {
                     connected.Id,
@@ -114,9 +118,6 @@ namespace MultiAI.Controllers
             }
         }
 
-        /// <summary>
-        /// Marks a connected provider as the user's default provider.
-        /// </summary>
         [HttpPut("connected/{id:int}/set-default")]
         public async Task<IActionResult> SetDefaultProvider(int id)
         {
@@ -127,6 +128,12 @@ namespace MultiAI.Controllers
             try
             {
                 var connected = await userAIProviderService.SetDefaultProviderAsync(userId, id);
+                await userLog.LogAsync(
+                    userId,
+                    UserLogActions.DefaultProviderChanged,
+                    $"ProviderId={connected.ProviderId}; Provider={connected.Provider.Name}",
+                    HttpContext.Connection.RemoteIpAddress?.ToString());
+
                 return Ok(new
                 {
                     connected.Id,
@@ -156,6 +163,12 @@ namespace MultiAI.Controllers
                     userId,
                     request.ProviderId,
                     request.ApiKey);
+
+                await userLog.LogAsync(
+                    userId,
+                    UserLogActions.ProviderConnected,
+                    $"ProviderId={connected.ProviderId}",
+                    HttpContext.Connection.RemoteIpAddress?.ToString());
 
                 return Ok(new
                 {
