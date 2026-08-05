@@ -39,10 +39,17 @@ namespace MultiAI.Config
             services.AddScoped<IApiKeyEncryptionService, ApiKeyEncryptionService>();
             services.AddScoped<IUserAIProviderService, UserAIProviderService>();
             services.AddScoped<IChatService, ChatService>();
+            services.AddScoped<IConversationFolderService, ConversationFolderService>();
+            services.AddScoped<IMessageAttachmentService, MessageAttachmentService>();
+            services.AddScoped<IAttachmentTextExtractor, AttachmentTextExtractor>();
             services.AddScoped<IWorkflowService, WorkflowService>();
             services.AddScoped<IWorkflowNodeService, WorkflowNodeService>();
             services.AddScoped<IWorkflowConnectionService, WorkflowConnectionService>();
             services.AddScoped<INodeExecutorService, AINodeExecutorService>();
+            services.AddScoped<INodeExecutorService, IfNodeExecutorService>();
+            services.AddScoped<INodeExecutorService, ParallelNodeExecutorService>();
+            services.AddScoped<INodeExecutorService, JoinNodeExecutorService>();
+            services.AddScoped<INodeExecutorService, LoopNodeExecutorService>();
             services.AddScoped<IWorkflowEngine, WorkflowEngineService>();
             services.AddScoped<IWorkflowExecutionService, WorkflowExecutionService>();
 

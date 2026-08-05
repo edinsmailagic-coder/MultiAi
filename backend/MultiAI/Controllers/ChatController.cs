@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MultiAI.Models.Request;
+using MultiAI.Models.Response;
 using MultiAI.Services.Interface;
 using System.Security.Claims;
 
@@ -12,15 +13,19 @@ namespace MultiAI.Controllers
     public class ChatController : ControllerBase
     {
         private readonly IChatService service;
+        private readonly IConversationFolderService folderService;
+        private readonly IMessageAttachmentService attachmentService;
 
-        public ChatController(IChatService service)
+        public ChatController(
+            IChatService service,
+            IConversationFolderService folderService,
+            IMessageAttachmentService attachmentService)
         {
             this.service = service;
+            this.folderService = folderService;
+            this.attachmentService = attachmentService;
         }
 
-        /// <summary>
-        /// Sends a message in direct chat mode or workflow mode.
-        /// </summary>
         [HttpPost("sendChat")]
         public async Task<IActionResult> Send([FromBody] ChatRequestDto request)
         {
@@ -30,8 +35,7 @@ namespace MultiAI.Controllers
 
             try
             {
-                var response = await service.SendAsync(userId, request);
-                return Ok(response);
+                return Ok(await service.SendAsync(userId, request));
             }
             catch (Exception ex)
             {
@@ -39,9 +43,6 @@ namespace MultiAI.Controllers
             }
         }
 
-        /// <summary>
-        /// Lists conversations for the authenticated user.
-        /// </summary>
         [HttpGet("conversations")]
         public async Task<IActionResult> GetConversations()
         {
@@ -49,13 +50,9 @@ namespace MultiAI.Controllers
             if (userId is null)
                 return Unauthorized();
 
-            var conversations = await service.GetConversationsAsync(userId);
-            return Ok(conversations);
+            return Ok(await service.GetConversationsAsync(userId));
         }
 
-        /// <summary>
-        /// Loads a conversation with ordered messages and responses.
-        /// </summary>
         [HttpGet("conversations/{id:int}")]
         public async Task<IActionResult> GetConversation(int id)
         {
@@ -65,8 +62,7 @@ namespace MultiAI.Controllers
 
             try
             {
-                var conversation = await service.GetConversationAsync(userId, id);
-                return Ok(conversation);
+                return Ok(await service.GetConversationAsync(userId, id));
             }
             catch (Exception ex)
             {
@@ -74,9 +70,6 @@ namespace MultiAI.Controllers
             }
         }
 
-        /// <summary>
-        /// Renames a conversation owned by the authenticated user.
-        /// </summary>
         [HttpPatch("conversations/{id:int}")]
         public async Task<IActionResult> RenameConversation(int id, [FromBody] RenameConversationRequest request)
         {
@@ -86,8 +79,7 @@ namespace MultiAI.Controllers
 
             try
             {
-                var conversation = await service.RenameConversationAsync(userId, id, request.Title);
-                return Ok(conversation);
+                return Ok(await service.RenameConversationAsync(userId, id, request.Title));
             }
             catch (Exception ex)
             {
@@ -95,9 +87,40 @@ namespace MultiAI.Controllers
             }
         }
 
-        /// <summary>
-        /// Soft-deletes a conversation owned by the authenticated user.
-        /// </summary>
+        [HttpPatch("conversations/{id:int}/pin")]
+        public async Task<IActionResult> PinConversation(int id, [FromBody] PinConversationRequest request)
+        {
+            var userId = GetUserId();
+            if (userId is null)
+                return Unauthorized();
+
+            try
+            {
+                return Ok(await service.SetPinnedAsync(userId, id, request.IsPinned));
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+        }
+
+        [HttpPatch("conversations/{id:int}/folder")]
+        public async Task<IActionResult> AssignFolder(int id, [FromBody] AssignFolderRequest request)
+        {
+            var userId = GetUserId();
+            if (userId is null)
+                return Unauthorized();
+
+            try
+            {
+                return Ok(await service.AssignFolderAsync(userId, id, request.FolderId));
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+        }
+
         [HttpDelete("conversations/{id:int}")]
         public async Task<IActionResult> DeleteConversation(int id)
         {
@@ -113,6 +136,86 @@ namespace MultiAI.Controllers
             catch (Exception ex)
             {
                 return NotFound(new { error = ex.Message });
+            }
+        }
+
+        [HttpGet("folders")]
+        public async Task<IActionResult> GetFolders()
+        {
+            var userId = GetUserId();
+            if (userId is null)
+                return Unauthorized();
+
+            return Ok(await folderService.GetAsync(userId));
+        }
+
+        [HttpPost("folders")]
+        public async Task<IActionResult> CreateFolder([FromBody] CreateFolderRequest request)
+        {
+            var userId = GetUserId();
+            if (userId is null)
+                return Unauthorized();
+
+            try
+            {
+                return Ok(await folderService.CreateAsync(userId, request.Name));
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+        }
+
+        [HttpPatch("folders/{id:int}")]
+        public async Task<IActionResult> RenameFolder(int id, [FromBody] RenameFolderRequest request)
+        {
+            var userId = GetUserId();
+            if (userId is null)
+                return Unauthorized();
+
+            try
+            {
+                return Ok(await folderService.RenameAsync(userId, id, request.Name));
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+        }
+
+        [HttpDelete("folders/{id:int}")]
+        public async Task<IActionResult> DeleteFolder(int id)
+        {
+            var userId = GetUserId();
+            if (userId is null)
+                return Unauthorized();
+
+            try
+            {
+                await folderService.DeleteAsync(userId, id);
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+        }
+
+        [HttpPost("attachments")]
+        [RequestSizeLimit(10 * 1024 * 1024)]
+        public async Task<IActionResult> UploadAttachment(IFormFile file)
+        {
+            var userId = GetUserId();
+            if (userId is null)
+                return Unauthorized();
+
+            try
+            {
+                return Ok(await attachmentService.UploadAsync(userId, file));
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { error = ex.Message });
             }
         }
 

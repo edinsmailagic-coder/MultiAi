@@ -4,37 +4,81 @@
       <div class="chat-history__header">
         <h2>{{ 'chat.history' | translate }}</h2>
         <div class="chat-history__header-actions">
+          <button class="secondary compact" type="button" (click)="createFolder()">
+            + {{ 'chat.newFolder' | translate }}
+          </button>
           <button class="primary compact" type="button" (click)="newChat()">+ {{ 'chat.new' | translate }}</button>
           <button class="secondary compact" type="button" (click)="toggleHistory()" [attr.aria-label]="'chat.closeHistory' | translate">×</button>
         </div>
       </div>
 
       <nav class="chat-history__list" role="list">
-        @for (item of conversations(); track item.id) {
-          <div
-            class="chat-history__item"
-            role="listitem"
-            [class.active]="conversationId() === item.id"
-          >
-            @if (renamingId() === item.id) {
-              <input
-                class="chat-history__rename"
-                [value]="item.title"
-                (click)="$event.stopPropagation()"
-                (keydown.enter)="commitRename(item, $event)"
-                (blur)="commitRename(item, $event)"
-              >
-            } @else {
-              <button type="button" class="chat-history__open" (click)="openConversation(item.id)">
-                <span>{{ item.title }}</span>
-              </button>
+        @for (folder of folders(); track folder.id) {
+          <section class="chat-history__section">
+            <header class="chat-history__section-header">
+              <h3>📁 {{ folder.name }}</h3>
               <div class="chat-history__actions">
-                <button type="button" class="icon-btn" [attr.aria-label]="'chat.rename' | translate" (click)="startRename(item, $event)">✎</button>
-                <button type="button" class="icon-btn danger" [attr.aria-label]="'common.delete' | translate" (click)="deleteConversation(item, $event)">×</button>
+                <button type="button" class="icon-btn" [attr.aria-label]="'chat.rename' | translate" (click)="renameFolder(folder, $event)">✎</button>
+                <button type="button" class="icon-btn danger" [attr.aria-label]="'chat.deleteFolder' | translate" (click)="deleteFolder(folder, $event)">×</button>
+              </div>
+            </header>
+
+            @for (item of conversationsForFolder(folder.id); track item.id) {
+              <div class="chat-history__item" role="listitem" [class.active]="conversationId() === item.id">
+                @if (renamingId() === item.id) {
+                  <input class="chat-history__rename" [value]="item.title" (click)="$event.stopPropagation()" (keydown.enter)="commitRename(item, $event)" (blur)="commitRename(item, $event)">
+                } @else {
+                  <button type="button" class="chat-history__open" (click)="openConversation(item.id)">
+                    <span>@if (item.isPinned) { 📌 } {{ item.title }}</span>
+                  </button>
+                  <div class="chat-history__actions">
+                    <button type="button" class="icon-btn" [class.pinned]="item.isPinned" [attr.aria-label]="(item.isPinned ? 'chat.unpin' : 'chat.pin') | translate" (click)="togglePinned(item, $event)">📌</button>
+                    <button type="button" class="icon-btn" [attr.aria-label]="'chat.rename' | translate" (click)="startRename(item, $event)">✎</button>
+                    <button type="button" class="icon-btn danger" [attr.aria-label]="'common.delete' | translate" (click)="deleteConversation(item, $event)">×</button>
+                  </div>
+                  <select class="chat-history__folder-select" [value]="item.folderId ?? ''" [attr.aria-label]="'chat.moveToFolder' | translate" (change)="moveToFolder(item, $event)">
+                    <option value="">{{ 'chat.ungrouped' | translate }}</option>
+                    @for (targetFolder of folders(); track targetFolder.id) {
+                      <option [value]="targetFolder.id">{{ targetFolder.name }}</option>
+                    }
+                  </select>
+                }
               </div>
             }
-          </div>
-        } @empty {
+          </section>
+        }
+
+        @if (conversationsForFolder(null).length) {
+          <section class="chat-history__section">
+            <header class="chat-history__section-header">
+              <h3>{{ 'chat.ungrouped' | translate }}</h3>
+            </header>
+            @for (item of conversationsForFolder(null); track item.id) {
+              <div class="chat-history__item" role="listitem" [class.active]="conversationId() === item.id">
+                @if (renamingId() === item.id) {
+                  <input class="chat-history__rename" [value]="item.title" (click)="$event.stopPropagation()" (keydown.enter)="commitRename(item, $event)" (blur)="commitRename(item, $event)">
+                } @else {
+                  <button type="button" class="chat-history__open" (click)="openConversation(item.id)">
+                    <span>@if (item.isPinned) { 📌 } {{ item.title }}</span>
+                  </button>
+                  <div class="chat-history__actions">
+                    <button type="button" class="icon-btn" [class.pinned]="item.isPinned" [attr.aria-label]="(item.isPinned ? 'chat.unpin' : 'chat.pin') | translate" (click)="togglePinned(item, $event)">📌</button>
+                    <button type="button" class="icon-btn" [attr.aria-label]="'chat.rename' | translate" (click)="startRename(item, $event)">✎</button>
+                    <button type="button" class="icon-btn danger" [attr.aria-label]="'common.delete' | translate" (click)="deleteConversation(item, $event)">×</button>
+                  </div>
+                  <select class="chat-history__folder-select" [value]="item.folderId ?? ''" [attr.aria-label]="'chat.moveToFolder' | translate" (change)="moveToFolder(item, $event)">
+                    <option value="">{{ 'chat.ungrouped' | translate }}</option>
+                    @for (targetFolder of folders(); track targetFolder.id) {
+                      <option [value]="targetFolder.id">{{ targetFolder.name }}</option>
+                    }
+                  </select>
+                }
+              </div>
+            }
+          </section>
+        }
+
+        @if (!conversations().length) {
           <p class="muted chat-history__empty">{{ 'chat.noHistory' | translate }}</p>
         }
       </nav>
@@ -70,6 +114,13 @@
               }
             </header>
             <pre>{{ message.content }}</pre>
+            @if (message.attachments?.length) {
+              <div class="attachment-list">
+                @for (attachment of message.attachments; track attachment.id) {
+                  <span class="attachment-chip">📎 {{ attachment.fileName }}</span>
+                }
+              </div>
+            }
           </article>
         }
       }
@@ -120,7 +171,22 @@
         }
       </div>
 
+      @if (pendingAttachments().length) {
+        <div class="pending-attachments">
+          @for (attachment of pendingAttachments(); track attachment.id) {
+            <span class="attachment-chip">
+              📎 {{ attachment.fileName }}
+              <button type="button" [disabled]="sending()" [attr.aria-label]="'chat.removeAttachment' | translate" (click)="removeAttachment(attachment.id)">×</button>
+            </span>
+          }
+        </div>
+      }
+
       <div class="chat-composer__row">
+        <input #attachmentInput class="visually-hidden" type="file" multiple (change)="onAttachmentSelected($event)">
+        <button class="secondary attach-button" type="button" [disabled]="sending() || uploadingAttachments() > 0" (click)="attachmentInput.click()">
+          📎 {{ 'chat.attach' | translate }}
+        </button>
         <textarea
           #composerInput
           formControlName="message"
@@ -129,7 +195,7 @@
           [placeholder]="'chat.promptPlaceholder' | translate"
           (keydown)="onComposerKeydown($event)"
         ></textarea>
-        <button class="primary" type="submit" [disabled]="sending()">
+        <button class="primary" type="submit" [disabled]="sending() || uploadingAttachments() > 0">
           {{ sending() ? ('chat.sending' | translate) : ('chat.send' | translate) }}
         </button>
       </div>

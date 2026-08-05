@@ -2,9 +2,12 @@
 
 namespace MultiAI.Models.Entities
 {
-    public class Conversation:BaseEntity
+    public class Conversation : BaseEntity
     {
-        public string UserId {  get; set; }
-        public string Title {  get; set; }
+        public string UserId { get; set; } = string.Empty;
+        public string Title { get; set; } = string.Empty;
+        public bool IsPinned { get; set; }
+        public DateTime? PinnedAt { get; set; }
+        public int? FolderId { get; set; }
     }
 }

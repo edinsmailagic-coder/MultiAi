@@ -96,10 +96,11 @@ export class WorkflowEditor implements OnInit {
       userAIProviderId: [{ value: 0, disabled: true }],
     });
     this.addForm = fb.nonNullable.group({
-      userAIProviderId: [0, [Validators.required, Validators.min(1)]],
-      model: ['gpt-4o-mini', Validators.required],
+      nodeType: ['AI', Validators.required],
+      userAIProviderId: [0],
+      model: ['gpt-4o-mini'],
       name: ['', Validators.required],
-      prompt: ['', Validators.required],
+      prompt: [''],
     });
     this.executeForm = fb.nonNullable.group({
       input: ['', Validators.required],
@@ -207,30 +208,37 @@ export class WorkflowEditor implements OnInit {
       this.toast.warning('toast.connectProviderFirst');
       return;
     }
-    if (this.addForm.invalid) {
+
+    const value = this.addForm.getRawValue();
+    const nodeType = value.nodeType || 'AI';
+    const isAi = nodeType === 'AI';
+    if (!value.name.trim()) {
+      this.addForm.controls.name.markAsTouched();
+      return;
+    }
+    if (isAi && (!value.userAIProviderId || !value.model || !value.prompt.trim())) {
       this.addForm.markAllAsTouched();
       return;
     }
 
-    const value = this.addForm.getRawValue();
     this.service
       .addNode({
         workflowId: this.workflowId,
-        userAIProviderId: Number(value.userAIProviderId),
-        model: value.model,
-        name: value.name,
-        prompt: value.prompt,
+        userAIProviderId: Number(value.userAIProviderId) || this.addProviderId() || 0,
+        model: isAi ? value.model : '-',
+        name: value.name.trim(),
+        prompt: value.prompt ?? '',
         inputMapping: '',
         order: this.nodes().length,
         positionX: 80 + (this.nodes().length % 3) * 280,
         positionY: 80 + Math.floor(this.nodes().length / 3) * 210,
-        nodeType: 'AI',
+        nodeType,
       })
       .subscribe({
         next: (node) => {
           this.nodes.update((rows) => [...rows, this.normalizeNode(node)]);
           this.showAdd.set(false);
-          this.addForm.patchValue({ name: '', prompt: '' });
+          this.addForm.patchValue({ name: '', prompt: '', nodeType: 'AI' });
           this.toast.showSuccess('toast.nodeAdded');
         },
         error: () => this.toast.error('toast.saveError'),
@@ -277,16 +285,32 @@ export class WorkflowEditor implements OnInit {
       return;
     }
 
-    this.service.addConnection({ workflowId: this.workflowId, sourceNodeId, targetNodeId }).subscribe({
-      next: (connection) => {
-        this.connections.update((rows) => [...rows, this.normalizeConnection(connection)]);
-        this.cancelConnection();
-      },
-      error: () => {
-        this.toast.error('toast.connectionError');
-        this.cancelConnection();
-      },
-    });
+    const source = this.nodes().find((n) => n.id === sourceNodeId);
+    let conditionKey: string | null = null;
+    if (source?.nodeType === 'If') {
+      conditionKey = window.prompt('Branch key (true/false/default):', 'true');
+    } else if (source?.nodeType === 'Loop') {
+      conditionKey = window.prompt('Branch key (body/done):', 'body');
+    }
+
+    this.service
+      .addConnection({
+        workflowId: this.workflowId,
+        sourceNodeId,
+        targetNodeId,
+        conditionKey,
+        priority: this.connections().filter((c) => c.sourceNodeId === sourceNodeId).length,
+      })
+      .subscribe({
+        next: (connection) => {
+          this.connections.update((rows) => [...rows, this.normalizeConnection(connection)]);
+          this.cancelConnection();
+        },
+        error: () => {
+          this.toast.error('toast.connectionError');
+          this.cancelConnection();
+        },
+      });
   }
 
   onCanvasPointerMove(event: PointerEvent): void {
@@ -365,6 +389,24 @@ export class WorkflowEditor implements OnInit {
     );
   }
 
+  labelX(connection: WorkflowConnection): number {
+    const source = this.nodes().find((n) => n.id === connection.sourceNodeId);
+    const target = this.nodes().find((n) => n.id === connection.targetNodeId);
+    if (!source || !target) {
+      return 0;
+    }
+    return (source.positionX + 220 + target.positionX) / 2;
+  }
+
+  labelY(connection: WorkflowConnection): number {
+    const source = this.nodes().find((n) => n.id === connection.sourceNodeId);
+    const target = this.nodes().find((n) => n.id === connection.targetNodeId);
+    if (!source || !target) {
+      return 0;
+    }
+    return (source.positionY + target.positionY) / 2 + 50;
+  }
+
   execute(): void {
     if (this.executeForm.invalid) {
       return;
@@ -426,6 +468,8 @@ export class WorkflowEditor implements OnInit {
       targetNodeId: Number(value['targetNodeId'] ?? value['TargetNodeId']),
       sourceOutput: (value['sourceOutput'] ?? value['SourceOutput']) as string | undefined,
       targetInput: (value['targetInput'] ?? value['TargetInput']) as string | undefined,
+      conditionKey: (value['conditionKey'] ?? value['ConditionKey'] ?? null) as string | null,
+      priority: Number(value['priority'] ?? value['Priority'] ?? 0),
     };
   }
 

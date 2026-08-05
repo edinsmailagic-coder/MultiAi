@@ -1,14 +1,33 @@
+export interface ConversationFolder {
+  id: number;
+  name: string;
+  sortOrder: number;
+}
+
+export interface AttachmentItem {
+  id: number;
+  fileName: string;
+  contentType: string;
+  sizeBytes: number;
+  isImage: boolean;
+  extractedTextPreview?: string | null;
+}
+
 export interface ConversationListItem {
   id: number;
   title: string;
   createdAt: string;
   updatedAt?: string | null;
+  isPinned?: boolean;
+  pinnedAt?: string | null;
+  folderId?: number | null;
 }
 
 export interface ChatMessageResult {
   id: number;
   content: string;
   createdAt: string;
+  attachments?: AttachmentItem[];
 }
 
 export interface ChatResponse {
@@ -34,6 +53,8 @@ export interface ConversationDetail {
   title: string;
   createdAt: string;
   updatedAt?: string | null;
+  isPinned?: boolean;
+  folderId?: number | null;
   turns: ConversationTurn[];
 }
 
@@ -43,6 +64,7 @@ export interface SendChatRequest {
   userProviderId?: number | null;
   model?: string | null;
   workflowId?: number | null;
+  attachmentIds?: number[];
 }
 
 export interface SendChatResult {
@@ -58,4 +80,5 @@ export interface ChatUiMessage {
   content: string;
   model?: string;
   createdAt?: string;
+  attachments?: AttachmentItem[];
 }

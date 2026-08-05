@@ -70,6 +70,28 @@
   padding: 0.75rem;
 }
 
+.chat-history__section {
+  display: grid;
+  gap: 0.3rem;
+}
+
+.chat-history__section-header {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  padding: 0.35rem 0.45rem;
+}
+
+.chat-history__section-header h3 {
+  color: var(--muted);
+  font-size: 0.78rem;
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
 .chat-history__item {
   align-items: center;
   border-radius: 8px;
@@ -111,6 +133,18 @@
   width: 100%;
 }
 
+.chat-history__folder-select {
+  background: var(--input-bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--muted);
+  font-size: 0.72rem;
+  grid-column: 1 / -1;
+  min-width: 0;
+  padding: 0.25rem 0.4rem;
+  width: 100%;
+}
+
 .chat-history__empty {
   margin: 1rem 0.5rem;
 }
@@ -135,6 +169,11 @@
 .icon-btn.danger:hover,
 .icon-btn.danger:focus-visible {
   color: var(--danger-text);
+}
+
+.icon-btn.pinned {
+  background: var(--accent-soft);
+  color: var(--accent-hover);
 }
 
 .chat-main {
@@ -243,6 +282,41 @@
   word-break: break-word;
 }
 
+.attachment-list,
+.pending-attachments {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 0.65rem;
+}
+
+.pending-attachments {
+  margin-top: 0;
+}
+
+.attachment-chip {
+  align-items: center;
+  background: var(--accent-softer);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  display: inline-flex;
+  font-size: 0.78rem;
+  gap: 0.3rem;
+  max-width: 100%;
+  overflow: hidden;
+  padding: 0.3rem 0.55rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.attachment-chip button {
+  background: transparent;
+  border: 0;
+  color: inherit;
+  cursor: pointer;
+  padding: 0;
+}
+
 .chat-composer {
   background: var(--panel);
   border-top: 1px solid var(--border);
@@ -290,7 +364,21 @@
   align-items: end;
   display: grid;
   gap: 0.65rem;
-  grid-template-columns: 1fr auto;
+  grid-template-columns: auto 1fr auto;
+}
+
+.visually-hidden {
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  padding: 0;
+  position: absolute;
+  width: 1px;
+  clip: rect(0 0 0 0);
+}
+
+.attach-button {
+  min-height: 48px;
 }
 
 .chat-composer textarea {

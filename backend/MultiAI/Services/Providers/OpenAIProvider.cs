@@ -70,14 +70,37 @@ namespace MultiAI.Services.Providers
             if (messages == null || messages.Count == 0)
                 throw new ArgumentException("At least one message is required.", nameof(messages));
 
+            var payloadMessages = messages.Select(m =>
+            {
+                if (m.Images.Count == 0)
+                {
+                    return (object)new { role = m.Role, content = m.Content };
+                }
+
+                var parts = new List<object>
+                {
+                    new { type = "text", text = m.Content }
+                };
+
+                foreach (var image in m.Images)
+                {
+                    parts.Add(new
+                    {
+                        type = "image_url",
+                        image_url = new
+                        {
+                            url = $"data:{image.MimeType};base64,{image.Base64Data}"
+                        }
+                    });
+                }
+
+                return new { role = m.Role, content = parts };
+            });
+
             var payload = new
             {
                 model,
-                messages = messages.Select(m => new
-                {
-                    role = m.Role,
-                    content = m.Content
-                })
+                messages = payloadMessages
             };
 
             using var request = CreateAuthorizedRequest(HttpMethod.Post, "chat/completions", key);

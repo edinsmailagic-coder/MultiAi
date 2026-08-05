@@ -13,6 +13,8 @@ namespace MultiAI.Models.Workflows
         public Dictionary<int, NodeExecutionResult> NodeResults { get; set; }
             = new();
 
+        public List<NodeExecutionResult> ExecutionLog { get; set; } = [];
+
         public Dictionary<string, object> Variables { get; set; }
             = new();
 

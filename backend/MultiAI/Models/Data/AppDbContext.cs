@@ -25,7 +25,11 @@ namespace MultiAI.Models.Data
 
         public DbSet<Conversation> Conversations { get; set; }
 
+        public DbSet<ConversationFolder> ConversationFolders { get; set; }
+
         public DbSet<UserMessage> UserMessages { get; set; }
+
+        public DbSet<MessageAttachment> MessageAttachments { get; set; }
 
         public DbSet<AIResponse> AIResponses { get; set; }
         public DbSet<WorkflowEntity> Workflows { get; set; }
@@ -49,8 +53,10 @@ namespace MultiAI.Models.Data
             builder.Entity<AIProvider>().ToTable("AIProviders");
             builder.Entity<AIResponse>().ToTable("AIResponses");
             builder.Entity<Conversation>().ToTable("Conversations");
+            builder.Entity<ConversationFolder>().ToTable("ConversationFolders");
             builder.Entity<UserAIProvider>().ToTable("UserAIProviders");
             builder.Entity<UserMessage>().ToTable("UserMessages");
+            builder.Entity<MessageAttachment>().ToTable("MessageAttachments");
             builder.Entity<WorkflowEntity>().ToTable("Workflows");
 
             builder.Entity<WorkflowNode>().ToTable("WorkflowNodes");

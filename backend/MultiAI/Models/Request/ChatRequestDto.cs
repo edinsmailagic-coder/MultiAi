@@ -27,5 +27,10 @@ namespace MultiAI.Models.Request
         /// When set, executes the workflow and stores only the final output.
         /// </summary>
         public int? WorkflowId { get; set; }
+
+        /// <summary>
+        /// Pending attachment ids uploaded by the user for this message.
+        /// </summary>
+        public List<int> AttachmentIds { get; set; } = [];
     }
 }

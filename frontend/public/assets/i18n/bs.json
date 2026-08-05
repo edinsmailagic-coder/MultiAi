@@ -70,7 +70,10 @@
     "connectFirst": "Povežite AI provajdera prije dodavanja Node.",
     "executionInput": "Ulaz toka",
     "executing": "Izvršavanje…",
-    "run": "Pokreni tok"
+    "run": "Pokreni tok",
+    "nodeType": "Tip Node",
+    "ifPrompt": "Uvjet (contains:/equals:/notEmpty)",
+    "loopMax": "Max iteracija"
   },
   "profile": {
     "title": "Profil i provajderi",
@@ -113,7 +116,16 @@
     "send": "Pošalji",
     "sending": "Šaljem…",
     "rename": "Preimenuj konverzaciju",
-    "closeHistory": "Zatvori historiju"
+    "closeHistory": "Zatvori historiju",
+    "pin": "Zakači konverzaciju",
+    "unpin": "Otkači konverzaciju",
+    "folder": "Folder",
+    "newFolder": "Novi folder",
+    "ungrouped": "Bez foldera",
+    "moveToFolder": "Premjesti u folder",
+    "deleteFolder": "Obriši folder",
+    "attach": "Priloži",
+    "removeAttachment": "Ukloni prilog"
   },
   "modelSelect": {
     "label": "Model",
@@ -151,6 +163,8 @@
     "defaultProviderSaved": "Podrazumijevani provajder je ažuriran.",
     "languageChanged": "Jezik je ažuriran.",
     "chatError": "Poruka se ne može poslati.",
+    "folderError": "Folder se ne može ažurirati.",
+    "uploadError": "Prilog se ne može učitati.",
     "nodeSaved": "Node je ažuriran.",
     "nodeAdded": "Node je dodat.",
     "nodeDeleted": "Node je obrisan.",

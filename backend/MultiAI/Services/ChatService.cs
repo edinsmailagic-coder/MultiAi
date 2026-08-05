@@ -14,17 +14,20 @@ namespace MultiAI.Services
         private readonly IAIProviderFactory providerFactory;
         private readonly IApiKeyEncryptionService encryptionService;
         private readonly IWorkflowExecutionService workflowExecutionService;
+        private readonly IMessageAttachmentService attachmentService;
 
         public ChatService(
             AppDbContext context,
             IAIProviderFactory providerFactory,
             IApiKeyEncryptionService encryptionService,
-            IWorkflowExecutionService workflowExecutionService)
+            IWorkflowExecutionService workflowExecutionService,
+            IMessageAttachmentService attachmentService)
         {
             this.context = context;
             this.providerFactory = providerFactory;
             this.encryptionService = encryptionService;
             this.workflowExecutionService = workflowExecutionService;
+            this.attachmentService = attachmentService;
         }
 
         public async Task<SendChatResultDto> SendAsync(string userId, ChatRequestDto request)
@@ -46,18 +49,15 @@ namespace MultiAI.Services
 
         public async Task<List<ConversationListItemDto>> GetConversationsAsync(string userId)
         {
-            return await context.Conversations
+            var rows = await context.Conversations
                 .AsNoTracking()
                 .Where(x => x.UserId == userId && x.IsDeleted == 0)
-                .OrderByDescending(x => x.UpdatedAt ?? x.CreatedAt)
-                .Select(x => new ConversationListItemDto
-                {
-                    Id = x.Id,
-                    Title = x.Title,
-                    CreatedAt = x.CreatedAt,
-                    UpdatedAt = x.UpdatedAt
-                })
+                .OrderByDescending(x => x.IsPinned)
+                .ThenByDescending(x => x.PinnedAt)
+                .ThenByDescending(x => x.UpdatedAt ?? x.CreatedAt)
                 .ToListAsync();
+
+            return rows.Select(MapListItem).ToList();
         }
 
         public async Task<ConversationDetailDto> GetConversationAsync(string userId, int conversationId)
@@ -80,19 +80,30 @@ namespace MultiAI.Services
                 .ThenBy(x => x.Id)
                 .ToListAsync();
 
+            var attachments = await context.MessageAttachments
+                .AsNoTracking()
+                .Where(x => x.UserMessageId != null && messageIds.Contains(x.UserMessageId.Value) && x.IsDeleted == 0)
+                .ToListAsync();
+
             return new ConversationDetailDto
             {
                 Id = conversation.Id,
                 Title = conversation.Title,
                 CreatedAt = conversation.CreatedAt,
                 UpdatedAt = conversation.UpdatedAt,
+                IsPinned = conversation.IsPinned,
+                FolderId = conversation.FolderId,
                 Turns = messages.Select(message => new ConversationTurnDto
                 {
                     UserMessage = new ChatMessageResultDto
                     {
                         Id = message.Id,
                         Content = message.Content,
-                        CreatedAt = message.CreatedAt
+                        CreatedAt = message.CreatedAt,
+                        Attachments = attachments
+                            .Where(a => a.UserMessageId == message.Id)
+                            .Select(MapAttachmentMeta)
+                            .ToList()
                     },
                     Responses = responses
                         .Where(r => r.UserMessageId == message.Id)
@@ -115,14 +126,7 @@ namespace MultiAI.Services
             conversation.UpdatedAt = DateTime.UtcNow;
             conversation.UpdatedBy = user.UserName;
             await context.SaveChangesAsync();
-
-            return new ConversationListItemDto
-            {
-                Id = conversation.Id,
-                Title = conversation.Title,
-                CreatedAt = conversation.CreatedAt,
-                UpdatedAt = conversation.UpdatedAt
-            };
+            return MapListItem(conversation);
         }
 
         public async Task DeleteConversationAsync(string userId, int conversationId)
@@ -139,12 +143,49 @@ namespace MultiAI.Services
             await context.SaveChangesAsync();
         }
 
+        public async Task<ConversationListItemDto> SetPinnedAsync(string userId, int conversationId, bool isPinned)
+        {
+            var conversation = await GetOwnedConversationAsync(userId, conversationId, track: true);
+            var user = await context.Users.FirstOrDefaultAsync(x => x.Id == userId)
+                ?? throw new Exception("User not found.");
+
+            conversation.IsPinned = isPinned;
+            conversation.PinnedAt = isPinned ? DateTime.UtcNow : null;
+            conversation.UpdatedAt = DateTime.UtcNow;
+            conversation.UpdatedBy = user.UserName;
+            await context.SaveChangesAsync();
+            return MapListItem(conversation);
+        }
+
+        public async Task<ConversationListItemDto> AssignFolderAsync(string userId, int conversationId, int? folderId)
+        {
+            var conversation = await GetOwnedConversationAsync(userId, conversationId, track: true);
+            var user = await context.Users.FirstOrDefaultAsync(x => x.Id == userId)
+                ?? throw new Exception("User not found.");
+
+            if (folderId.HasValue)
+            {
+                var folderExists = await context.ConversationFolders.AnyAsync(x =>
+                    x.Id == folderId.Value && x.UserId == userId && x.IsDeleted == 0);
+                if (!folderExists)
+                    throw new Exception("Folder not found.");
+            }
+
+            conversation.FolderId = folderId;
+            conversation.UpdatedAt = DateTime.UtcNow;
+            conversation.UpdatedBy = user.UserName;
+            await context.SaveChangesAsync();
+            return MapListItem(conversation);
+        }
+
         private async Task<SendChatResultDto> SendDirectAsync(Users user, ChatRequestDto request)
         {
             var conversation = await ResolveConversationAsync(user, request.ConversationId, request.Message);
+            var pending = await attachmentService.GetOwnedPendingAsync(user.Id, request.AttachmentIds);
+            if (request.AttachmentIds.Count > 0 && pending.Count != request.AttachmentIds.Distinct().Count())
+                throw new Exception("One or more attachments were not found.");
 
             var historyMessages = await BuildHistoryAsync(conversation.Id);
-
             var userProvider = await context.UserAIProviders
                 .Include(x => x.Provider)
                 .FirstOrDefaultAsync(x =>
@@ -154,15 +195,17 @@ namespace MultiAI.Services
                 ?? throw new Exception("Provider not found.");
 
             var userMessage = await PersistUserMessageAsync(user, conversation.Id, request.Message);
+            await attachmentService.LinkToMessageAsync(user.Id, userMessage.Id, request.AttachmentIds);
+
+            var chatUserMessage = BuildProviderUserMessage(request.Message, pending);
+            historyMessages.Add(chatUserMessage);
+
+            if (chatUserMessage.Images.Count > 0 &&
+                !userProvider.Provider.Name.Contains("OpenAI", StringComparison.OrdinalIgnoreCase))
+                throw new Exception("Selected provider does not support image inputs.");
 
             var apiKey = encryptionService.Decrypt(userProvider.EncryptedApiKey);
             var provider = providerFactory.GetProvider(userProvider.Provider.Name);
-
-            historyMessages.Add(new ChatMessageDto
-            {
-                Role = "user",
-                Content = request.Message
-            });
 
             var stopwatch = System.Diagnostics.Stopwatch.StartNew();
             var providerResponse = await provider.Chat(historyMessages, request.Model!, apiKey);
@@ -199,7 +242,8 @@ namespace MultiAI.Services
                 {
                     Id = userMessage.Id,
                     Content = userMessage.Content,
-                    CreatedAt = userMessage.CreatedAt
+                    CreatedAt = userMessage.CreatedAt,
+                    Attachments = pending.Select(MapAttachmentMeta).ToList()
                 },
                 Response = MapResponse(aiResponse)
             };
@@ -208,12 +252,18 @@ namespace MultiAI.Services
         private async Task<SendChatResultDto> SendWithWorkflowAsync(Users user, ChatRequestDto request)
         {
             var conversation = await ResolveConversationAsync(user, request.ConversationId, request.Message);
+            var pending = await attachmentService.GetOwnedPendingAsync(user.Id, request.AttachmentIds);
+            if (request.AttachmentIds.Count > 0 && pending.Count != request.AttachmentIds.Distinct().Count())
+                throw new Exception("One or more attachments were not found.");
+
+            var enrichedInput = EnrichWithAttachmentText(request.Message, pending);
             var userMessage = await PersistUserMessageAsync(user, conversation.Id, request.Message);
+            await attachmentService.LinkToMessageAsync(user.Id, userMessage.Id, request.AttachmentIds);
 
             var execution = await workflowExecutionService.ExecuteAsync(
                 request.WorkflowId!.Value,
                 user.Id,
-                request.Message);
+                enrichedInput);
 
             var lastResult = execution.NodeResults.Values
                 .OrderBy(x => x.ExecutedAt)
@@ -231,7 +281,6 @@ namespace MultiAI.Services
             var providerId = node?.UserAIProviderId
                 ?? throw new Exception("Unable to resolve workflow provider.");
 
-            // Ensure the provider belongs to the current user.
             var ownedProvider = await context.UserAIProviders
                 .AsNoTracking()
                 .FirstOrDefaultAsync(x => x.Id == providerId && x.UserId == user.Id && x.IsDeleted == 0)
@@ -270,10 +319,44 @@ namespace MultiAI.Services
                 {
                     Id = userMessage.Id,
                     Content = userMessage.Content,
-                    CreatedAt = userMessage.CreatedAt
+                    CreatedAt = userMessage.CreatedAt,
+                    Attachments = pending.Select(MapAttachmentMeta).ToList()
                 },
                 Response = MapResponse(aiResponse)
             };
+        }
+
+        private static ChatMessageDto BuildProviderUserMessage(string message, List<MessageAttachment> attachments)
+        {
+            var dto = new ChatMessageDto
+            {
+                Role = "user",
+                Content = EnrichWithAttachmentText(message, attachments)
+            };
+
+            foreach (var image in attachments.Where(a => a.IsImage))
+            {
+                dto.Images.Add(new ChatImageDto
+                {
+                    MimeType = image.ContentType,
+                    Base64Data = Convert.ToBase64String(image.Data)
+                });
+            }
+
+            return dto;
+        }
+
+        private static string EnrichWithAttachmentText(string message, List<MessageAttachment> attachments)
+        {
+            var texts = attachments
+                .Where(a => !a.IsImage && !string.IsNullOrWhiteSpace(a.ExtractedText))
+                .Select(a => $"--- Attachment: {a.FileName} ---\n{a.ExtractedText}")
+                .ToList();
+
+            if (texts.Count == 0)
+                return message;
+
+            return $"{message}\n\nAttached document content:\n{string.Join("\n\n", texts)}";
         }
 
         private async Task<Conversation> ResolveConversationAsync(Users user, int? conversationId, string message)
@@ -289,7 +372,8 @@ namespace MultiAI.Services
                 CreatedBy = user.UserName,
                 UpdatedAt = DateTime.UtcNow,
                 UpdatedBy = user.UserName,
-                IsDeleted = 0
+                IsDeleted = 0,
+                IsPinned = false
             };
 
             context.Conversations.Add(conversation);
@@ -335,10 +419,20 @@ namespace MultiAI.Services
                 .ThenBy(x => x.Id)
                 .ToListAsync();
 
+            var attachmentText = await context.MessageAttachments
+                .AsNoTracking()
+                .Where(x => x.UserMessageId != null && messageIds.Contains(x.UserMessageId.Value) && x.IsDeleted == 0)
+                .ToListAsync();
+
             var history = new List<ChatMessageDto>();
             foreach (var message in messages)
             {
-                history.Add(new ChatMessageDto { Role = "user", Content = message.Content });
+                var files = attachmentText.Where(a => a.UserMessageId == message.Id).ToList();
+                history.Add(new ChatMessageDto
+                {
+                    Role = "user",
+                    Content = EnrichWithAttachmentText(message.Content, files)
+                });
 
                 var assistant = responses
                     .Where(r => r.UserMessageId == message.Id)
@@ -346,9 +440,7 @@ namespace MultiAI.Services
                     .FirstOrDefault();
 
                 if (!string.IsNullOrWhiteSpace(assistant))
-                {
                     history.Add(new ChatMessageDto { Role = "assistant", Content = assistant });
-                }
             }
 
             return history;
@@ -366,6 +458,29 @@ namespace MultiAI.Services
                        x.IsDeleted == 0)
                    ?? throw new Exception("Conversation not found.");
         }
+
+        private static ConversationListItemDto MapListItem(Conversation x) => new()
+        {
+            Id = x.Id,
+            Title = x.Title,
+            CreatedAt = x.CreatedAt,
+            UpdatedAt = x.UpdatedAt,
+            IsPinned = x.IsPinned,
+            PinnedAt = x.PinnedAt,
+            FolderId = x.FolderId
+        };
+
+        private static AttachmentDto MapAttachmentMeta(MessageAttachment x) => new()
+        {
+            Id = x.Id,
+            FileName = x.FileName,
+            ContentType = x.ContentType,
+            SizeBytes = x.SizeBytes,
+            IsImage = x.IsImage,
+            ExtractedTextPreview = x.ExtractedText == null
+                ? null
+                : (x.ExtractedText.Length > 200 ? x.ExtractedText[..200] : x.ExtractedText)
+        };
 
         private static ChatResponseDto MapResponse(AIResponse response) => new()
         {

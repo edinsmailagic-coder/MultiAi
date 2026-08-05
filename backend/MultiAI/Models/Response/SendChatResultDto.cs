@@ -16,5 +16,6 @@ namespace MultiAI.Models.Response
         public int Id { get; set; }
         public string Content { get; set; } = string.Empty;
         public DateTime CreatedAt { get; set; }
+        public List<AttachmentDto> Attachments { get; set; } = [];
     }
 }

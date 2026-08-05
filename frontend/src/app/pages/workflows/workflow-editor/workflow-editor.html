@@ -41,6 +41,11 @@
 
         @for (connection of connections(); track connection.id) {
           <path class="edge" [attr.d]="path(connection)" marker-end="url(#arrow)" />
+          @if (connection.conditionKey) {
+            <text class="edge-label" [attr.x]="labelX(connection)" [attr.y]="labelY(connection)">
+              {{ connection.conditionKey }}
+            </text>
+          }
         }
 
         @if (previewPath()) {
@@ -138,27 +143,46 @@
           </div>
         } @else {
           <form [formGroup]="addForm" (ngSubmit)="addNode()">
+            <label>{{ 'workflow.nodeType' | translate }}
+              <select formControlName="nodeType">
+                <option value="AI">AI</option>
+                <option value="If">If / Else</option>
+                <option value="Parallel">Parallel</option>
+                <option value="Join">Join</option>
+                <option value="Loop">Loop</option>
+              </select>
+            </label>
             <label>{{ 'workflow.nodeName' | translate }}
               <input formControlName="name">
             </label>
-            <label>{{ 'workflow.provider' | translate }}
-              <select [value]="addProviderId()" (change)="onAddProviderChange($event)">
-                @for (provider of providers(); track provider.id) {
-                  <option [value]="provider.id">{{ provider.providerName }}</option>
-                }
-              </select>
-            </label>
-            <label>{{ 'workflow.model' | translate }}
-              <app-model-select
-                formControlName="model"
-                [userProviderId]="addProviderId()"
-                [defaultModel]="providerById(addProviderId())?.defaultModel"
-                [supportsModelListing]="providerById(addProviderId())?.supportsModelListing !== false"
-              />
-            </label>
-            <label>{{ 'workflow.prompt' | translate }}
-              <textarea formControlName="prompt" rows="5"></textarea>
-            </label>
+            @if (addForm.controls.nodeType.value === 'AI') {
+              <label>{{ 'workflow.provider' | translate }}
+                <select [value]="addProviderId()" (change)="onAddProviderChange($event)">
+                  @for (provider of providers(); track provider.id) {
+                    <option [value]="provider.id">{{ provider.providerName }}</option>
+                  }
+                </select>
+              </label>
+              <label>{{ 'workflow.model' | translate }}
+                <app-model-select
+                  formControlName="model"
+                  [userProviderId]="addProviderId()"
+                  [defaultModel]="providerById(addProviderId())?.defaultModel"
+                  [supportsModelListing]="providerById(addProviderId())?.supportsModelListing !== false"
+                />
+              </label>
+              <label>{{ 'workflow.prompt' | translate }}
+                <textarea formControlName="prompt" rows="5"></textarea>
+              </label>
+            } @else if (addForm.controls.nodeType.value === 'If') {
+              <label>{{ 'workflow.ifPrompt' | translate }}
+                <textarea formControlName="prompt" rows="3" placeholder="contains:yes | equals:ok | notEmpty"></textarea>
+              </label>
+            } @else if (addForm.controls.nodeType.value === 'Loop') {
+              <label>{{ 'workflow.loopMax' | translate }}
+                <input formControlName="prompt" placeholder="5">
+              </label>
+            }
             <div class="modal-actions">
               <button class="secondary" type="button" (click)="showAdd.set(false)">{{ 'common.cancel' | translate }}</button>
               <button class="primary" type="submit">{{ 'common.add' | translate }}</button>

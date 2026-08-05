@@ -70,7 +70,10 @@
     "connectFirst": "Connect an AI provider before adding nodes.",
     "executionInput": "Workflow input",
     "executing": "Running…",
-    "run": "Run workflow"
+    "run": "Run workflow",
+    "nodeType": "Node type",
+    "ifPrompt": "Condition (contains:/equals:/notEmpty)",
+    "loopMax": "Max iterations"
   },
   "profile": {
     "title": "Profile & providers",
@@ -113,7 +116,16 @@
     "send": "Send",
     "sending": "Sending…",
     "rename": "Rename conversation",
-    "closeHistory": "Close history"
+    "closeHistory": "Close history",
+    "pin": "Pin conversation",
+    "unpin": "Unpin conversation",
+    "folder": "Folder",
+    "newFolder": "New folder",
+    "ungrouped": "Ungrouped",
+    "moveToFolder": "Move to folder",
+    "deleteFolder": "Delete folder",
+    "attach": "Attach",
+    "removeAttachment": "Remove attachment"
   },
   "modelSelect": {
     "label": "Model",
@@ -151,6 +163,8 @@
     "defaultProviderSaved": "Default provider updated.",
     "languageChanged": "Language updated.",
     "chatError": "Unable to send message.",
+    "folderError": "Unable to update folder.",
+    "uploadError": "Unable to upload attachment.",
     "nodeSaved": "Node updated.",
     "nodeAdded": "Node added.",
     "nodeDeleted": "Node deleted.",

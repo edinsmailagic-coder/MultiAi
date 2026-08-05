@@ -32,18 +32,34 @@ namespace MultiAI.Services
             var user = await context.Users.FirstOrDefaultAsync(x => x.Id == workflow.UserId);
             var actor = user?.UserName ?? workflow.UserId;
 
+            var nodeType = string.IsNullOrWhiteSpace(dto.NodeType) ? "AI" : dto.NodeType.Trim();
+            var providerId = dto.UserAIProviderId;
+            if (providerId <= 0 || !string.Equals(nodeType, "AI", StringComparison.OrdinalIgnoreCase))
+            {
+                var fallback = await context.UserAIProviders
+                    .Where(x => x.UserId == workflow.UserId && x.IsDeleted == 0)
+                    .OrderByDescending(x => x.IsDefault)
+                    .ThenBy(x => x.Id)
+                    .Select(x => x.Id)
+                    .FirstOrDefaultAsync();
+                if (fallback == 0)
+                    throw new Exception("Connect an AI provider before adding workflow nodes.");
+                if (providerId <= 0)
+                    providerId = fallback;
+            }
+
             var node = new WorkflowNode
             {
                 WorkflowId = dto.WorkflowId,
-                UserAIProviderId = dto.UserAIProviderId,
-                Name = dto.Name,
-                Model = dto.Model,
-                Prompt = dto.Prompt,
+                UserAIProviderId = providerId,
+                Name = string.IsNullOrWhiteSpace(dto.Name) ? nodeType : dto.Name,
+                Model = string.IsNullOrWhiteSpace(dto.Model) ? "-" : dto.Model,
+                Prompt = dto.Prompt ?? string.Empty,
                 InputMapping = dto.InputMapping,
                 Order = dto.Order,
                 PositionX = dto.PositionX,
                 PositionY = dto.PositionY,
-                NodeType = dto.NodeType,
+                NodeType = nodeType,
                 CreatedAt = DateTime.UtcNow,
                 CreatedBy = actor,
                 UpdatedAt = DateTime.UtcNow,
