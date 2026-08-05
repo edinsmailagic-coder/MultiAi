@@ -1,4 +1,5 @@
 ﻿using FluentMigrator.Runner;
+using MultiAI.Models.Data;
 using System.Reflection;
 
 namespace MultiAI.Config
@@ -21,6 +22,9 @@ namespace MultiAI.Config
             var runner = scope.ServiceProvider.GetRequiredService<IMigrationRunner>();
 
             runner.MigrateUp();
+
+            var logDb = scope.ServiceProvider.GetRequiredService<LogDbContext>();
+            logDb.Database.EnsureCreated();
         }
     }
 }

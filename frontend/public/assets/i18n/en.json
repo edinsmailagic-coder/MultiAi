@@ -41,7 +41,11 @@
     "totalWorkflows": "Total workflows",
     "activeWorkflows": "Active workflows",
     "connectedProviders": "Connected providers",
-    "recentWorkflows": "Recent workflows"
+    "recentWorkflows": "Recent workflows",
+    "costByProvider": "Cost by provider",
+    "tokensByProvider": "Tokens by provider",
+    "topWorkflowModels": "Most used workflow models",
+    "usageEmpty": "No usage data yet. Run a chat or workflow."
   },
   "workflow": {
     "new": "New workflow",
@@ -73,7 +77,13 @@
     "run": "Run workflow",
     "nodeType": "Node type",
     "ifPrompt": "Condition (contains:/equals:/notEmpty)",
-    "loopMax": "Max iterations"
+    "loopMax": "Max iterations",
+    "deleteNodeTitle": "Delete node?",
+    "deleteNodeText": "Do you want to delete “{{name}}”? Connected lines will also be removed.",
+    "deleteConnectionTitle": "Delete connection?",
+    "deleteConnectionText": "Do you want to delete the link {{source}} → {{target}}?",
+    "branchTitle": "Choose branch",
+    "branchText": "Which branch links {{source}} → {{target}}?"
   },
   "profile": {
     "title": "Profile & providers",
@@ -168,6 +178,7 @@
     "nodeSaved": "Node updated.",
     "nodeAdded": "Node added.",
     "nodeDeleted": "Node deleted.",
+    "connectionDeleted": "Connection deleted.",
     "connectProviderFirst": "Connect a provider first.",
     "connectionError": "Unable to create connection.",
     "moveError": "Unable to save node position.",

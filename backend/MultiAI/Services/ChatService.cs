@@ -15,19 +15,22 @@ namespace MultiAI.Services
         private readonly IApiKeyEncryptionService encryptionService;
         private readonly IWorkflowExecutionService workflowExecutionService;
         private readonly IMessageAttachmentService attachmentService;
+        private readonly IUsageLogService usageLog;
 
         public ChatService(
             AppDbContext context,
             IAIProviderFactory providerFactory,
             IApiKeyEncryptionService encryptionService,
             IWorkflowExecutionService workflowExecutionService,
-            IMessageAttachmentService attachmentService)
+            IMessageAttachmentService attachmentService,
+            IUsageLogService usageLog)
         {
             this.context = context;
             this.providerFactory = providerFactory;
             this.encryptionService = encryptionService;
             this.workflowExecutionService = workflowExecutionService;
             this.attachmentService = attachmentService;
+            this.usageLog = usageLog;
         }
 
         public async Task<SendChatResultDto> SendAsync(string userId, ChatRequestDto request)
@@ -211,6 +214,11 @@ namespace MultiAI.Services
             var providerResponse = await provider.Chat(historyMessages, request.Model!, apiKey);
             stopwatch.Stop();
 
+            var cost = TokenCostEstimator.Estimate(
+                providerResponse.Model ?? request.Model!,
+                providerResponse.PromptTokens,
+                providerResponse.CompletitionTokens);
+
             var aiResponse = new AIResponse
             {
                 UserMessageId = userMessage.Id,
@@ -221,6 +229,7 @@ namespace MultiAI.Services
                 CompletitionTokens = providerResponse.CompletitionTokens,
                 TotalTokens = providerResponse.TotalTokens,
                 DurationMs = stopwatch.ElapsedMilliseconds,
+                Cost = cost,
                 IsStreamingCompleted = true,
                 CreatedAt = DateTime.UtcNow,
                 CreatedBy = user.UserName,
@@ -233,6 +242,19 @@ namespace MultiAI.Services
             conversation.UpdatedAt = DateTime.UtcNow;
             conversation.UpdatedBy = user.UserName;
             await context.SaveChangesAsync();
+
+            await usageLog.LogAsync(
+                user.Id,
+                userProvider.Id,
+                userProvider.Provider.Name,
+                aiResponse.Model,
+                aiResponse.PromptTokens,
+                aiResponse.CompletitionTokens,
+                aiResponse.TotalTokens,
+                cost,
+                workflowId: null,
+                workflowNodeId: null,
+                source: "chat");
 
             return new SendChatResultDto
             {

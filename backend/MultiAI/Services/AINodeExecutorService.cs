@@ -12,13 +12,19 @@ namespace MultiAI.Services
         private readonly AppDbContext context;
         private readonly IAIProviderFactory providerFactory;
         private readonly IApiKeyEncryptionService encryptionService;
+        private readonly IUsageLogService usageLog;
         public string NodeType => "AI";
 
-        public AINodeExecutorService(AppDbContext context, IAIProviderFactory providerFactory, IApiKeyEncryptionService encryptionService)
+        public AINodeExecutorService(
+            AppDbContext context,
+            IAIProviderFactory providerFactory,
+            IApiKeyEncryptionService encryptionService,
+            IUsageLogService usageLog)
         {
             this.context = context;
             this.providerFactory = providerFactory;
             this.encryptionService = encryptionService;
+            this.usageLog = usageLog;
         }
 
         public async Task<NodeExecutionResult> ExecuteAsync(WorkflowExecutionContext executionContext, WorkflowNode node)
@@ -55,10 +61,24 @@ namespace MultiAI.Services
                 result.PromptTokens = response.PromptTokens;
                 result.CompletionTokens = response.CompletitionTokens;
                 result.TotalTokens = response.TotalTokens;
+                result.Cost = TokenCostEstimator.Estimate(node.Model, response.PromptTokens, response.CompletitionTokens);
                 result.Outputs["output"] = response.Content;
 
                 executionContext.Variables[$"node:{node.Id}:output"] = response.Content;
                 executionContext.Variables["lastOutput"] = response.Content;
+
+                await usageLog.LogAsync(
+                    executionContext.UserId,
+                    userProvider.Id,
+                    userProvider.Provider.Name,
+                    node.Model,
+                    response.PromptTokens,
+                    response.CompletitionTokens,
+                    response.TotalTokens,
+                    result.Cost,
+                    executionContext.WorkflowId,
+                    node.Id,
+                    "workflow");
 
                 return result;
             }

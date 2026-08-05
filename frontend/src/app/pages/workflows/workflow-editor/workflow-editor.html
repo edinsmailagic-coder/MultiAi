@@ -40,7 +40,17 @@
         </defs>
 
         @for (connection of connections(); track connection.id) {
-          <path class="edge" [attr.d]="path(connection)" marker-end="url(#arrow)" />
+          <path
+            class="edge-hit"
+            [attr.d]="path(connection)"
+            (click)="requestDeleteConnection(connection, $event)"
+          />
+          <path
+            class="edge"
+            [class.pending-delete]="isPendingConnection(connection.id)"
+            [attr.d]="path(connection)"
+            marker-end="url(#arrow)"
+          />
           @if (connection.conditionKey) {
             <text class="edge-label" [attr.x]="labelX(connection)" [attr.y]="labelY(connection)">
               {{ connection.conditionKey }}
@@ -117,27 +127,37 @@
         <label>{{ 'workflow.nodeName' | translate }}
           <input formControlName="name">
         </label>
-        <label>{{ 'workflow.model' | translate }}
-          <app-model-select
-            formControlName="model"
-            [userProviderId]="editProviderId()"
-            [defaultModel]="providerById(editProviderId())?.defaultModel"
-            [supportsModelListing]="providerById(editProviderId())?.supportsModelListing !== false"
-          />
-        </label>
-        <label>{{ 'workflow.provider' | translate }}
-          <select formControlName="userAIProviderId">
-            @for (provider of providers(); track provider.id) {
-              <option [value]="provider.id">{{ provider.providerName }}</option>
-            }
-          </select>
-        </label>
-        <label>{{ 'workflow.prompt' | translate }}
-          <textarea formControlName="prompt" rows="7"></textarea>
-        </label>
-        <label>{{ 'workflow.inputMapping' | translate }}
-          <input formControlName="inputMapping">
-        </label>
+        @if (selected()!.nodeType === 'AI') {
+          <label>{{ 'workflow.model' | translate }}
+            <app-model-select
+              formControlName="model"
+              [userProviderId]="editProviderId()"
+              [defaultModel]="providerById(editProviderId())?.defaultModel"
+              [supportsModelListing]="providerById(editProviderId())?.supportsModelListing !== false"
+            />
+          </label>
+          <label>{{ 'workflow.provider' | translate }}
+            <select formControlName="userAIProviderId">
+              @for (provider of providers(); track provider.id) {
+                <option [value]="provider.id">{{ provider.providerName }}</option>
+              }
+            </select>
+          </label>
+          <label>{{ 'workflow.prompt' | translate }}
+            <textarea formControlName="prompt" rows="7"></textarea>
+          </label>
+          <label>{{ 'workflow.inputMapping' | translate }}
+            <input formControlName="inputMapping">
+          </label>
+        } @else if (selected()!.nodeType === 'If') {
+          <label>{{ 'workflow.ifPrompt' | translate }}
+            <textarea formControlName="prompt" rows="3" placeholder="contains:yes | equals:ok | notEmpty"></textarea>
+          </label>
+        } @else if (selected()!.nodeType === 'Loop') {
+          <label>{{ 'workflow.loopMax' | translate }}
+            <input formControlName="prompt" placeholder="5">
+          </label>
+        }
         <button class="primary full" type="submit">{{ 'common.save' | translate }}</button>
         <button class="danger-button full" type="button" (click)="deleteSelected()">{{ 'common.delete' | translate }}</button>
       </form>
@@ -229,5 +249,55 @@
         }
       </div>
     </aside>
+  }
+
+  @if (pendingDelete(); as pending) {
+    <div class="modal-backdrop" (click)="cancelPendingDelete()">
+      <section class="modal confirm-modal" (click)="$event.stopPropagation()" role="dialog" aria-modal="true">
+        @if (pending.kind === 'node') {
+          <h2>{{ 'workflow.deleteNodeTitle' | translate }}</h2>
+          <p>{{ 'workflow.deleteNodeText' | translate: { name: pending.node.name } }}</p>
+        } @else {
+          <h2>{{ 'workflow.deleteConnectionTitle' | translate }}</h2>
+          <p>
+            {{
+              'workflow.deleteConnectionText'
+                | translate
+                  : {
+                      source: nodeName(pending.connection.sourceNodeId),
+                      target: nodeName(pending.connection.targetNodeId),
+                    }
+            }}
+          </p>
+        }
+        <div class="modal-actions">
+          <button class="secondary" type="button" (click)="cancelPendingDelete()">{{ 'common.cancel' | translate }}</button>
+          <button class="danger-button" type="button" (click)="confirmPendingDelete()">{{ 'common.delete' | translate }}</button>
+        </div>
+      </section>
+    </div>
+  }
+
+  @if (pendingBranch(); as branch) {
+    <div class="modal-backdrop" (click)="cancelPendingBranch()">
+      <section class="modal confirm-modal" (click)="$event.stopPropagation()" role="dialog" aria-modal="true">
+        <h2>{{ 'workflow.branchTitle' | translate }}</h2>
+        <p>
+          {{
+            'workflow.branchText'
+              | translate
+                : { source: nodeName(branch.sourceNodeId), target: nodeName(branch.targetNodeId) }
+          }}
+        </p>
+        <div class="branch-options">
+          @for (option of branch.options; track option) {
+            <button class="primary" type="button" (click)="selectBranchKey(option)">{{ option }}</button>
+          }
+        </div>
+        <div class="modal-actions">
+          <button class="secondary" type="button" (click)="cancelPendingBranch()">{{ 'common.cancel' | translate }}</button>
+        </div>
+      </section>
+    </div>
   }
 </div>

@@ -335,6 +335,53 @@ form {
   margin-bottom: 1.5rem;
 }
 
+.stats-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(3, 1fr);
+  margin-bottom: 1.5rem;
+}
+
+.stats-card .panel-header {
+  margin-bottom: 0.75rem;
+}
+
+.stats-empty {
+  color: var(--muted);
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+.stats-list {
+  display: grid;
+  gap: 0.65rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.stats-list li {
+  align-items: baseline;
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+}
+
+.stats-list span {
+  color: var(--text-secondary);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.stats-list strong {
+  color: var(--text);
+  font-size: 0.95rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
 .metrics article,
 .metric-card,
 .panel {
@@ -715,13 +762,28 @@ form {
 
 .connections .edge {
   fill: none;
+  pointer-events: none;
   stroke: var(--accent);
   stroke-linecap: round;
   stroke-width: 2.75;
 }
 
+.connections .edge.pending-delete {
+  stroke: var(--danger);
+}
+
+.connections .edge-hit {
+  cursor: pointer;
+  fill: none;
+  pointer-events: stroke;
+  stroke: transparent;
+  stroke-linecap: round;
+  stroke-width: 16;
+}
+
 .connections .edge.preview {
   opacity: 0.95;
+  pointer-events: none;
   stroke: var(--accent-hover);
   stroke-dasharray: 7 5;
   stroke-width: 2.5;
@@ -732,9 +794,23 @@ form {
   font-size: 11px;
   font-weight: 650;
   paint-order: stroke;
+  pointer-events: none;
   stroke: var(--bg);
   stroke-width: 3px;
   text-anchor: middle;
+}
+
+.confirm-modal p {
+  color: var(--text-secondary);
+  line-height: 1.45;
+  margin: 0 0 1.25rem;
+}
+
+.branch-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-bottom: 1rem;
 }
 
 .node-card {
@@ -1020,6 +1096,7 @@ form {
   }
 
   .metrics,
+  .stats-grid,
   .profile-grid {
     grid-template-columns: 1fr;
   }
@@ -1065,7 +1142,8 @@ form {
     flex-direction: column;
   }
 
-  .metrics {
+  .metrics,
+  .stats-grid {
     grid-template-columns: 1fr;
   }
 

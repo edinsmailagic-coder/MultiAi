@@ -34,6 +34,62 @@
   </article>
 </section>
 
+<section class="stats-grid">
+  <article class="panel stats-card">
+    <div class="panel-header">
+      <h2>{{ 'dashboard.costByProvider' | translate }}</h2>
+    </div>
+    @if (!usage()?.costByProvider?.length) {
+      <p class="stats-empty">{{ 'dashboard.usageEmpty' | translate }}</p>
+    } @else {
+      <ul class="stats-list">
+        @for (row of usage()!.costByProvider; track row.providerName) {
+          <li>
+            <span>{{ row.providerName }}</span>
+            <strong>{{ row.totalCost | currency: 'USD':'symbol':'1.2-4' }}</strong>
+          </li>
+        }
+      </ul>
+    }
+  </article>
+
+  <article class="panel stats-card">
+    <div class="panel-header">
+      <h2>{{ 'dashboard.tokensByProvider' | translate }}</h2>
+    </div>
+    @if (!usage()?.tokensByProvider?.length) {
+      <p class="stats-empty">{{ 'dashboard.usageEmpty' | translate }}</p>
+    } @else {
+      <ul class="stats-list">
+        @for (row of usage()!.tokensByProvider; track row.providerName) {
+          <li>
+            <span>{{ row.providerName }}</span>
+            <strong>{{ row.totalTokens | number }}</strong>
+          </li>
+        }
+      </ul>
+    }
+  </article>
+
+  <article class="panel stats-card">
+    <div class="panel-header">
+      <h2>{{ 'dashboard.topWorkflowModels' | translate }}</h2>
+    </div>
+    @if (!usage()?.mostUsedWorkflowModels?.length) {
+      <p class="stats-empty">{{ 'dashboard.usageEmpty' | translate }}</p>
+    } @else {
+      <ul class="stats-list">
+        @for (row of usage()!.mostUsedWorkflowModels; track row.model) {
+          <li>
+            <span>{{ row.model }}</span>
+            <strong>{{ row.requestCount }}× · {{ row.totalTokens | number }} tok</strong>
+          </li>
+        }
+      </ul>
+    }
+  </article>
+</section>
+
 <section class="panel">
   <div class="panel-header">
     <h2>{{ 'dashboard.recentWorkflows' | translate }}</h2>

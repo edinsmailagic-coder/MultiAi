@@ -41,7 +41,11 @@
     "totalWorkflows": "Ukupno tokova",
     "activeWorkflows": "Aktivni tokovi",
     "connectedProviders": "Povezani provajderi",
-    "recentWorkflows": "Nedavni tokovi"
+    "recentWorkflows": "Nedavni tokovi",
+    "costByProvider": "Troškovi po provajderu",
+    "tokensByProvider": "Tokeni po provajderu",
+    "topWorkflowModels": "Najkorišteniji modeli (workflow)",
+    "usageEmpty": "Još nema usage podataka. Pokreni chat ili tok."
   },
   "workflow": {
     "new": "Novi tok",
@@ -73,7 +77,13 @@
     "run": "Pokreni tok",
     "nodeType": "Tip Node",
     "ifPrompt": "Uvjet (contains:/equals:/notEmpty)",
-    "loopMax": "Max iteracija"
+    "loopMax": "Max iteracija",
+    "deleteNodeTitle": "Obriši Node?",
+    "deleteNodeText": "Želite li obrisati „{{name}}“? Povezane linije će također nestati.",
+    "deleteConnectionTitle": "Obriši liniju?",
+    "deleteConnectionText": "Želite li obrisati vezu {{source}} → {{target}}?",
+    "branchTitle": "Odaberi granu",
+    "branchText": "Koja grana povezuje {{source}} → {{target}}?"
   },
   "profile": {
     "title": "Profil i provajderi",
@@ -168,6 +178,7 @@
     "nodeSaved": "Node je ažuriran.",
     "nodeAdded": "Node je dodat.",
     "nodeDeleted": "Node je obrisan.",
+    "connectionDeleted": "Linija je obrisana.",
     "connectProviderFirst": "Prvo povežite provajdera.",
     "connectionError": "Veza se ne može kreirati.",
     "moveError": "Pozicija Node se ne može sačuvati.",

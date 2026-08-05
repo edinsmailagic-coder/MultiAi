@@ -14,6 +14,7 @@ namespace MultiAI.Config
         {
             services.AddDataProtection();
             services.AddDbContext<AppDbContext>(options => options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
+            services.AddDbContext<LogDbContext>(options => options.UseSqlServer(configuration.GetConnectionString("LogConnection")));
             services.AddIdentityCore<Users>(options =>
             {
                 options.Password.RequireDigit = true;
@@ -52,6 +53,8 @@ namespace MultiAI.Config
             services.AddScoped<INodeExecutorService, LoopNodeExecutorService>();
             services.AddScoped<IWorkflowEngine, WorkflowEngineService>();
             services.AddScoped<IWorkflowExecutionService, WorkflowExecutionService>();
+            services.AddScoped<IUsageLogService, UsageLogService>();
+            services.AddScoped<IUsageStatsService, UsageStatsService>();
 
             return services;
         }

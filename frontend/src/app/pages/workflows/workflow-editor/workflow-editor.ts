@@ -27,6 +27,16 @@ interface Point {
   y: number;
 }
 
+type PendingDelete =
+  | { kind: 'node'; node: WorkflowNode }
+  | { kind: 'connection'; connection: WorkflowConnection };
+
+interface PendingBranchConnection {
+  sourceNodeId: number;
+  targetNodeId: number;
+  options: string[];
+}
+
 @Component({
   selector: 'app-workflow-editor',
   imports: [ReactiveFormsModule, RouterLink, TranslatePipe, ModelSelect],
@@ -48,6 +58,8 @@ export class WorkflowEditor implements OnInit {
   readonly showExecute = signal(false);
   readonly executing = signal(false);
   readonly results = signal<NodeExecutionResult[]>([]);
+  readonly pendingDelete = signal<PendingDelete | null>(null);
+  readonly pendingBranch = signal<PendingBranchConnection | null>(null);
   readonly drag = signal<DragState | null>(null);
   readonly addProviderId = signal(0);
   readonly editProviderId = signal(0);
@@ -151,6 +163,18 @@ export class WorkflowEditor implements OnInit {
   }
 
   @HostListener('document:keydown.escape')
+  onEscape(): void {
+    if (this.pendingDelete()) {
+      this.cancelPendingDelete();
+      return;
+    }
+    if (this.pendingBranch()) {
+      this.cancelPendingBranch();
+      return;
+    }
+    this.cancelConnection();
+  }
+
   cancelConnection(): void {
     this.sourceNodeId.set(null);
     this.pointer.set(null);
@@ -162,6 +186,7 @@ export class WorkflowEditor implements OnInit {
     }
     this.selected.set(node);
     this.editProviderId.set(node.userAIProviderId);
+    this.syncEditValidators(node.nodeType);
     this.editForm.reset({
       name: node.name,
       model: node.model,
@@ -170,6 +195,15 @@ export class WorkflowEditor implements OnInit {
       order: node.order,
       userAIProviderId: node.userAIProviderId,
     });
+  }
+
+  private syncEditValidators(nodeType: string): void {
+    const isAi = nodeType === 'AI';
+    const needsPrompt = isAi || nodeType === 'If' || nodeType === 'Loop';
+    this.editForm.controls.model.setValidators(isAi ? [Validators.required] : []);
+    this.editForm.controls.prompt.setValidators(needsPrompt ? [Validators.required] : []);
+    this.editForm.controls.model.updateValueAndValidity({ emitEvent: false });
+    this.editForm.controls.prompt.updateValueAndValidity({ emitEvent: false });
   }
 
   closePanel(): void {
@@ -250,32 +284,79 @@ export class WorkflowEditor implements OnInit {
     if (!node) {
       return;
     }
-    this.deleteNode(node);
+    this.requestDeleteNode(node);
   }
 
   deleteNode(node: WorkflowNode, event?: Event): void {
     event?.stopPropagation();
     event?.preventDefault();
-    if (!confirm(node.name)) {
+    this.requestDeleteNode(node);
+  }
+
+  requestDeleteNode(node: WorkflowNode): void {
+    this.pendingDelete.set({ kind: 'node', node });
+  }
+
+  requestDeleteConnection(connection: WorkflowConnection, event?: Event): void {
+    event?.stopPropagation();
+    event?.preventDefault();
+    if (this.isConnecting()) {
+      return;
+    }
+    this.selected.set(null);
+    this.pendingDelete.set({ kind: 'connection', connection });
+  }
+
+  cancelPendingDelete(): void {
+    this.pendingDelete.set(null);
+  }
+
+  confirmPendingDelete(): void {
+    const pending = this.pendingDelete();
+    if (!pending) {
       return;
     }
 
-    this.service.deleteNode(node.id).subscribe({
+    if (pending.kind === 'node') {
+      const node = pending.node;
+      this.service.deleteNode(node.id).subscribe({
+        next: () => {
+          this.nodes.update((rows) => rows.filter((row) => row.id !== node.id));
+          this.connections.update((rows) =>
+            rows.filter((row) => row.sourceNodeId !== node.id && row.targetNodeId !== node.id),
+          );
+          if (this.selected()?.id === node.id) {
+            this.selected.set(null);
+          }
+          if (this.sourceNodeId() === node.id) {
+            this.cancelConnection();
+          }
+          this.pendingDelete.set(null);
+          this.toast.showSuccess('toast.nodeDeleted');
+        },
+        error: () => this.toast.error('toast.deleteError'),
+      });
+      return;
+    }
+
+    const connection = pending.connection;
+    this.service.deleteConnection(connection.id).subscribe({
       next: () => {
-        this.nodes.update((rows) => rows.filter((row) => row.id !== node.id));
-        this.connections.update((rows) =>
-          rows.filter((row) => row.sourceNodeId !== node.id && row.targetNodeId !== node.id),
-        );
-        if (this.selected()?.id === node.id) {
-          this.selected.set(null);
-        }
-        if (this.sourceNodeId() === node.id) {
-          this.cancelConnection();
-        }
-        this.toast.showSuccess('toast.nodeDeleted');
+        this.connections.update((rows) => rows.filter((row) => row.id !== connection.id));
+        this.pendingDelete.set(null);
+        this.toast.showSuccess('toast.connectionDeleted');
       },
       error: () => this.toast.error('toast.deleteError'),
     });
+  }
+
+  nodeName(id: number): string {
+    return this.nodes().find((node) => node.id === id)?.name ?? `#${id}`;
+  }
+
+  isPendingConnection(connectionId: number): boolean {
+    const pending = this.pendingDelete();
+    return pending?.kind === 'connection' && pending.connection.id === connectionId;
   }
 
   startConnection(nodeId: number, event: PointerEvent): void {
@@ -300,13 +381,42 @@ export class WorkflowEditor implements OnInit {
     }
 
     const source = this.nodes().find((n) => n.id === sourceNodeId);
-    let conditionKey: string | null = null;
     if (source?.nodeType === 'If') {
-      conditionKey = window.prompt('Branch key (true/false/default):', 'true');
-    } else if (source?.nodeType === 'Loop') {
-      conditionKey = window.prompt('Branch key (body/done):', 'body');
+      this.pendingBranch.set({
+        sourceNodeId,
+        targetNodeId,
+        options: ['true', 'false', 'default'],
+      });
+      this.cancelConnection();
+      return;
+    }
+    if (source?.nodeType === 'Loop') {
+      this.pendingBranch.set({
+        sourceNodeId,
+        targetNodeId,
+        options: ['body', 'done'],
+      });
+      this.cancelConnection();
+      return;
     }
 
+    this.createConnection(sourceNodeId, targetNodeId, null);
+  }
+
+  cancelPendingBranch(): void {
+    this.pendingBranch.set(null);
+  }
+
+  selectBranchKey(conditionKey: string): void {
+    const pending = this.pendingBranch();
+    if (!pending) {
+      return;
+    }
+    this.pendingBranch.set(null);
+    this.createConnection(pending.sourceNodeId, pending.targetNodeId, conditionKey);
+  }
+
+  private createConnection(sourceNodeId: number, targetNodeId: number, conditionKey: string | null): void {
     this.service
       .addConnection({
         workflowId: this.workflowId,

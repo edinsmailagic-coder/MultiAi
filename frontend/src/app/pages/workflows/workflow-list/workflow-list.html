@@ -4,7 +4,7 @@
     <h1>{{ 'workflow.allTitle' | translate }}</h1>
     <p>{{ 'workflow.allSubtitle' | translate }}</p>
   </div>
-  <a class="primary" routerLink="/dashboard">{{ 'workflow.createOnDashboard' | translate }}</a>
+  <button class="primary" type="button" (click)="showCreate.set(true)">+ {{ 'workflow.new' | translate }}</button>
 </section>
 
 <section class="panel">
@@ -13,7 +13,8 @@
   } @else if (!workflows().length) {
     <div class="empty-state">
       <h3>{{ 'workflow.emptyTitle' | translate }}</h3>
-      <a class="primary" routerLink="/dashboard">{{ 'workflow.createFirst' | translate }}</a>
+      <p>{{ 'workflow.emptyText' | translate }}</p>
+      <button class="primary" type="button" (click)="showCreate.set(true)">{{ 'workflow.createFirst' | translate }}</button>
     </div>
   } @else {
     <div class="workflow-grid">
@@ -33,3 +34,23 @@
     </div>
   }
 </section>
+
+@if (showCreate()) {
+  <div class="modal-backdrop" (click)="showCreate.set(false)">
+    <section class="modal" (click)="$event.stopPropagation()" role="dialog" aria-modal="true">
+      <h2>{{ 'workflow.createTitle' | translate }}</h2>
+      <form [formGroup]="createForm" (ngSubmit)="create()">
+        <label>{{ 'workflow.name' | translate }}
+          <input formControlName="name">
+        </label>
+        <label>{{ 'workflow.description' | translate }}
+          <textarea formControlName="description" rows="3"></textarea>
+        </label>
+        <div class="modal-actions">
+          <button class="secondary" type="button" (click)="showCreate.set(false)">{{ 'common.cancel' | translate }}</button>
+          <button class="primary" type="submit">{{ 'common.create' | translate }}</button>
+        </div>
+      </form>
+    </section>
+  </div>
+}
