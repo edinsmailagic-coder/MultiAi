@@ -1,0 +1,28 @@
+<div class="model-select">
+  @if (loading()) {
+    <span class="model-select__status" role="status">{{ 'common.loading' | translate }}</span>
+  } @else if (useManualInput()) {
+    <input
+      type="text"
+      [value]="value()"
+      [disabled]="isDisabled()"
+      [attr.aria-label]="'modelSelect.label' | translate"
+      [placeholder]="'modelSelect.placeholder' | translate"
+      (input)="onSelectChange($event)"
+      (blur)="markTouched()"
+    >
+  } @else {
+    <select
+      [value]="value()"
+      [disabled]="isDisabled()"
+      [attr.aria-label]="'modelSelect.label' | translate"
+      (change)="onSelectChange($event)"
+      (blur)="markTouched()"
+    >
+      <option value="" disabled>{{ 'modelSelect.choose' | translate }}</option>
+      @for (model of models(); track model.id) {
+        <option [value]="model.id">{{ model.name }}</option>
+      }
+    </select>
+  }
+</div>

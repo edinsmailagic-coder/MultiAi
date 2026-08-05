@@ -21,6 +21,7 @@
   },
   "nav": {
     "dashboard": "Dashboard",
+    "chat": "Chat",
     "workflows": "Workflows",
     "profile": "Profile & providers",
     "logout": "Log out"
@@ -77,7 +78,37 @@
     "selectProvider": "Choose a provider",
     "apiKey": "API key",
     "connect": "Connect provider",
-    "session": "Session"
+    "session": "Session",
+    "defaultModel": "Default model",
+    "saveDefaultModel": "Save default model",
+    "setDefaultProvider": "Set as default provider",
+    "defaultProvider": "Default"
+  },
+  "chat": {
+    "title": "New chat",
+    "history": "Chat history",
+    "new": "New chat",
+    "noHistory": "No conversations yet.",
+    "emptyTitle": "Start a conversation",
+    "emptyText": "Ask anything with your preferred model, or run an optional workflow.",
+    "you": "You",
+    "assistant": "Assistant",
+    "thinking": "Thinking…",
+    "workflowOptional": "Workflow (optional)",
+    "noWorkflow": "No workflow — direct chat",
+    "provider": "Provider",
+    "model": "Model",
+    "prompt": "Message",
+    "promptPlaceholder": "Type your message…",
+    "send": "Send",
+    "sending": "Sending…",
+    "rename": "Rename conversation",
+    "closeHistory": "Close history"
+  },
+  "modelSelect": {
+    "label": "Model",
+    "choose": "Choose a model",
+    "placeholder": "Enter model name"
   },
   "common": {
     "loading": "Loading…",
@@ -106,6 +137,9 @@
     "passwordError": "Unable to change password.",
     "providerConnected": "Provider connected.",
     "providerError": "Unable to connect provider.",
+    "defaultModelSaved": "Default model saved.",
+    "defaultProviderSaved": "Default provider updated.",
+    "chatError": "Unable to send message.",
     "nodeSaved": "Node updated.",
     "nodeAdded": "Node added.",
     "nodeDeleted": "Node deleted.",

@@ -56,6 +56,12 @@ namespace MultiAI.Models.Data
             builder.Entity<WorkflowNode>().ToTable("WorkflowNodes");
 
             builder.Entity<WorkflowConnection>().ToTable("WorkflowConnections");
+
+            builder.Entity<AIResponse>(entity =>
+            {
+                entity.Property(x => x.CompletitionTokens).HasColumnName("CompletionTokens");
+                entity.Property(x => x.UserAIProvideId).HasColumnName("UserAIProviderId");
+            });
         }
     }
 }

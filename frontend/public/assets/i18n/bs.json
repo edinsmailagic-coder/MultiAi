@@ -21,6 +21,7 @@
   },
   "nav": {
     "dashboard": "Kontrolna tabla",
+    "chat": "Chat",
     "workflows": "Tokovi rada",
     "profile": "Profil i provajderi",
     "logout": "Odjava"
@@ -77,7 +78,37 @@
     "selectProvider": "Odaberite provajdera",
     "apiKey": "API ključ",
     "connect": "Poveži provajdera",
-    "session": "Sesija"
+    "session": "Sesija",
+    "defaultModel": "Podrazumijevani model",
+    "saveDefaultModel": "Sačuvaj podrazumijevani model",
+    "setDefaultProvider": "Postavi kao podrazumijevanog provajdera",
+    "defaultProvider": "Podrazumijevani"
+  },
+  "chat": {
+    "title": "Novi chat",
+    "history": "Historija chata",
+    "new": "Novi chat",
+    "noHistory": "Još nema konverzacija.",
+    "emptyTitle": "Započnite razgovor",
+    "emptyText": "Pitajte bilo šta odabranim modelom ili pokrenite opcioni workflow.",
+    "you": "Vi",
+    "assistant": "Asistent",
+    "thinking": "Razmišljam…",
+    "workflowOptional": "Workflow (opciono)",
+    "noWorkflow": "Bez workflowa — direktan chat",
+    "provider": "Provajder",
+    "model": "Model",
+    "prompt": "Poruka",
+    "promptPlaceholder": "Ukucajte poruku…",
+    "send": "Pošalji",
+    "sending": "Šaljem…",
+    "rename": "Preimenuj konverzaciju",
+    "closeHistory": "Zatvori historiju"
+  },
+  "modelSelect": {
+    "label": "Model",
+    "choose": "Odaberite model",
+    "placeholder": "Unesite naziv modela"
   },
   "common": {
     "loading": "Učitavanje…",
@@ -106,6 +137,9 @@
     "passwordError": "Lozinka se ne može promijeniti.",
     "providerConnected": "Provajder je povezan.",
     "providerError": "Provajder se ne može povezati.",
+    "defaultModelSaved": "Podrazumijevani model je sačuvan.",
+    "defaultProviderSaved": "Podrazumijevani provajder je ažuriran.",
+    "chatError": "Poruka se ne može poslati.",
     "nodeSaved": "Čvor je ažuriran.",
     "nodeAdded": "Čvor je dodat.",
     "nodeDeleted": "Čvor je obrisan.",

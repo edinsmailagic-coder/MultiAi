@@ -5,6 +5,9 @@
       <a routerLink="/dashboard" routerLinkActive="active" (click)="closeMenu()">
         <span aria-hidden="true">⌂</span>{{ 'nav.dashboard' | translate }}
       </a>
+      <a routerLink="/chat" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: false }" (click)="closeMenu()">
+        <span aria-hidden="true">✦</span>{{ 'nav.chat' | translate }}
+      </a>
       <a routerLink="/workflows" routerLinkActive="active" (click)="closeMenu()">
         <span aria-hidden="true">◈</span>{{ 'nav.workflows' | translate }}
       </a>

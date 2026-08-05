@@ -10,6 +10,7 @@ namespace MultiAI.Models.Entities
         public AIProvider Provider { get; set; }
         public string EncryptedApiKey {  get; set; }
         public bool IsDefault { get; set; }
+        public string? DefaultModel { get; set; }
         [NotMapped]
         public string? DisplayName { get; set; }
     }

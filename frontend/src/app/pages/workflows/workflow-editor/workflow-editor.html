@@ -101,7 +101,12 @@
           <input formControlName="name">
         </label>
         <label>{{ 'workflow.model' | translate }}
-          <input formControlName="model">
+          <app-model-select
+            formControlName="model"
+            [userProviderId]="editProviderId()"
+            [defaultModel]="providerById(editProviderId())?.defaultModel"
+            [supportsModelListing]="providerById(editProviderId())?.supportsModelListing !== false"
+          />
         </label>
         <label>{{ 'workflow.provider' | translate }}
           <select formControlName="userAIProviderId">
@@ -137,14 +142,19 @@
               <input formControlName="name">
             </label>
             <label>{{ 'workflow.provider' | translate }}
-              <select formControlName="userAIProviderId">
+              <select [value]="addProviderId()" (change)="onAddProviderChange($event)">
                 @for (provider of providers(); track provider.id) {
                   <option [value]="provider.id">{{ provider.providerName }}</option>
                 }
               </select>
             </label>
             <label>{{ 'workflow.model' | translate }}
-              <input formControlName="model">
+              <app-model-select
+                formControlName="model"
+                [userProviderId]="addProviderId()"
+                [defaultModel]="providerById(addProviderId())?.defaultModel"
+                [supportsModelListing]="providerById(addProviderId())?.supportsModelListing !== false"
+              />
             </label>
             <label>{{ 'workflow.prompt' | translate }}
               <textarea formControlName="prompt" rows="5"></textarea>

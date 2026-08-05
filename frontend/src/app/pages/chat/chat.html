@@ -1,0 +1,132 @@
+<div class="chat-layout" [class.history-open]="historyOpen()">
+  <aside class="chat-history" [attr.aria-label]="'chat.history' | translate">
+    <div class="chat-history__header">
+      <h2>{{ 'chat.history' | translate }}</h2>
+      <button class="primary compact" type="button" (click)="newChat()">+ {{ 'chat.new' | translate }}</button>
+    </div>
+
+    <nav class="chat-history__list" role="list">
+      @for (item of conversations(); track item.id) {
+        <div
+          class="chat-history__item"
+          role="listitem"
+          [class.active]="conversationId() === item.id"
+        >
+          @if (renamingId() === item.id) {
+            <input
+              class="chat-history__rename"
+              [value]="item.title"
+              (click)="$event.stopPropagation()"
+              (keydown.enter)="commitRename(item, $event)"
+              (blur)="commitRename(item, $event)"
+            >
+          } @else {
+            <button type="button" class="chat-history__open" (click)="openConversation(item.id)">
+              <span>{{ item.title }}</span>
+            </button>
+            <div class="chat-history__actions">
+              <button type="button" class="icon-btn" [attr.aria-label]="'chat.rename' | translate" (click)="startRename(item, $event)">✎</button>
+              <button type="button" class="icon-btn danger" [attr.aria-label]="'common.delete' | translate" (click)="deleteConversation(item, $event)">×</button>
+            </div>
+          }
+        </div>
+      } @empty {
+        <p class="muted chat-history__empty">{{ 'chat.noHistory' | translate }}</p>
+      }
+    </nav>
+  </aside>
+
+  @if (historyOpen()) {
+    <button class="chat-backdrop" type="button" [attr.aria-label]="'chat.closeHistory' | translate" (click)="toggleHistory()"></button>
+  }
+
+  <section class="chat-main">
+    <header class="chat-main__header">
+      <button class="secondary compact history-toggle" type="button" (click)="toggleHistory()">☰ {{ 'chat.history' | translate }}</button>
+      <div>
+        <p class="eyebrow">{{ 'nav.chat' | translate }}</p>
+        <h1>{{ conversationTitle() || ('chat.title' | translate) }}</h1>
+      </div>
+    </header>
+
+    <div #messageList class="chat-messages" role="log" aria-live="polite" aria-relevant="additions">
+      @if (loading()) {
+        <p class="muted centered">{{ 'common.loading' | translate }}</p>
+      } @else if (!messages().length) {
+        <div class="chat-empty">
+          <h2>{{ 'chat.emptyTitle' | translate }}</h2>
+          <p>{{ 'chat.emptyText' | translate }}</p>
+        </div>
+      } @else {
+        @for (message of messages(); track message.id) {
+          <article class="chat-bubble" [class.user]="message.role === 'user'" [class.assistant]="message.role === 'assistant'">
+            <header>
+              <strong>{{ message.role === 'user' ? ('chat.you' | translate) : ('chat.assistant' | translate) }}</strong>
+              @if (message.model) {
+                <span>{{ message.model }}</span>
+              }
+            </header>
+            <pre>{{ message.content }}</pre>
+          </article>
+        }
+      }
+
+      @if (sending()) {
+        <article class="chat-bubble assistant pending">
+          <header><strong>{{ 'chat.assistant' | translate }}</strong></header>
+          <p>{{ 'chat.thinking' | translate }}</p>
+        </article>
+      }
+    </div>
+
+    <form class="chat-composer" [formGroup]="composerForm" (ngSubmit)="send()">
+      <div class="chat-composer__controls">
+        <label>
+          <span>{{ 'chat.workflowOptional' | translate }}</span>
+          <select [value]="composerForm.controls.workflowId.value" (change)="onWorkflowChange($event)">
+            <option [value]="0">{{ 'chat.noWorkflow' | translate }}</option>
+            @for (workflow of workflows(); track workflow.id) {
+              <option [value]="workflow.id">{{ workflow.name }}</option>
+            }
+          </select>
+        </label>
+
+        @if (!workflowMode()) {
+          <label>
+            <span>{{ 'chat.provider' | translate }}</span>
+            <select [value]="providerIdValue()" (change)="onProviderChange($event)">
+              <option [value]="0">{{ 'profile.selectProvider' | translate }}</option>
+              @for (provider of providers(); track provider.id) {
+                <option [value]="provider.id">{{ provider.providerName }}</option>
+              }
+            </select>
+          </label>
+
+          <label>
+            <span>{{ 'chat.model' | translate }}</span>
+            <app-model-select
+              formControlName="model"
+              [userProviderId]="providerIdValue()"
+              [defaultModel]="selectedProvider()?.defaultModel"
+              [supportsModelListing]="selectedProvider()?.supportsModelListing !== false"
+            />
+          </label>
+        }
+      </div>
+
+      <div class="chat-composer__row">
+        <textarea
+          #composerInput
+          formControlName="message"
+          rows="2"
+          [attr.aria-label]="'chat.prompt' | translate"
+          [placeholder]="'chat.promptPlaceholder' | translate"
+          (keydown)="onComposerKeydown($event)"
+        ></textarea>
+        <button class="primary" type="submit" [disabled]="sending()">
+          {{ sending() ? ('chat.sending' | translate) : ('chat.send' | translate) }}
+        </button>
+      </div>
+    </form>
+  </section>
+</div>

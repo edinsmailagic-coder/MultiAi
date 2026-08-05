@@ -14,6 +14,7 @@ import {
 import { ProviderService } from '../../../core/services/provider.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { WorkflowService } from '../../../core/services/workflow.service';
+import { ModelSelect } from '../../../shared/components/model-select/model-select';
 
 interface DragState {
   id: number;
@@ -28,7 +29,7 @@ interface Point {
 
 @Component({
   selector: 'app-workflow-editor',
-  imports: [ReactiveFormsModule, RouterLink, TranslatePipe],
+  imports: [ReactiveFormsModule, RouterLink, TranslatePipe, ModelSelect],
   templateUrl: './workflow-editor.html',
   styleUrl: './workflow-editor.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -48,6 +49,8 @@ export class WorkflowEditor implements OnInit {
   readonly executing = signal(false);
   readonly results = signal<NodeExecutionResult[]>([]);
   readonly drag = signal<DragState | null>(null);
+  readonly addProviderId = signal(0);
+  readonly editProviderId = signal(0);
 
   readonly canvasWidth = computed(() => Math.max(1200, ...this.nodes().map((n) => n.positionX + 350), 0));
   readonly canvasHeight = computed(() => Math.max(700, ...this.nodes().map((n) => n.positionY + 280), 0));
@@ -120,10 +123,29 @@ export class WorkflowEditor implements OnInit {
         this.connections.set(data.connections.map((c) => this.normalizeConnection(c)));
         this.providers.set(data.providers);
         if (data.providers[0]) {
-          this.addForm.controls.userAIProviderId.setValue(data.providers[0].id);
+          const preferred = data.providers.find((p) => p.isDefault) ?? data.providers[0];
+          this.addProviderId.set(preferred.id);
+          this.addForm.patchValue({
+            userAIProviderId: preferred.id,
+            model: preferred.defaultModel ?? 'gpt-4o-mini',
+          });
         }
       },
       error: () => this.toast.error('toast.loadError'),
+    });
+  }
+
+  providerById(id: number): ConnectedProvider | null {
+    return this.providers().find((p) => p.id === id) ?? null;
+  }
+
+  onAddProviderChange(event: Event): void {
+    const id = Number((event.target as HTMLSelectElement).value);
+    const provider = this.providerById(id);
+    this.addProviderId.set(id);
+    this.addForm.patchValue({
+      userAIProviderId: id,
+      model: provider?.defaultModel ?? '',
     });
   }
 
@@ -138,6 +160,7 @@ export class WorkflowEditor implements OnInit {
       return;
     }
     this.selected.set(node);
+    this.editProviderId.set(node.userAIProviderId);
     this.editForm.reset({
       name: node.name,
       model: node.model,

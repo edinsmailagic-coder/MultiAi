@@ -5,6 +5,10 @@ namespace MultiAI.Services.Interface
 {
     public interface IChatService
     {
-        Task<List<ChatResponseDto>> SendAsync(string userId, ChatRequestDto request);
+        Task<SendChatResultDto> SendAsync(string userId, ChatRequestDto request);
+        Task<List<ConversationListItemDto>> GetConversationsAsync(string userId);
+        Task<ConversationDetailDto> GetConversationAsync(string userId, int conversationId);
+        Task<ConversationListItemDto> RenameConversationAsync(string userId, int conversationId, string title);
+        Task DeleteConversationAsync(string userId, int conversationId);
     }
 }
