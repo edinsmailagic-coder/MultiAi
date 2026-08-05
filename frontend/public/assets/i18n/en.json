@@ -55,6 +55,8 @@
     "createTitle": "Create workflow",
     "name": "Name",
     "description": "Description",
+    "descriptionOptional": "Description (optional)",
+    "inputMappingOptional": "Input mapping (optional)",
     "allTitle": "All workflows",
     "allSubtitle": "Build, inspect, and run your AI workflows.",
     "createOnDashboard": "Create on dashboard",
@@ -257,5 +259,11 @@
       "p3": { "name": "Cobalt", "quote": "One canvas for every provider we trust." },
       "p4": { "name": "Signal Co.", "quote": "Clean UI our team actually uses." }
     }
+  },
+  "validation": {
+    "required": "“{{field}}” is required.",
+    "email": "Enter a valid email address.",
+    "minLength": "“{{field}}” must be at least {{min}} characters.",
+    "selectRequired": "Select a value for “{{field}}”."
   }
 }

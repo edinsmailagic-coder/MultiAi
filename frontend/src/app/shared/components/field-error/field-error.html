@@ -1,0 +1,11 @@
+@if (show) {
+  @if (control()?.hasError('required')) {
+    <small class="field-error">{{ 'validation.required' | translate:{ field: (fieldKey() | translate) } }}</small>
+  } @else if (control()?.hasError('email')) {
+    <small class="field-error">{{ 'validation.email' | translate }}</small>
+  } @else if (control()?.hasError('minlength')) {
+    <small class="field-error">{{ 'validation.minLength' | translate:{ field: (fieldKey() | translate), min: minLength } }}</small>
+  } @else if (control()?.hasError('min')) {
+    <small class="field-error">{{ 'validation.selectRequired' | translate:{ field: (fieldKey() | translate) } }}</small>
+  }
+}

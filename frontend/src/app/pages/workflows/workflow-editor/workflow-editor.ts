@@ -15,6 +15,7 @@ import { ProviderService } from '../../../core/services/provider.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { WorkflowService } from '../../../core/services/workflow.service';
 import { ModelSelect } from '../../../shared/components/model-select/model-select';
+import { FieldError } from '../../../shared/components/field-error/field-error';
 
 interface DragState {
   id: number;
@@ -39,7 +40,7 @@ interface PendingBranchConnection {
 
 @Component({
   selector: 'app-workflow-editor',
-  imports: [ReactiveFormsModule, RouterLink, TranslatePipe, ModelSelect],
+  imports: [ReactiveFormsModule, RouterLink, TranslatePipe, ModelSelect, FieldError],
   templateUrl: './workflow-editor.html',
   styleUrl: './workflow-editor.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -212,7 +213,11 @@ export class WorkflowEditor implements OnInit {
 
   saveNode(): void {
     const node = this.selected();
-    if (!node || this.editForm.invalid) {
+    if (!node) {
+      return;
+    }
+    if (this.editForm.invalid) {
+      this.editForm.markAllAsTouched();
       return;
     }
 
@@ -246,11 +251,16 @@ export class WorkflowEditor implements OnInit {
     const value = this.addForm.getRawValue();
     const nodeType = value.nodeType || 'AI';
     const isAi = nodeType === 'AI';
-    if (!value.name.trim()) {
-      this.addForm.controls.name.markAsTouched();
-      return;
-    }
-    if (isAi && (!value.userAIProviderId || !value.model || !value.prompt.trim())) {
+    const needsPrompt = isAi || nodeType === 'If' || nodeType === 'Loop';
+
+    this.addForm.controls.model.setValidators(isAi ? [Validators.required] : []);
+    this.addForm.controls.prompt.setValidators(needsPrompt ? [Validators.required] : []);
+    this.addForm.controls.userAIProviderId.setValidators(isAi ? [Validators.required, Validators.min(1)] : []);
+    this.addForm.controls.model.updateValueAndValidity({ emitEvent: false });
+    this.addForm.controls.prompt.updateValueAndValidity({ emitEvent: false });
+    this.addForm.controls.userAIProviderId.updateValueAndValidity({ emitEvent: false });
+
+    if (this.addForm.invalid) {
       this.addForm.markAllAsTouched();
       return;
     }
@@ -538,6 +548,7 @@ export class WorkflowEditor implements OnInit {
 
   execute(): void {
     if (this.executeForm.invalid) {
+      this.executeForm.markAllAsTouched();
       return;
     }
     this.executing.set(true);

@@ -6,15 +6,58 @@ import { finalize, switchMap } from 'rxjs';
 import { AuthService } from '../../core/services/auth.service';
 import { ToastService } from '../../core/services/toast.service';
 import { Brand } from '../../shared/components/brand/brand';
-@Component({ selector: 'app-login', imports: [ReactiveFormsModule, RouterLink, TranslatePipe, Brand], templateUrl: './login.html', styleUrl: './login.scss', changeDetection: ChangeDetectionStrategy.OnPush })
+import { FieldError } from '../../shared/components/field-error/field-error';
+
+@Component({
+  selector: 'app-login',
+  imports: [ReactiveFormsModule, RouterLink, TranslatePipe, Brand, FieldError],
+  templateUrl: './login.html',
+  styleUrl: './login.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+})
 export class Login {
   readonly loading = signal(false);
   readonly form;
   currentLanguage = signal(localStorage.getItem('lang') ?? 'bs');
-  constructor(fb: FormBuilder, private readonly auth: AuthService, private readonly router: Router, private readonly translate: TranslateService, private readonly toast: ToastService) {
-    this.form = fb.nonNullable.group({ email: ['', [Validators.required, Validators.email]], password: ['', [Validators.required, Validators.minLength(6)]] });
+
+  constructor(
+    fb: FormBuilder,
+    private readonly auth: AuthService,
+    private readonly router: Router,
+    private readonly translate: TranslateService,
+    private readonly toast: ToastService,
+  ) {
+    this.form = fb.nonNullable.group({
+      email: ['', [Validators.required, Validators.email]],
+      password: ['', [Validators.required, Validators.minLength(6)]],
+    });
     this.translate.use(this.currentLanguage());
   }
-  changeLanguage(lang: 'bs' | 'en'): void { this.currentLanguage.set(lang); localStorage.setItem('lang', lang); this.translate.use(lang); }
-  submit(): void { if (this.form.invalid) { this.form.markAllAsTouched(); return; } this.loading.set(true); this.auth.login(this.form.getRawValue()).pipe(switchMap(() => this.auth.loadCurrentUser()), finalize(() => this.loading.set(false))).subscribe({ next: () => { this.toast.showSuccess('toast.loginSuccess'); void this.router.navigate(['/dashboard']); }, error: () => this.toast.error('toast.loginError') }); }
+
+  changeLanguage(lang: 'bs' | 'en'): void {
+    this.currentLanguage.set(lang);
+    localStorage.setItem('lang', lang);
+    this.translate.use(lang);
+  }
+
+  submit(): void {
+    if (this.form.invalid) {
+      this.form.markAllAsTouched();
+      return;
+    }
+    this.loading.set(true);
+    this.auth
+      .login(this.form.getRawValue())
+      .pipe(
+        switchMap(() => this.auth.loadCurrentUser()),
+        finalize(() => this.loading.set(false)),
+      )
+      .subscribe({
+        next: () => {
+          this.toast.showSuccess('toast.loginSuccess');
+          void this.router.navigate(['/dashboard']);
+        },
+        error: () => this.toast.error('toast.loginError'),
+      });
+  }
 }

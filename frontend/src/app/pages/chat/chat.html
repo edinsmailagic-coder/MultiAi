@@ -212,17 +212,20 @@
         </select>
 
         @if (!workflowMode()) {
-          <select
-            class="chat-select"
-            [value]="providerIdValue()"
-            [attr.aria-label]="'chat.provider' | translate"
-            (change)="onProviderChange($event)"
-          >
-            <option [value]="0">{{ 'profile.selectProvider' | translate }}</option>
-            @for (provider of providers(); track provider.id) {
-              <option [value]="provider.id">{{ provider.providerName }}</option>
-            }
-          </select>
+          <div class="chat-select-wrap">
+            <select
+              class="chat-select"
+              [value]="providerIdValue()"
+              [attr.aria-label]="'chat.provider' | translate"
+              (change)="onProviderChange($event)"
+            >
+              <option [value]="0">{{ 'profile.selectProvider' | translate }}</option>
+              @for (provider of providers(); track provider.id) {
+                <option [value]="provider.id">{{ provider.providerName }}</option>
+              }
+            </select>
+            <app-field-error [control]="composerForm.controls.userProviderId" fieldKey="chat.provider" />
+          </div>
 
           <div class="chat-model">
             <app-model-select
@@ -231,6 +234,7 @@
               [defaultModel]="selectedProvider()?.defaultModel"
               [supportsModelListing]="selectedProvider()?.supportsModelListing !== false"
             />
+            <app-field-error [control]="composerForm.controls.model" fieldKey="workflow.model" />
           </div>
         }
       </div>
@@ -263,6 +267,7 @@
           {{ sending() ? ('chat.sending' | translate) : ('chat.send' | translate) }}
         </button>
       </div>
+      <app-field-error [control]="composerForm.controls.message" fieldKey="chat.prompt" />
     </form>
   </section>
 </div>

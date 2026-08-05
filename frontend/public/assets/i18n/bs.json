@@ -55,6 +55,8 @@
     "createTitle": "Kreiraj tok",
     "name": "Naziv",
     "description": "Opis",
+    "descriptionOptional": "Opis (neobavezno)",
+    "inputMappingOptional": "Mapiranje ulaza (neobavezno)",
     "allTitle": "Svi tokovi rada",
     "allSubtitle": "Kreirajte, pregledajte i pokrenite AI tokove.",
     "createOnDashboard": "Kreiraj na kontrolnoj tabli",
@@ -257,5 +259,11 @@
       "p3": { "name": "Cobalt", "quote": "Jedan canvas za svakog providera." },
       "p4": { "name": "Signal Co.", "quote": "Čist UI koji tim stvarno koristi." }
     }
+  },
+  "validation": {
+    "required": "Polje „{{field}}“ je obavezno.",
+    "email": "Unesite ispravnu email adresu.",
+    "minLength": "Polje „{{field}}“ mora imati najmanje {{min}} karaktera.",
+    "selectRequired": "Odaberite vrijednost za „{{field}}“."
   }
 }

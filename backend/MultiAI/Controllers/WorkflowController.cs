@@ -46,14 +46,17 @@ namespace MultiAI.Controllers
 
         [HasPermission(AppPermissions.WorkflowsWrite)]
         [HttpPost("create")]
-        public async Task<IActionResult> CreateWorkflow(string name, string description)
+        public async Task<IActionResult> CreateWorkflow(string name, string? description = null)
         {
+            if (string.IsNullOrWhiteSpace(name))
+                return BadRequest(new { error = "Name is required." });
+
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
             if (string.IsNullOrEmpty(userId))
                 return Unauthorized();
 
-            var response = await service.CreateAsync(userId, name, description);
+            var response = await service.CreateAsync(userId, name.Trim(), description);
 
             return Ok(response);
         }

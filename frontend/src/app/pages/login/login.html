@@ -19,17 +19,13 @@
           [placeholder]="'auth.emailPlaceholder' | translate"
         >
       </label>
-      @if (form.controls.email.touched && form.controls.email.invalid) {
-        <small>{{ 'auth.validEmail' | translate }}</small>
-      }
+      <app-field-error [control]="form.controls.email" fieldKey="auth.email" />
 
       <label>
         {{ 'auth.password' | translate }}
         <input type="password" formControlName="password" autocomplete="current-password">
       </label>
-      @if (form.controls.password.touched && form.controls.password.invalid) {
-        <small>{{ 'auth.passwordMin' | translate }}</small>
-      }
+      <app-field-error [control]="form.controls.password" fieldKey="auth.password" />
 
       <button class="primary full" type="submit" [disabled]="loading()">
         {{ (loading() ? 'common.loading' : 'auth.login') | translate }}

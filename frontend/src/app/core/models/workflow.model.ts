@@ -1,4 +1,4 @@
-export interface Workflow { id: number; userId: string; name: string; description: string; isActive: boolean; createdAt?: string; }
+export interface Workflow { id: number; userId: string; name: string; description?: string | null; isActive: boolean; createdAt?: string; }
 export type WorkflowNodeType = 'AI' | 'If' | 'Parallel' | 'Join' | 'Loop' | string;
 export interface WorkflowNode {
   id: number;

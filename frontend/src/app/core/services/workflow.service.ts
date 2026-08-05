@@ -9,7 +9,13 @@ export class WorkflowService {
   constructor(private readonly http: HttpClient) {}
   getAll(): Observable<Workflow[]> { return this.http.get<Workflow[]>(`${this.api}/api/workflow`); }
   getById(id: number): Observable<Workflow> { return this.http.get<Workflow>(`${this.api}/api/workflow/${id}`); }
-  create(name: string, description: string): Observable<Workflow> { return this.http.post<Workflow>(`${this.api}/api/workflow/create`, null, { params: new HttpParams().set('name', name).set('description', description) }); }
+  create(name: string, description = ''): Observable<Workflow> {
+    let params = new HttpParams().set('name', name);
+    if (description.trim()) {
+      params = params.set('description', description.trim());
+    }
+    return this.http.post<Workflow>(`${this.api}/api/workflow/create`, null, { params });
+  }
   update(workflow: Workflow): Observable<void> { return this.http.put<void>(`${this.api}/api/workflow/${workflow.id}`, workflow); }
   delete(id: number): Observable<void> { return this.http.delete<void>(`${this.api}/api/workflow/${id}`); }
   getNodes(workflowId: number): Observable<WorkflowNode[]> { return this.http.get<WorkflowNode[]>(`${this.api}/api/workflow-nodes/${workflowId}`); }

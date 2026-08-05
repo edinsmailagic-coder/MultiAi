@@ -23,7 +23,9 @@
           <div class="workflow-icon" aria-hidden="true">◈</div>
           <div>
             <h3>{{ workflow.name }}</h3>
-            <p>{{ workflow.description }}</p>
+            @if (workflow.description) {
+              <p>{{ workflow.description }}</p>
+            }
             <span class="status" [class.inactive]="!workflow.isActive">
               {{ (workflow.isActive ? 'common.active' : 'common.inactive') | translate }}
             </span>
@@ -43,7 +45,8 @@
         <label>{{ 'workflow.name' | translate }}
           <input formControlName="name">
         </label>
-        <label>{{ 'workflow.description' | translate }}
+        <app-field-error [control]="createForm.controls.name" fieldKey="workflow.name" />
+        <label>{{ 'workflow.descriptionOptional' | translate }}
           <textarea formControlName="description" rows="3"></textarea>
         </label>
         <div class="modal-actions">

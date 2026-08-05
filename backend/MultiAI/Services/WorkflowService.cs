@@ -24,14 +24,14 @@ namespace MultiAI.Services
             return await dbContext.Workflows.Where(x => x.UserId == userId && x.Id == workflowId && x.IsDeleted == 0).FirstOrDefaultAsync();
         }
         
-        public async Task<Workflow> CreateAsync(string userId, string name, string description)
+        public async Task<Workflow> CreateAsync(string userId, string name, string? description)
         {
             var user = await dbContext.Users.FirstOrDefaultAsync(x => x.Id == userId);
             var newWorkflow = new Workflow
             {
                 UserId = userId,
                 Name = name,
-                Description = description,
+                Description = string.IsNullOrWhiteSpace(description) ? null : description.Trim(),
                 IsActive = true,
                 CreatedAt = DateTime.UtcNow,
                 CreatedBy = user.UserName,

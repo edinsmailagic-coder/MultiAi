@@ -8,7 +8,7 @@ namespace MultiAI.Services.Interface
 
         Task<Workflow?> GetByIdAsync(int workflowId, string userId);
 
-        Task<Workflow> CreateAsync(string userId, string name, string description);
+        Task<Workflow> CreateAsync(string userId, string name, string? description);
 
         Task UpdateAsync(Workflow workflow);
 

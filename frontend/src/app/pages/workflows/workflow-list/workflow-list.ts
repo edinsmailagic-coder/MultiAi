@@ -6,10 +6,11 @@ import { Workflow } from '../../../core/models/workflow.model';
 import { AppDialogService } from '../../../core/services/app-dialog.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { WorkflowService } from '../../../core/services/workflow.service';
+import { FieldError } from '../../../shared/components/field-error/field-error';
 
 @Component({
   selector: 'app-workflow-list',
-  imports: [ReactiveFormsModule, RouterLink, TranslatePipe],
+  imports: [ReactiveFormsModule, RouterLink, TranslatePipe, FieldError],
   templateUrl: './workflow-list.html',
   styleUrl: './workflow-list.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -29,7 +30,7 @@ export class WorkflowList implements OnInit {
   constructor(fb: FormBuilder) {
     this.createForm = fb.nonNullable.group({
       name: ['', Validators.required],
-      description: ['', Validators.required],
+      description: [''],
     });
   }
 

@@ -11,12 +11,18 @@
   <p class="muted">{{ auth.currentUser()?.email }}</p>
   <form [formGroup]="profileForm" (ngSubmit)="saveProfile()">
     <div class="form-row">
-      <label>{{ 'auth.firstName' | translate }}
-        <input formControlName="firstName">
-      </label>
-      <label>{{ 'auth.lastName' | translate }}
-        <input formControlName="lastName">
-      </label>
+      <div>
+        <label>{{ 'auth.firstName' | translate }}
+          <input formControlName="firstName">
+        </label>
+        <app-field-error [control]="profileForm.controls.firstName" fieldKey="auth.firstName" />
+      </div>
+      <div>
+        <label>{{ 'auth.lastName' | translate }}
+          <input formControlName="lastName">
+        </label>
+        <app-field-error [control]="profileForm.controls.lastName" fieldKey="auth.lastName" />
+      </div>
     </div>
     <button class="primary" type="submit">{{ 'common.save' | translate }}</button>
   </form>

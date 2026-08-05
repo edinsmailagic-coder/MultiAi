@@ -6,10 +6,11 @@ import { AIProvider, ConnectedProvider } from '../../core/models/provider.model'
 import { ProviderService } from '../../core/services/provider.service';
 import { ToastService } from '../../core/services/toast.service';
 import { ModelSelect } from '../../shared/components/model-select/model-select';
+import { FieldError } from '../../shared/components/field-error/field-error';
 
 @Component({
   selector: 'app-providers',
-  imports: [FormsModule, ReactiveFormsModule, TranslatePipe, ModelSelect],
+  imports: [FormsModule, ReactiveFormsModule, TranslatePipe, ModelSelect, FieldError],
   templateUrl: './providers.html',
   styleUrl: './providers.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

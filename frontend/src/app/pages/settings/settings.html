@@ -13,9 +13,11 @@
       <label>{{ 'profile.currentPassword' | translate }}
         <input type="password" formControlName="currentPassword" autocomplete="current-password">
       </label>
+      <app-field-error [control]="passwordForm.controls.currentPassword" fieldKey="profile.currentPassword" />
       <label>{{ 'profile.newPassword' | translate }}
         <input type="password" formControlName="newPassword" autocomplete="new-password">
       </label>
+      <app-field-error [control]="passwordForm.controls.newPassword" fieldKey="profile.newPassword" />
       <button class="primary" type="submit">{{ 'profile.changePassword' | translate }}</button>
     </form>
   </section>

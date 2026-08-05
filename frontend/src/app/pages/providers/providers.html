@@ -54,9 +54,11 @@
         }
       </select>
     </label>
+    <app-field-error [control]="providerForm.controls.providerId" fieldKey="profile.provider" />
     <label>{{ 'profile.apiKey' | translate }}
       <input type="password" formControlName="apiKey" autocomplete="off">
     </label>
+    <app-field-error [control]="providerForm.controls.apiKey" fieldKey="profile.apiKey" />
     <button class="primary" type="submit">{{ 'profile.connect' | translate }}</button>
   </form>
 </section>

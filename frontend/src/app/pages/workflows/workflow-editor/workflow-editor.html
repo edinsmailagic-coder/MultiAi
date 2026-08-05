@@ -3,7 +3,9 @@
     <a class="secondary compact" routerLink="/workflows">← {{ 'common.back' | translate }}</a>
     <div>
       <h1>{{ workflow()?.name }}</h1>
-      <p>{{ workflow()?.description }}</p>
+      @if (workflow()?.description) {
+        <p>{{ workflow()?.description }}</p>
+      }
     </div>
     <span class="toolbar-space"></span>
     <button class="secondary" type="button" (click)="showAdd.set(true)">+ {{ 'workflow.addNode' | translate }}</button>
@@ -127,6 +129,7 @@
         <label>{{ 'workflow.nodeName' | translate }}
           <input formControlName="name">
         </label>
+        <app-field-error [control]="editForm.controls.name" fieldKey="workflow.nodeName" />
         @if (selected()!.nodeType === 'AI') {
           <label>{{ 'workflow.model' | translate }}
             <app-model-select
@@ -136,6 +139,7 @@
               [supportsModelListing]="providerById(editProviderId())?.supportsModelListing !== false"
             />
           </label>
+          <app-field-error [control]="editForm.controls.model" fieldKey="workflow.model" />
           <label>{{ 'workflow.provider' | translate }}
             <select formControlName="userAIProviderId">
               @for (provider of providers(); track provider.id) {
@@ -146,17 +150,20 @@
           <label>{{ 'workflow.prompt' | translate }}
             <textarea formControlName="prompt" rows="7"></textarea>
           </label>
-          <label>{{ 'workflow.inputMapping' | translate }}
+          <app-field-error [control]="editForm.controls.prompt" fieldKey="workflow.prompt" />
+          <label>{{ 'workflow.inputMappingOptional' | translate }}
             <input formControlName="inputMapping">
           </label>
         } @else if (selected()!.nodeType === 'If') {
           <label>{{ 'workflow.ifPrompt' | translate }}
             <textarea formControlName="prompt" rows="3" placeholder="contains:yes | equals:ok | notEmpty"></textarea>
           </label>
+          <app-field-error [control]="editForm.controls.prompt" fieldKey="workflow.ifPrompt" />
         } @else if (selected()!.nodeType === 'Loop') {
           <label>{{ 'workflow.loopMax' | translate }}
             <input formControlName="prompt" placeholder="5">
           </label>
+          <app-field-error [control]="editForm.controls.prompt" fieldKey="workflow.loopMax" />
         }
         <button class="primary full" type="submit">{{ 'common.save' | translate }}</button>
         <button class="danger-button full" type="button" (click)="deleteSelected()">{{ 'common.delete' | translate }}</button>
@@ -187,6 +194,7 @@
             <label>{{ 'workflow.nodeName' | translate }}
               <input formControlName="name">
             </label>
+            <app-field-error [control]="addForm.controls.name" fieldKey="workflow.nodeName" />
             @if (addForm.controls.nodeType.value === 'AI') {
               <label>{{ 'workflow.provider' | translate }}
                 <select [value]="addProviderId()" (change)="onAddProviderChange($event)">
@@ -195,6 +203,7 @@
                   }
                 </select>
               </label>
+              <app-field-error [control]="addForm.controls.userAIProviderId" fieldKey="workflow.provider" />
               <label>{{ 'workflow.model' | translate }}
                 <app-model-select
                   formControlName="model"
@@ -203,17 +212,21 @@
                   [supportsModelListing]="providerById(addProviderId())?.supportsModelListing !== false"
                 />
               </label>
+              <app-field-error [control]="addForm.controls.model" fieldKey="workflow.model" />
               <label>{{ 'workflow.prompt' | translate }}
                 <textarea formControlName="prompt" rows="5"></textarea>
               </label>
+              <app-field-error [control]="addForm.controls.prompt" fieldKey="workflow.prompt" />
             } @else if (addForm.controls.nodeType.value === 'If') {
               <label>{{ 'workflow.ifPrompt' | translate }}
                 <textarea formControlName="prompt" rows="3" placeholder="contains:yes | equals:ok | notEmpty"></textarea>
               </label>
+              <app-field-error [control]="addForm.controls.prompt" fieldKey="workflow.ifPrompt" />
             } @else if (addForm.controls.nodeType.value === 'Loop') {
               <label>{{ 'workflow.loopMax' | translate }}
                 <input formControlName="prompt" placeholder="5">
               </label>
+              <app-field-error [control]="addForm.controls.prompt" fieldKey="workflow.loopMax" />
             }
             <div class="modal-actions">
               <button class="secondary" type="button" (click)="showAdd.set(false)">{{ 'common.cancel' | translate }}</button>
@@ -233,6 +246,7 @@
         <label>{{ 'workflow.executionInput' | translate }}
           <textarea formControlName="input" rows="5"></textarea>
         </label>
+        <app-field-error [control]="executeForm.controls.input" fieldKey="workflow.executionInput" />
         <button class="primary full" type="submit" [disabled]="executing()">
           {{ (executing() ? 'workflow.executing' : 'workflow.run') | translate }}
         </button>

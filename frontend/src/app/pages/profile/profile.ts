@@ -5,10 +5,11 @@ import { switchMap } from 'rxjs';
 import { AuthService } from '../../core/services/auth.service';
 import { ToastService } from '../../core/services/toast.service';
 import { UserService } from '../../core/services/user.service';
+import { FieldError } from '../../shared/components/field-error/field-error';
 
 @Component({
   selector: 'app-profile',
-  imports: [ReactiveFormsModule, TranslatePipe],
+  imports: [ReactiveFormsModule, TranslatePipe, FieldError],
   templateUrl: './profile.html',
   styleUrl: './profile.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -39,6 +40,7 @@ export class Profile implements OnInit {
 
   saveProfile(): void {
     if (this.profileForm.invalid) {
+      this.profileForm.markAllAsTouched();
       return;
     }
 

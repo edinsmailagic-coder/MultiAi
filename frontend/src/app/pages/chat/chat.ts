@@ -28,10 +28,11 @@ import { ProviderService } from '../../core/services/provider.service';
 import { ToastService } from '../../core/services/toast.service';
 import { WorkflowService } from '../../core/services/workflow.service';
 import { ModelSelect } from '../../shared/components/model-select/model-select';
+import { FieldError } from '../../shared/components/field-error/field-error';
 
 @Component({
   selector: 'app-chat',
-  imports: [NgTemplateOutlet, ReactiveFormsModule, TranslatePipe, ModelSelect],
+  imports: [NgTemplateOutlet, ReactiveFormsModule, TranslatePipe, ModelSelect, FieldError],
   templateUrl: './chat.html',
   styleUrl: './chat.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

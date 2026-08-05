@@ -12,6 +12,7 @@ import { ProviderService } from '../../core/services/provider.service';
 import { ToastService } from '../../core/services/toast.service';
 import { UsageService } from '../../core/services/usage.service';
 import { WorkflowService } from '../../core/services/workflow.service';
+import { FieldError } from '../../shared/components/field-error/field-error';
 
 const emptyUsage: UsageStats = {
   costByProvider: [],
@@ -21,7 +22,7 @@ const emptyUsage: UsageStats = {
 
 @Component({
   selector: 'app-dashboard',
-  imports: [ReactiveFormsModule, RouterLink, TranslatePipe, CurrencyPipe, DecimalPipe],
+  imports: [ReactiveFormsModule, RouterLink, TranslatePipe, CurrencyPipe, DecimalPipe, FieldError],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -48,7 +49,7 @@ export class Dashboard implements OnInit {
   ) {
     this.createForm = fb.nonNullable.group({
       name: ['', Validators.required],
-      description: ['', Validators.required],
+      description: [''],
     });
   }
 
