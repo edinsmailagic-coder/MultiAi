@@ -8,17 +8,29 @@
 </section>
 
 <section class="metrics">
-  <article>
-    <span>{{ 'dashboard.totalWorkflows' | translate }}</span>
-    <strong>{{ workflows().length }}</strong>
+  <article class="metric-card">
+    <span class="metric-card__icon" aria-hidden="true">◈</span>
+    <div class="metric-card__body">
+      <span class="metric-card__label">{{ 'dashboard.totalWorkflows' | translate }}</span>
+      <strong class="metric-card__value">{{ workflows().length }}</strong>
+      <span class="metric-card__trend">● MultiAI</span>
+    </div>
   </article>
-  <article>
-    <span>{{ 'dashboard.activeWorkflows' | translate }}</span>
-    <strong>{{ activeCount() }}</strong>
+  <article class="metric-card">
+    <span class="metric-card__icon" aria-hidden="true">▶</span>
+    <div class="metric-card__body">
+      <span class="metric-card__label">{{ 'dashboard.activeWorkflows' | translate }}</span>
+      <strong class="metric-card__value">{{ activeCount() }}</strong>
+      <span class="metric-card__trend">▲ active</span>
+    </div>
   </article>
-  <article>
-    <span>{{ 'dashboard.connectedProviders' | translate }}</span>
-    <strong>{{ connectedCount() }}</strong>
+  <article class="metric-card">
+    <span class="metric-card__icon" aria-hidden="true">◎</span>
+    <div class="metric-card__body">
+      <span class="metric-card__label">{{ 'dashboard.connectedProviders' | translate }}</span>
+      <strong class="metric-card__value">{{ connectedCount() }}</strong>
+      <span class="metric-card__trend">● linked</span>
+    </div>
   </article>
 </section>
 
@@ -38,24 +50,27 @@
       <button class="primary" type="button" (click)="showCreate.set(true)">{{ 'workflow.createFirst' | translate }}</button>
     </div>
   } @else {
-    <div class="workflow-grid">
+    <div class="list-stack">
       @for (workflow of workflows().slice(0, 6); track workflow.id) {
-        <article class="workflow-card" [routerLink]="['/workflows', workflow.id]">
-          <div class="workflow-icon" aria-hidden="true">◈</div>
-          <div>
+        <a class="list-row" [routerLink]="['/workflows', workflow.id]">
+          <span class="list-row__icon" aria-hidden="true">◈</span>
+          <div class="list-row__content">
             <h3>{{ workflow.name }}</h3>
             <p>{{ workflow.description }}</p>
-            <span class="status" [class.inactive]="!workflow.isActive">
-              {{ (workflow.isActive ? 'common.active' : 'common.inactive') | translate }}
-            </span>
           </div>
-          <button
-            class="icon-button danger"
-            type="button"
-            (click)="delete(workflow, $event)"
-            [attr.aria-label]="'common.delete' | translate"
-          >×</button>
-        </article>
+          <span class="status" [class.inactive]="!workflow.isActive">
+            {{ (workflow.isActive ? 'common.active' : 'common.inactive') | translate }}
+          </span>
+          <div class="list-row__actions">
+            <span class="icon-button" aria-hidden="true">▶</span>
+            <button
+              class="icon-button danger"
+              type="button"
+              (click)="delete(workflow, $event)"
+              [attr.aria-label]="'common.delete' | translate"
+            >⋯</button>
+          </div>
+        </a>
       }
     </div>
   }

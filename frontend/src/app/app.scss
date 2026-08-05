@@ -1,1 +1,6 @@
-/* Component styles are defined by the shared MultiAI design system. */
+/* Root host inherits global MultiAI theme tokens from styles/_theme.scss */
+:host {
+  color: var(--text);
+  display: block;
+  min-height: 100vh;
+}

@@ -1,0 +1,81 @@
+// MultiAI black & orange theme tokens (dark by default).
+// Change values here to restyle the whole app.
+
+:root,
+[data-theme='dark'] {
+  // Core surfaces
+  --bg: #0a0a0a;
+  --sidebar: #0a0a0a;
+  --panel: #161616;
+  --panel-soft: #121212;
+  --panel-gradient: linear-gradient(160deg, #1a1a1a 0%, #141414 55%, #101010 100%);
+  --border: #2a2a2a;
+  --border-strong: #3a3a3a;
+
+  // Text
+  --text: #ffffff;
+  --text-secondary: #d1d1d1;
+  --muted: #d1d1d1;
+  --muted-dim: #9a9a9a;
+
+  // Accent (primary orange)
+  --accent: #ff6a00;
+  --accent-hover: #ff8126;
+  --accent-pressed: #e55f00;
+  --accent-soft: rgb(255 106 0 / 14%);
+  --accent-softer: rgb(255 106 0 / 8%);
+  --accent-ring: rgb(255 106 0 / 22%);
+  --accent-muted: #cc6914;
+  --on-accent: #ffffff;
+
+  // Status (aligned to orange family + deep red for errors)
+  --success: #e8892a;
+  --success-soft: rgb(232 137 42 / 14%);
+  --warning: #ff8c33;
+  --warning-soft: rgb(255 140 51 / 14%);
+  --danger: #c62828;
+  --danger-soft: rgb(198 40 40 / 14%);
+  --danger-text: #ff8a80;
+
+  // Legacy aliases used across existing styles
+  --violet: var(--accent);
+  --blue: var(--accent-hover);
+
+  // Inputs / chrome
+  --input-bg: #111111;
+  --topbar-bg: #0a0a0a;
+  --search-bg: #1c1c1c;
+  --icon-bg: var(--accent);
+  --icon-fg: var(--on-accent);
+
+  // Shape & elevation
+  --radius-sm: 8px;
+  --radius: 14px;
+  --radius-lg: 22px;
+  --space-1: 0.5rem;
+  --space-2: 0.75rem;
+  --space-3: 1rem;
+  --space-4: 1.5rem;
+  --space-5: 2rem;
+  --shadow: 0 20px 50px rgb(0 0 0 / 45%);
+  --shadow-soft: 0 10px 28px rgb(0 0 0 / 35%);
+}
+
+// Optional light override if toggled later
+[data-theme='light'] {
+  --bg: #f4f4f4;
+  --sidebar: #111111;
+  --panel: #ffffff;
+  --panel-soft: #f7f7f7;
+  --panel-gradient: linear-gradient(160deg, #ffffff 0%, #f5f5f5 100%);
+  --border: #e2e2e2;
+  --border-strong: #cfcfcf;
+  --text: #111111;
+  --text-secondary: #444444;
+  --muted: #555555;
+  --muted-dim: #777777;
+  --input-bg: #ffffff;
+  --topbar-bg: #ffffff;
+  --search-bg: #f0f0f0;
+  --shadow: 0 18px 40px rgb(0 0 0 / 12%);
+}
