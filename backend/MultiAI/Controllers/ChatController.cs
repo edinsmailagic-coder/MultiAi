@@ -43,6 +43,55 @@ namespace MultiAI.Controllers
             }
         }
 
+        [HasPermission(AppPermissions.ChatWrite)]
+        [HttpPost("stream")]
+        public async Task Stream([FromBody] ChatRequestDto request, CancellationToken cancellationToken)
+        {
+            var userId = GetUserId();
+            if (userId is null)
+            {
+                Response.StatusCode = StatusCodes.Status401Unauthorized;
+                return;
+            }
+
+            Response.Headers.ContentType = "text/event-stream";
+            Response.Headers.CacheControl = "no-cache";
+            Response.Headers.Connection = "keep-alive";
+
+            var jsonOptions = new System.Text.Json.JsonSerializerOptions
+            {
+                PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase
+            };
+
+            try
+            {
+                await foreach (var evt in service.StreamAsync(userId, request, cancellationToken))
+                {
+                    var payload = System.Text.Json.JsonSerializer.Serialize(evt, jsonOptions);
+                    await Response.WriteAsync($"data: {payload}\n\n", cancellationToken);
+                    await Response.Body.FlushAsync(cancellationToken);
+
+                    if (string.Equals(evt.Type, "error", StringComparison.OrdinalIgnoreCase) ||
+                        string.Equals(evt.Type, "done", StringComparison.OrdinalIgnoreCase))
+                    {
+                        break;
+                    }
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                // Client disconnected.
+            }
+            catch (Exception ex)
+            {
+                var payload = System.Text.Json.JsonSerializer.Serialize(
+                    new ChatStreamEventDto { Type = "error", Message = ex.Message },
+                    jsonOptions);
+                await Response.WriteAsync($"data: {payload}\n\n", CancellationToken.None);
+                await Response.Body.FlushAsync(CancellationToken.None);
+            }
+        }
+
         [HasPermission(AppPermissions.ChatRead)]
         [HttpGet("conversations")]
         public async Task<IActionResult> GetConversations()

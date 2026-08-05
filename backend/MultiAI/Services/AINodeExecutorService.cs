@@ -4,6 +4,7 @@ using MultiAI.Models.DTOs;
 using MultiAI.Models.Entities;
 using MultiAI.Models.Workflows;
 using MultiAI.Services.Interface;
+using System.Text;
 
 namespace MultiAI.Services
 {
@@ -51,30 +52,73 @@ namespace MultiAI.Services
                 var provider = providerFactory.GetProvider(userProvider.Provider.Name);
                 var messages = BuildMessages(executionContext, node);
 
-                var response = await provider.Chat(messages, node.Model, apiKey);
+                string content;
+                int promptTokens;
+                int completionTokens;
+                int totalTokens;
+
+                if (executionContext.ShouldStreamNode(node.Id) && executionContext.OnTokenDelta != null)
+                {
+                    var builder = new StringBuilder();
+                    promptTokens = 0;
+                    completionTokens = 0;
+                    totalTokens = 0;
+
+                    await foreach (var chunk in provider.ChatStream(
+                                       messages,
+                                       node.Model,
+                                       apiKey,
+                                       executionContext.CancellationToken))
+                    {
+                        if (!string.IsNullOrEmpty(chunk.Delta))
+                        {
+                            builder.Append(chunk.Delta);
+                            await executionContext.OnTokenDelta(chunk.Delta, executionContext.CancellationToken);
+                        }
+
+                        if (chunk.IsDone)
+                        {
+                            promptTokens = chunk.PromptTokens;
+                            completionTokens = chunk.CompletionTokens;
+                            totalTokens = chunk.TotalTokens;
+                        }
+                    }
+
+                    content = builder.ToString();
+                    if (string.IsNullOrWhiteSpace(content))
+                        throw new Exception("OpenAI returned an empty response.");
+                }
+                else
+                {
+                    var response = await provider.Chat(messages, node.Model, apiKey);
+                    content = response.Content;
+                    promptTokens = response.PromptTokens;
+                    completionTokens = response.CompletitionTokens;
+                    totalTokens = response.TotalTokens;
+                }
 
                 stopwatch.Stop();
 
                 result.Success = true;
-                result.Output = response.Content;
+                result.Output = content;
                 result.DurationMs = stopwatch.ElapsedMilliseconds;
-                result.PromptTokens = response.PromptTokens;
-                result.CompletionTokens = response.CompletitionTokens;
-                result.TotalTokens = response.TotalTokens;
-                result.Cost = TokenCostEstimator.Estimate(node.Model, response.PromptTokens, response.CompletitionTokens);
-                result.Outputs["output"] = response.Content;
+                result.PromptTokens = promptTokens;
+                result.CompletionTokens = completionTokens;
+                result.TotalTokens = totalTokens;
+                result.Cost = TokenCostEstimator.Estimate(node.Model, promptTokens, completionTokens);
+                result.Outputs["output"] = content;
 
-                executionContext.Variables[$"node:{node.Id}:output"] = response.Content;
-                executionContext.Variables["lastOutput"] = response.Content;
+                executionContext.Variables[$"node:{node.Id}:output"] = content;
+                executionContext.Variables["lastOutput"] = content;
 
                 await usageLog.LogAsync(
                     executionContext.UserId,
                     userProvider.Id,
                     userProvider.Provider.Name,
                     node.Model,
-                    response.PromptTokens,
-                    response.CompletitionTokens,
-                    response.TotalTokens,
+                    promptTokens,
+                    completionTokens,
+                    totalTokens,
                     result.Cost,
                     executionContext.WorkflowId,
                     node.Id,

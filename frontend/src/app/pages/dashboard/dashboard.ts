@@ -90,6 +90,21 @@ export class Dashboard implements OnInit {
     });
   }
 
+  costBarWidth(value: number): number {
+    const max = Math.max(...(this.usage()?.costByProvider?.map((r) => r.totalCost) ?? [0]), 0.0001);
+    return Math.max(6, Math.round((value / max) * 100));
+  }
+
+  tokenBarWidth(value: number): number {
+    const max = Math.max(...(this.usage()?.tokensByProvider?.map((r) => r.totalTokens) ?? [0]), 1);
+    return Math.max(6, Math.round((value / max) * 100));
+  }
+
+  modelBarWidth(value: number): number {
+    const max = Math.max(...(this.usage()?.mostUsedWorkflowModels?.map((r) => r.requestCount) ?? [0]), 1);
+    return Math.max(6, Math.round((value / max) * 100));
+  }
+
   async delete(workflow: Workflow, event: Event): Promise<void> {
     event.preventDefault();
     event.stopPropagation();

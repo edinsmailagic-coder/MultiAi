@@ -1,138 +1,193 @@
-<section class="page-heading">
-  <div>
-    <p class="eyebrow">{{ 'dashboard.overview' | translate }}</p>
-    <h1>{{ 'dashboard.welcome' | translate }}, {{ auth.currentUser()?.firstName }}</h1>
-    <p>{{ 'dashboard.subtitle' | translate }}</p>
-  </div>
-  <button class="primary" type="button" (click)="showCreate.set(true)">+ {{ 'workflow.new' | translate }}</button>
-</section>
+<div class="dashboard">
+  <header class="dash-hero">
+    <div class="dash-hero__copy">
+      <p class="eyebrow">{{ 'dashboard.overview' | translate }}</p>
+      <h1>{{ 'dashboard.welcome' | translate }}, {{ auth.currentUser()?.firstName }}</h1>
+      <p class="dash-hero__subtitle">{{ 'dashboard.subtitle' | translate }}</p>
+    </div>
+    <button class="primary dash-hero__cta" type="button" (click)="showCreate.set(true)">
+      <span aria-hidden="true">+</span>
+      {{ 'workflow.new' | translate }}
+    </button>
+  </header>
 
-<section class="metrics">
-  <article class="metric-card">
-    <span class="metric-card__icon" aria-hidden="true">◈</span>
-    <div class="metric-card__body">
-      <span class="metric-card__label">{{ 'dashboard.totalWorkflows' | translate }}</span>
+  <section class="metrics" aria-label="Metrics">
+    <article class="metric-card metric-card--workflows">
+      <div class="metric-card__top">
+        <span class="metric-card__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <rect x="3" y="3" width="7" height="7" rx="1.5"/>
+            <rect x="14" y="3" width="7" height="7" rx="1.5"/>
+            <rect x="3" y="14" width="7" height="7" rx="1.5"/>
+            <path d="M17.5 14v7M14 17.5h7"/>
+          </svg>
+        </span>
+        <span class="metric-card__label">{{ 'dashboard.totalWorkflows' | translate }}</span>
+      </div>
       <strong class="metric-card__value">{{ workflows().length }}</strong>
-      <span class="metric-card__trend">● Nodexa</span>
-    </div>
-  </article>
-  <article class="metric-card">
-    <span class="metric-card__icon" aria-hidden="true">▶</span>
-    <div class="metric-card__body">
-      <span class="metric-card__label">{{ 'dashboard.activeWorkflows' | translate }}</span>
+    </article>
+
+    <article class="metric-card metric-card--active">
+      <div class="metric-card__top">
+        <span class="metric-card__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <circle cx="12" cy="12" r="8"/>
+            <path d="M10 9.5v5l4.5-2.5L10 9.5z" fill="currentColor" stroke="none"/>
+          </svg>
+        </span>
+        <span class="metric-card__label">{{ 'dashboard.activeWorkflows' | translate }}</span>
+      </div>
       <strong class="metric-card__value">{{ activeCount() }}</strong>
-      <span class="metric-card__trend">▲ active</span>
-    </div>
-  </article>
-  <article class="metric-card">
-    <span class="metric-card__icon" aria-hidden="true">◎</span>
-    <div class="metric-card__body">
-      <span class="metric-card__label">{{ 'dashboard.connectedProviders' | translate }}</span>
+    </article>
+
+    <article class="metric-card metric-card--providers">
+      <div class="metric-card__top">
+        <span class="metric-card__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <path d="M12 3v3M12 18v3M3 12h3M18 12h3"/>
+            <circle cx="12" cy="12" r="4"/>
+            <circle cx="12" cy="5" r="1.2" fill="currentColor" stroke="none"/>
+            <circle cx="12" cy="19" r="1.2" fill="currentColor" stroke="none"/>
+            <circle cx="5" cy="12" r="1.2" fill="currentColor" stroke="none"/>
+            <circle cx="19" cy="12" r="1.2" fill="currentColor" stroke="none"/>
+          </svg>
+        </span>
+        <span class="metric-card__label">{{ 'dashboard.connectedProviders' | translate }}</span>
+      </div>
       <strong class="metric-card__value">{{ connectedCount() }}</strong>
-      <span class="metric-card__trend">● linked</span>
-    </div>
-  </article>
-</section>
+    </article>
+  </section>
 
-<section class="stats-grid">
-  <article class="panel stats-card">
+  <section class="stats-grid">
+    <article class="panel stats-card">
+      <div class="panel-header">
+        <h2>{{ 'dashboard.costByProvider' | translate }}</h2>
+      </div>
+      @if (!usage()?.costByProvider?.length) {
+        <p class="stats-empty">{{ 'dashboard.usageEmpty' | translate }}</p>
+      } @else {
+        <ul class="stats-list">
+          @for (row of usage()!.costByProvider; track row.providerName) {
+            <li>
+              <div class="stats-list__meta">
+                <span>{{ row.providerName }}</span>
+                <strong>{{ row.totalCost | currency: 'USD':'symbol':'1.2-4' }}</strong>
+              </div>
+              <div class="stats-bar" aria-hidden="true">
+                <span [style.width.%]="costBarWidth(row.totalCost)"></span>
+              </div>
+            </li>
+          }
+        </ul>
+      }
+    </article>
+
+    <article class="panel stats-card">
+      <div class="panel-header">
+        <h2>{{ 'dashboard.tokensByProvider' | translate }}</h2>
+      </div>
+      @if (!usage()?.tokensByProvider?.length) {
+        <p class="stats-empty">{{ 'dashboard.usageEmpty' | translate }}</p>
+      } @else {
+        <ul class="stats-list">
+          @for (row of usage()!.tokensByProvider; track row.providerName) {
+            <li>
+              <div class="stats-list__meta">
+                <span>{{ row.providerName }}</span>
+                <strong>{{ row.totalTokens | number }}</strong>
+              </div>
+              <div class="stats-bar" aria-hidden="true">
+                <span [style.width.%]="tokenBarWidth(row.totalTokens)"></span>
+              </div>
+            </li>
+          }
+        </ul>
+      }
+    </article>
+
+    <article class="panel stats-card">
+      <div class="panel-header">
+        <h2>{{ 'dashboard.topWorkflowModels' | translate }}</h2>
+      </div>
+      @if (!usage()?.mostUsedWorkflowModels?.length) {
+        <p class="stats-empty">{{ 'dashboard.usageEmpty' | translate }}</p>
+      } @else {
+        <ul class="stats-list">
+          @for (row of usage()!.mostUsedWorkflowModels; track row.model) {
+            <li>
+              <div class="stats-list__meta">
+                <span>{{ row.model }}</span>
+                <strong>{{ row.requestCount }}× · {{ row.totalTokens | number }} tok</strong>
+              </div>
+              <div class="stats-bar" aria-hidden="true">
+                <span [style.width.%]="modelBarWidth(row.requestCount)"></span>
+              </div>
+            </li>
+          }
+        </ul>
+      }
+    </article>
+  </section>
+
+  <section class="panel recent-panel">
     <div class="panel-header">
-      <h2>{{ 'dashboard.costByProvider' | translate }}</h2>
+      <h2>{{ 'dashboard.recentWorkflows' | translate }}</h2>
+      <a class="panel-link" routerLink="/workflows">{{ 'common.viewAll' | translate }}</a>
     </div>
-    @if (!usage()?.costByProvider?.length) {
-      <p class="stats-empty">{{ 'dashboard.usageEmpty' | translate }}</p>
+
+    @if (loading()) {
+      <div class="empty-state">{{ 'common.loading' | translate }}</div>
+    } @else if (!workflows().length) {
+      <div class="empty-state empty-state--rich">
+        <div class="empty-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+            <rect x="3" y="3" width="7" height="7" rx="1.5"/>
+            <rect x="14" y="3" width="7" height="7" rx="1.5"/>
+            <rect x="3" y="14" width="7" height="7" rx="1.5"/>
+            <path d="M17.5 14v7M14 17.5h7"/>
+          </svg>
+        </div>
+        <h3>{{ 'workflow.emptyTitle' | translate }}</h3>
+        <p>{{ 'workflow.emptyText' | translate }}</p>
+        <button class="primary" type="button" (click)="showCreate.set(true)">{{ 'workflow.createFirst' | translate }}</button>
+      </div>
     } @else {
-      <ul class="stats-list">
-        @for (row of usage()!.costByProvider; track row.providerName) {
-          <li>
-            <span>{{ row.providerName }}</span>
-            <strong>{{ row.totalCost | currency: 'USD':'symbol':'1.2-4' }}</strong>
-          </li>
-        }
-      </ul>
-    }
-  </article>
-
-  <article class="panel stats-card">
-    <div class="panel-header">
-      <h2>{{ 'dashboard.tokensByProvider' | translate }}</h2>
-    </div>
-    @if (!usage()?.tokensByProvider?.length) {
-      <p class="stats-empty">{{ 'dashboard.usageEmpty' | translate }}</p>
-    } @else {
-      <ul class="stats-list">
-        @for (row of usage()!.tokensByProvider; track row.providerName) {
-          <li>
-            <span>{{ row.providerName }}</span>
-            <strong>{{ row.totalTokens | number }}</strong>
-          </li>
-        }
-      </ul>
-    }
-  </article>
-
-  <article class="panel stats-card">
-    <div class="panel-header">
-      <h2>{{ 'dashboard.topWorkflowModels' | translate }}</h2>
-    </div>
-    @if (!usage()?.mostUsedWorkflowModels?.length) {
-      <p class="stats-empty">{{ 'dashboard.usageEmpty' | translate }}</p>
-    } @else {
-      <ul class="stats-list">
-        @for (row of usage()!.mostUsedWorkflowModels; track row.model) {
-          <li>
-            <span>{{ row.model }}</span>
-            <strong>{{ row.requestCount }}× · {{ row.totalTokens | number }} tok</strong>
-          </li>
-        }
-      </ul>
-    }
-  </article>
-</section>
-
-<section class="panel">
-  <div class="panel-header">
-    <h2>{{ 'dashboard.recentWorkflows' | translate }}</h2>
-    <a routerLink="/workflows">{{ 'common.viewAll' | translate }}</a>
-  </div>
-
-  @if (loading()) {
-    <div class="empty-state">{{ 'common.loading' | translate }}</div>
-  } @else if (!workflows().length) {
-    <div class="empty-state">
-      <div class="empty-icon" aria-hidden="true">◈</div>
-      <h3>{{ 'workflow.emptyTitle' | translate }}</h3>
-      <p>{{ 'workflow.emptyText' | translate }}</p>
-      <button class="primary" type="button" (click)="showCreate.set(true)">{{ 'workflow.createFirst' | translate }}</button>
-    </div>
-  } @else {
-    <div class="list-stack">
-      @for (workflow of workflows().slice(0, 6); track workflow.id) {
-        <a class="list-row" [routerLink]="['/workflows', workflow.id]">
-          <span class="list-row__icon" aria-hidden="true">◈</span>
-          <div class="list-row__content">
-            <h3>{{ workflow.name }}</h3>
-            @if (workflow.description) {
-              <p>{{ workflow.description }}</p>
-            }
-          </div>
-          <span class="status" [class.inactive]="!workflow.isActive">
-            {{ (workflow.isActive ? 'common.active' : 'common.inactive') | translate }}
-          </span>
-          <div class="list-row__actions">
-            <span class="icon-button" aria-hidden="true">▶</span>
+      <div class="list-stack">
+        @for (workflow of workflows().slice(0, 6); track workflow.id) {
+          <a class="list-row" [routerLink]="['/workflows', workflow.id]">
+            <span class="list-row__icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                <path d="M4 7h10M4 12h16M4 17h8"/>
+              </svg>
+            </span>
+            <div class="list-row__content">
+              <h3>{{ workflow.name }}</h3>
+              @if (workflow.description) {
+                <p>{{ workflow.description }}</p>
+              }
+            </div>
+            <span class="status" [class.inactive]="!workflow.isActive">
+              {{ (workflow.isActive ? 'common.active' : 'common.inactive') | translate }}
+            </span>
             <button
               class="icon-button danger"
               type="button"
               (click)="delete(workflow, $event)"
               [attr.aria-label]="'common.delete' | translate"
-            >⋯</button>
-          </div>
-        </a>
-      }
-    </div>
-  }
-</section>
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                <path d="M5 7h14"/>
+                <path d="M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+                <path d="M8 7l1 12a1 1 0 0 0 1 1h4a1 1 0 0 0 1-1l1-12"/>
+                <path d="M10 11v6M14 11v6"/>
+              </svg>
+            </button>
+          </a>
+        }
+      </div>
+    }
+  </section>
+</div>
 
 @if (showCreate()) {
   <div class="modal-backdrop" (click)="showCreate.set(false)">

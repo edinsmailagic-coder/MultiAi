@@ -87,7 +87,12 @@
     "deleteConnectionTitle": "Obriši liniju?",
     "deleteConnectionText": "Želite li obrisati vezu {{source}} → {{target}}?",
     "branchTitle": "Odaberi granu",
-    "branchText": "Koja grana povezuje {{source}} → {{target}}?"
+    "branchText": "Koja grana povezuje {{source}} → {{target}}?",
+    "zoomControls": "Zumiranje canvasa",
+    "zoomIn": "Uvećaj",
+    "zoomOut": "Umanji",
+    "zoomReset": "Resetuj zum (100%)",
+    "zoomFit": "Prilagodi sve nodove"
   },
   "profile": {
     "title": "Profil i provajderi",
@@ -131,8 +136,10 @@
     "you": "Vi",
     "assistant": "Asistent",
     "thinking": "Razmišljam…",
-    "workflowOptional": "Workflow (opciono)",
+    "processingNode": "Obrađujem tok: {{name}}",
+    "workflowOptional": "Tok rada",
     "noWorkflow": "Bez workflowa — direktan chat",
+    "defaultModel": "Default model",
     "provider": "Provajder",
     "model": "Model",
     "prompt": "Poruka",
@@ -160,7 +167,9 @@
   "modelSelect": {
     "label": "Model",
     "choose": "Odaberite model",
-    "placeholder": "Unesite naziv modela"
+    "placeholder": "Unesite naziv modela",
+    "search": "Pretraži modele…",
+    "defaultHint": "Default model"
   },
   "common": {
     "loading": "Učitavanje…",

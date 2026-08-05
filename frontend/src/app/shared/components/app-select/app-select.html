@@ -1,0 +1,59 @@
+<div class="app-select" [class.open]="open()" [class.disabled]="isDisabled() || disabledInput()">
+  <button
+    type="button"
+    class="app-select__trigger"
+    [disabled]="isDisabled() || disabledInput()"
+    [attr.aria-label]="ariaLabel()"
+    [attr.aria-expanded]="open()"
+    aria-haspopup="listbox"
+    (click)="toggle()"
+  >
+    <span class="app-select__value" [class.placeholder]="!value()">{{ selectedLabel() }}</span>
+    <span class="app-select__chevron" aria-hidden="true"></span>
+  </button>
+
+  @if (open() && panelBox(); as box) {
+    <div
+      class="app-select__panel"
+      role="listbox"
+      [style.top]="box.top === null ? 'auto' : box.top + 'px'"
+      [style.bottom]="box.bottom === null ? 'auto' : box.bottom + 'px'"
+      [style.left.px]="box.left"
+      [style.width.px]="box.width"
+      [style.max-height.px]="box.maxHeight"
+    >
+      @if (searchable()) {
+        <div class="app-select__search">
+          <input
+            type="search"
+            [value]="query()"
+            [placeholder]="searchPlaceholder()"
+            (input)="onSearchInput($event)"
+            (click)="$event.stopPropagation()"
+          >
+        </div>
+      }
+
+      <div class="app-select__options">
+        @for (option of filteredOptions(); track option.value) {
+          <button
+            type="button"
+            class="app-select__option"
+            role="option"
+            [class.selected]="isSelected(option)"
+            [disabled]="option.disabled"
+            [attr.aria-selected]="isSelected(option)"
+            (click)="select(option)"
+          >
+            <span class="app-select__option-label">{{ option.label }}</span>
+            @if (option.hint) {
+              <span class="app-select__option-hint">{{ option.hint }}</span>
+            }
+          </button>
+        } @empty {
+          <p class="app-select__empty">No matches</p>
+        }
+      </div>
+    </div>
+  }
+</div>

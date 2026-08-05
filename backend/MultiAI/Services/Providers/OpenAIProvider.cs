@@ -2,6 +2,7 @@
 using MultiAI.Models.Response;
 using MultiAI.Services.Interface;
 using System.Net.Http.Headers;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -70,38 +71,7 @@ namespace MultiAI.Services.Providers
             if (messages == null || messages.Count == 0)
                 throw new ArgumentException("At least one message is required.", nameof(messages));
 
-            var payloadMessages = messages.Select(m =>
-            {
-                if (m.Images.Count == 0)
-                {
-                    return (object)new { role = m.Role, content = m.Content };
-                }
-
-                var parts = new List<object>
-                {
-                    new { type = "text", text = m.Content }
-                };
-
-                foreach (var image in m.Images)
-                {
-                    parts.Add(new
-                    {
-                        type = "image_url",
-                        image_url = new
-                        {
-                            url = $"data:{image.MimeType};base64,{image.Base64Data}"
-                        }
-                    });
-                }
-
-                return new { role = m.Role, content = parts };
-            });
-
-            var payload = new
-            {
-                model,
-                messages = payloadMessages
-            };
+            var payload = BuildChatPayload(messages, model, stream: false);
 
             using var request = CreateAuthorizedRequest(HttpMethod.Post, "chat/completions", key);
             request.Content = new StringContent(
@@ -134,6 +104,154 @@ namespace MultiAI.Services.Providers
             };
         }
 
+        public async IAsyncEnumerable<ChatStreamChunk> ChatStream(
+            List<ChatMessageDto> messages,
+            string model,
+            string key,
+            [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        {
+            if (string.IsNullOrWhiteSpace(model))
+                throw new ArgumentException("Model is required.", nameof(model));
+
+            if (messages == null || messages.Count == 0)
+                throw new ArgumentException("At least one message is required.", nameof(messages));
+
+            var payload = BuildChatPayload(messages, model, stream: true);
+
+            using var request = CreateAuthorizedRequest(HttpMethod.Post, "chat/completions", key);
+            request.Content = new StringContent(
+                JsonSerializer.Serialize(payload, JsonOptions),
+                Encoding.UTF8,
+                "application/json");
+
+            using var response = await httpClient.SendAsync(
+                request,
+                HttpCompletionOption.ResponseHeadersRead,
+                cancellationToken);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                var errorBody = await response.Content.ReadAsStringAsync(cancellationToken);
+                throw new Exception($"OpenAI chat failed ({(int)response.StatusCode}): {TrimError(errorBody)}");
+            }
+
+            await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken);
+            using var reader = new StreamReader(stream);
+
+            string? responseModel = model;
+            var promptTokens = 0;
+            var completionTokens = 0;
+            var totalTokens = 0;
+
+            while (true)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                var line = await reader.ReadLineAsync(cancellationToken);
+                if (line == null)
+                    break;
+
+                if (string.IsNullOrWhiteSpace(line))
+                    continue;
+
+                if (!line.StartsWith("data:", StringComparison.OrdinalIgnoreCase))
+                    continue;
+
+                var data = line["data:".Length..].Trim();
+                if (data.Equals("[DONE]", StringComparison.OrdinalIgnoreCase))
+                    break;
+
+                OpenAIChatStreamChunk? chunk;
+                try
+                {
+                    chunk = JsonSerializer.Deserialize<OpenAIChatStreamChunk>(data, JsonOptions);
+                }
+                catch
+                {
+                    continue;
+                }
+
+                if (chunk == null)
+                    continue;
+
+                if (!string.IsNullOrWhiteSpace(chunk.Model))
+                    responseModel = chunk.Model;
+
+                if (chunk.Usage != null)
+                {
+                    promptTokens = chunk.Usage.PromptTokens;
+                    completionTokens = chunk.Usage.CompletionTokens;
+                    totalTokens = chunk.Usage.TotalTokens;
+                }
+
+                var delta = chunk.Choices?.FirstOrDefault()?.Delta?.Content;
+                if (string.IsNullOrEmpty(delta))
+                    continue;
+
+                yield return new ChatStreamChunk
+                {
+                    Delta = delta,
+                    Model = responseModel,
+                    IsDone = false
+                };
+            }
+
+            yield return new ChatStreamChunk
+            {
+                IsDone = true,
+                Model = responseModel,
+                PromptTokens = promptTokens,
+                CompletionTokens = completionTokens,
+                TotalTokens = totalTokens
+            };
+        }
+
+        private static object BuildChatPayload(List<ChatMessageDto> messages, string model, bool stream)
+        {
+            var payloadMessages = messages.Select(m =>
+            {
+                if (m.Images.Count == 0)
+                {
+                    return (object)new { role = m.Role, content = m.Content };
+                }
+
+                var parts = new List<object>
+                {
+                    new { type = "text", text = m.Content }
+                };
+
+                foreach (var image in m.Images)
+                {
+                    parts.Add(new
+                    {
+                        type = "image_url",
+                        image_url = new
+                        {
+                            url = $"data:{image.MimeType};base64,{image.Base64Data}"
+                        }
+                    });
+                }
+
+                return new { role = m.Role, content = parts };
+            });
+
+            if (stream)
+            {
+                return new
+                {
+                    model,
+                    messages = payloadMessages,
+                    stream = true,
+                    stream_options = new { include_usage = true }
+                };
+            }
+
+            return new
+            {
+                model,
+                messages = payloadMessages
+            };
+        }
+
         private static HttpRequestMessage CreateAuthorizedRequest(HttpMethod method, string relativeUrl, string key)
         {
             var request = new HttpRequestMessage(method, relativeUrl);
@@ -154,6 +272,23 @@ namespace MultiAI.Services.Providers
             public string? Model { get; set; }
             public List<OpenAIChoice>? Choices { get; set; }
             public OpenAIUsage? Usage { get; set; }
+        }
+
+        private sealed class OpenAIChatStreamChunk
+        {
+            public string? Model { get; set; }
+            public List<OpenAIStreamChoice>? Choices { get; set; }
+            public OpenAIUsage? Usage { get; set; }
+        }
+
+        private sealed class OpenAIStreamChoice
+        {
+            public OpenAIDelta? Delta { get; set; }
+        }
+
+        private sealed class OpenAIDelta
+        {
+            public string? Content { get; set; }
         }
 
         private sealed class OpenAIChoice

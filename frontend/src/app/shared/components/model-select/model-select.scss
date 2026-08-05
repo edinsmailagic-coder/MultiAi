@@ -8,3 +8,22 @@
   font-size: 0.85rem;
   padding: 0.55rem 0;
 }
+
+.model-select__manual {
+  appearance: none;
+  background: var(--panel-soft);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  font: inherit;
+  font-size: 0.875rem;
+  min-height: 40px;
+  padding: 0.45rem 0.8rem;
+  width: 100%;
+}
+
+.model-select__manual:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-ring);
+  outline: none;
+}

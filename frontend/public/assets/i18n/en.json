@@ -87,7 +87,12 @@
     "deleteConnectionTitle": "Delete connection?",
     "deleteConnectionText": "Do you want to delete the link {{source}} → {{target}}?",
     "branchTitle": "Choose branch",
-    "branchText": "Which branch links {{source}} → {{target}}?"
+    "branchText": "Which branch links {{source}} → {{target}}?",
+    "zoomControls": "Canvas zoom",
+    "zoomIn": "Zoom in",
+    "zoomOut": "Zoom out",
+    "zoomReset": "Reset zoom (100%)",
+    "zoomFit": "Fit all nodes"
   },
   "profile": {
     "title": "Profile & providers",
@@ -131,8 +136,10 @@
     "you": "You",
     "assistant": "Assistant",
     "thinking": "Thinking…",
-    "workflowOptional": "Workflow (optional)",
+    "processingNode": "Processing node: {{name}}",
+    "workflowOptional": "Workflow",
     "noWorkflow": "No workflow — direct chat",
+    "defaultModel": "Default model",
     "provider": "Provider",
     "model": "Model",
     "prompt": "Message",
@@ -160,7 +167,9 @@
   "modelSelect": {
     "label": "Model",
     "choose": "Choose a model",
-    "placeholder": "Enter model name"
+    "placeholder": "Enter model name",
+    "search": "Search models…",
+    "defaultHint": "Default model"
   },
   "common": {
     "loading": "Loading…",

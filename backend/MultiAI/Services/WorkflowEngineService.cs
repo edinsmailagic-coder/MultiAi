@@ -54,7 +54,7 @@ namespace MultiAI.Services
 
                 if (string.Equals(current.NodeType, "Parallel", StringComparison.OrdinalIgnoreCase))
                 {
-                    var forkResult = await GetExecutor(current.NodeType).ExecuteAsync(executionContext, current);
+                    var forkResult = await ExecuteNodeAsync(executionContext, current);
                     StoreResult(executionContext, current.Id, forkResult);
                     completed.Add(current.Id);
 
@@ -91,8 +91,7 @@ namespace MultiAI.Services
                     continue;
                 }
 
-                var executor = GetExecutor(current.NodeType);
-                var result = await executor.ExecuteAsync(executionContext, current);
+                var result = await ExecuteNodeAsync(executionContext, current);
                 StoreResult(executionContext, current.Id, result);
 
                 if (!string.Equals(current.NodeType, "Loop", StringComparison.OrdinalIgnoreCase) ||
@@ -137,8 +136,7 @@ namespace MultiAI.Services
                 if (completed.Contains(current.Id))
                     continue;
 
-                var executor = GetExecutor(current.NodeType);
-                var result = await executor.ExecuteAsync(executionContext, current);
+                var result = await ExecuteNodeAsync(executionContext, current);
                 StoreResult(executionContext, current.Id, result);
                 completed.Add(current.Id);
                 activeParallel.Remove(current.Id);
@@ -150,6 +148,44 @@ namespace MultiAI.Services
                     localQueue.Enqueue(next);
                 }
             }
+        }
+
+        private async Task<NodeExecutionResult> ExecuteNodeAsync(
+            WorkflowExecutionContext executionContext,
+            WorkflowNode node)
+        {
+            await ReportProgressAsync(executionContext, node, "started");
+            var result = await GetExecutor(node.NodeType).ExecuteAsync(executionContext, node);
+            await ReportProgressAsync(
+                executionContext,
+                node,
+                result.Success ? "completed" : "failed",
+                result.Success,
+                result.Error);
+            return result;
+        }
+
+        private static async Task ReportProgressAsync(
+            WorkflowExecutionContext executionContext,
+            WorkflowNode node,
+            string status,
+            bool success = true,
+            string? error = null)
+        {
+            if (executionContext.OnNodeProgress == null)
+                return;
+
+            await executionContext.OnNodeProgress(
+                new WorkflowNodeProgress
+                {
+                    NodeId = node.Id,
+                    NodeName = string.IsNullOrWhiteSpace(node.Name) ? $"{node.NodeType} #{node.Id}" : node.Name,
+                    NodeType = node.NodeType,
+                    Status = status,
+                    Success = success,
+                    Error = error
+                },
+                executionContext.CancellationToken);
         }
 
         private static IEnumerable<WorkflowNode> ResolveNextNodes(

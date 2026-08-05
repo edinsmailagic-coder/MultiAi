@@ -738,17 +738,45 @@ form {
 
 .canvas {
   background-color: var(--bg);
+  cursor: grab;
+  height: calc(100% - 76px);
+  overflow: hidden;
+  position: relative;
+  touch-action: none;
+  user-select: none;
+}
+
+.canvas.panning {
+  cursor: grabbing;
+}
+
+.canvas-world {
   background-image: radial-gradient(var(--border-strong) 1px, transparent 1px);
   background-size: 22px 22px;
-  height: calc(100% - 76px);
-  overflow: auto;
-  touch-action: none;
+  min-height: 100%;
+  min-width: 100%;
+  position: absolute;
+  left: 0;
+  top: 0;
+  transform-origin: 0 0;
+  will-change: transform;
 }
 
 .canvas-inner {
   min-height: 100%;
   min-width: 100%;
   position: relative;
+}
+
+.canvas-zoom {
+  align-items: center;
+  display: inline-flex;
+  gap: 0.3rem;
+}
+
+.canvas-zoom__label {
+  min-width: 3.4rem;
+  text-align: center;
 }
 
 .connections {

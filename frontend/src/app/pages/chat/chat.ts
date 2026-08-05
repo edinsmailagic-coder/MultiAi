@@ -3,6 +3,7 @@ import {
   Component,
   ElementRef,
   HostListener,
+  OnDestroy,
   OnInit,
   ViewChild,
   computed,
@@ -13,9 +14,10 @@ import { NgTemplateOutlet } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
-import { forkJoin } from 'rxjs';
+import { Subscription, forkJoin } from 'rxjs';
 import {
   AttachmentItem,
+  ChatStreamEvent,
   ChatUiMessage,
   ConversationFolder,
   ConversationListItem,
@@ -27,17 +29,17 @@ import { AppDialogService } from '../../core/services/app-dialog.service';
 import { ProviderService } from '../../core/services/provider.service';
 import { ToastService } from '../../core/services/toast.service';
 import { WorkflowService } from '../../core/services/workflow.service';
-import { ModelSelect } from '../../shared/components/model-select/model-select';
 import { FieldError } from '../../shared/components/field-error/field-error';
+import { AppSelect, AppSelectOption } from '../../shared/components/app-select/app-select';
 
 @Component({
   selector: 'app-chat',
-  imports: [NgTemplateOutlet, ReactiveFormsModule, TranslatePipe, ModelSelect, FieldError],
+  imports: [NgTemplateOutlet, ReactiveFormsModule, TranslatePipe, FieldError, AppSelect],
   templateUrl: './chat.html',
   styleUrl: './chat.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class Chat implements OnInit {
+export class Chat implements OnInit, OnDestroy {
   @ViewChild('messageList') private messageList?: ElementRef<HTMLElement>;
   @ViewChild('composerInput') private composerInput?: ElementRef<HTMLTextAreaElement>;
 
@@ -70,6 +72,9 @@ export class Chat implements OnInit {
   readonly selectedProviderId = signal(0);
   readonly workflowMode = signal(false);
   readonly uploadingAttachments = signal(0);
+  readonly activeNodeName = signal<string | null>(null);
+  readonly streamingContent = signal('');
+  readonly selectedWorkflowId = signal(0);
 
   readonly composerForm = this.fb.nonNullable.group({
     message: ['', Validators.required],
@@ -83,7 +88,34 @@ export class Chat implements OnInit {
     return this.providers().find((p) => p.id === id) ?? null;
   });
 
+  readonly workflowOptions = computed<AppSelectOption[]>(() => [
+    {
+      value: '0',
+      label: this.translate.instant('chat.defaultModel'),
+    },
+    ...this.workflows().map((workflow) => ({
+      value: String(workflow.id),
+      label: workflow.name,
+    })),
+  ]);
+
+  private streamSub?: Subscription;
+  private pendingWorkflowId: number | null = null;
+  private syncingWorkflowFromRoute = false;
+
   ngOnInit(): void {
+    this.route.queryParamMap.subscribe((params) => {
+      const raw = params.get('workflowId');
+      const id = raw ? Number(raw) : 0;
+      this.pendingWorkflowId = Number.isFinite(id) && id > 0 ? id : null;
+      if (!this.pendingWorkflowId) {
+        return;
+      }
+      this.syncingWorkflowFromRoute = true;
+      this.tryApplyPendingWorkflow();
+      this.syncingWorkflowFromRoute = false;
+    });
+
     forkJoin({
       conversations: this.chatService.getConversations(),
       folders: this.chatService.getFolders(),
@@ -105,6 +137,11 @@ export class Chat implements OnInit {
             model: preferred.defaultModel ?? '',
           });
         }
+
+        this.applyWorkflowSelection(this.selectedWorkflowId() || this.pendingWorkflowId || 0, {
+          syncUrl: false,
+        });
+        this.tryApplyPendingWorkflow();
       },
       error: () => this.toast.error('toast.loadError'),
     });
@@ -129,45 +166,32 @@ export class Chat implements OnInit {
     });
   }
 
+  ngOnDestroy(): void {
+    this.streamSub?.unsubscribe();
+  }
+
   providerIdValue(): number {
     return this.selectedProviderId();
   }
 
-  onWorkflowChange(event: Event): void {
-    const workflowId = Number((event.target as HTMLSelectElement).value) || 0;
-    this.composerForm.controls.workflowId.setValue(workflowId);
-    const enabled = workflowId > 0;
-    this.workflowMode.set(enabled);
-
-    const providerCtrl = this.composerForm.controls.userProviderId;
-    const modelCtrl = this.composerForm.controls.model;
-    if (enabled) {
-      providerCtrl.disable({ emitEvent: false });
-      modelCtrl.disable({ emitEvent: false });
-    } else {
-      providerCtrl.enable({ emitEvent: false });
-      modelCtrl.enable({ emitEvent: false });
-    }
-  }
-
-  onProviderChange(event: Event): void {
-    const id = Number((event.target as HTMLSelectElement).value);
-    const provider = this.providers().find((p) => p.id === id);
-    this.selectedProviderId.set(id);
-    this.composerForm.patchValue({
-      userProviderId: id,
-      model: provider?.defaultModel ?? '',
-    });
+  onWorkflowSelect(value: string): void {
+    this.applyWorkflowSelection(Number(value) || 0, { syncUrl: true });
   }
 
   newChat(): void {
     this.historyOpen.set(false);
-    void this.router.navigate(['/chat']);
+    const workflowId = this.selectedWorkflowId();
+    void this.router.navigate(['/chat'], {
+      queryParams: workflowId > 0 ? { workflowId } : {},
+    });
   }
 
   openConversation(id: number): void {
     this.historyOpen.set(false);
-    void this.router.navigate(['/chat', id]);
+    const workflowId = this.selectedWorkflowId();
+    void this.router.navigate(['/chat', id], {
+      queryParams: workflowId > 0 ? { workflowId } : {},
+    });
   }
 
   conversationsForFolder(folderId: number | null): ConversationListItem[] {
@@ -448,7 +472,7 @@ export class Chat implements OnInit {
       return;
     }
 
-    const workflowId = Number(this.composerForm.controls.workflowId.value) || 0;
+    const workflowId = this.selectedWorkflowId() || Number(this.composerForm.controls.workflowId.value) || 0;
     const message = this.composerForm.controls.message.value.trim();
     if (!message) {
       this.composerForm.controls.message.markAsTouched();
@@ -456,12 +480,18 @@ export class Chat implements OnInit {
     }
 
     if (workflowId <= 0) {
-      if (this.composerForm.controls.userProviderId.invalid || this.composerForm.controls.model.invalid) {
-        this.composerForm.markAllAsTouched();
+      const provider = this.selectedProvider();
+      const model =
+        this.composerForm.controls.model.value || provider?.defaultModel || '';
+      if (!provider || !model) {
         this.toast.error('toast.connectProviderFirst');
         return;
       }
     }
+
+    const provider = this.selectedProvider();
+    const model =
+      this.composerForm.controls.model.value || provider?.defaultModel || '';
 
     const tempUserId = `local-user-${Date.now()}`;
     const attachments = this.pendingAttachments();
@@ -477,65 +507,26 @@ export class Chat implements OnInit {
     ]);
     this.composerForm.controls.message.setValue('');
     this.sending.set(true);
+    this.activeNodeName.set(null);
+    this.streamingContent.set('');
     this.scrollToBottom();
 
-    this.chatService
-      .send({
+    this.streamSub?.unsubscribe();
+    this.streamSub = this.chatService
+      .streamSend({
         conversationId: this.conversationId(),
         message,
         workflowId: workflowId > 0 ? workflowId : null,
-        userProviderId: workflowId > 0 ? null : this.providerIdValue(),
-        model: workflowId > 0 ? null : this.composerForm.controls.model.value,
+        userProviderId: workflowId > 0 ? null : provider?.id ?? null,
+        model: workflowId > 0 ? null : model,
         attachmentIds: attachments.map((attachment) => attachment.id),
       })
       .subscribe({
-        next: (result) => {
-          this.sending.set(false);
-          this.conversationId.set(result.conversationId);
-          this.conversationTitle.set(result.title);
-          this.messages.update((list) => [
-            ...list.filter((m) => m.id !== tempUserId),
-            {
-              id: `u-${result.userMessage.id}`,
-              role: 'user',
-              content: result.userMessage.content,
-              createdAt: result.userMessage.createdAt,
-              attachments: result.userMessage.attachments ?? attachments,
-            },
-            {
-              id: `a-${result.response.id}`,
-              role: 'assistant',
-              content: result.response.content,
-              model: result.response.model,
-              createdAt: result.response.createdAt,
-            },
-          ]);
-          this.pendingAttachments.set([]);
-
-          this.conversations.update((list) => {
-            const existing = list.find((c) => c.id === result.conversationId);
-            const item: ConversationListItem = {
-              id: result.conversationId,
-              title: result.title,
-              createdAt: existing?.createdAt ?? new Date().toISOString(),
-              updatedAt: new Date().toISOString(),
-              isPinned: existing?.isPinned ?? false,
-              folderId: existing?.folderId ?? null,
-            };
-            return [item, ...list.filter((c) => c.id !== result.conversationId)].sort(
-              (a, b) => Number(Boolean(b.isPinned)) - Number(Boolean(a.isPinned)),
-            );
-          });
-
-          if (!this.route.snapshot.paramMap.get('conversationId')) {
-            void this.router.navigate(['/chat', result.conversationId], { replaceUrl: true });
-          }
-
-          this.scrollToBottom();
-          this.focusComposer();
-        },
+        next: (event) => this.handleStreamEvent(event, tempUserId, message, attachments),
         error: () => {
           this.sending.set(false);
+          this.activeNodeName.set(null);
+          this.streamingContent.set('');
           this.messages.update((list) => list.filter((m) => m.id !== tempUserId));
           this.composerForm.controls.message.setValue(message);
           this.toast.error('toast.chatError');
@@ -545,6 +536,185 @@ export class Chat implements OnInit {
 
   toggleHistory(): void {
     this.historyOpen.update((open) => !open);
+  }
+
+  private handleStreamEvent(
+    event: ChatStreamEvent,
+    tempUserId: string,
+    message: string,
+    attachments: AttachmentItem[],
+  ): void {
+    switch (event.type) {
+      case 'ready': {
+        if (event.conversationId) {
+          this.conversationId.set(event.conversationId);
+        }
+        if (event.title) {
+          this.conversationTitle.set(event.title);
+        }
+        if (event.userMessage) {
+          this.messages.update((list) => [
+            ...list.filter((m) => m.id !== tempUserId),
+            {
+              id: `u-${event.userMessage!.id}`,
+              role: 'user',
+              content: event.userMessage!.content,
+              createdAt: event.userMessage!.createdAt,
+              attachments: event.userMessage!.attachments ?? attachments,
+            },
+          ]);
+        }
+        this.scrollToBottom();
+        break;
+      }
+      case 'node-progress': {
+        if (event.status === 'started') {
+          this.activeNodeName.set(event.nodeName || event.nodeType || 'Node');
+        } else if (event.status === 'failed' && event.message) {
+          this.toast.error(event.message);
+        }
+        this.scrollToBottom();
+        break;
+      }
+      case 'delta': {
+        if (event.content) {
+          this.activeNodeName.set(null);
+          this.streamingContent.update((text) => text + event.content);
+          this.scrollToBottom();
+        }
+        break;
+      }
+      case 'done': {
+        this.finishStreamSuccess(event, tempUserId, attachments);
+        break;
+      }
+      case 'error': {
+        this.sending.set(false);
+        this.activeNodeName.set(null);
+        this.streamingContent.set('');
+        this.messages.update((list) => list.filter((m) => m.id !== tempUserId));
+        this.composerForm.controls.message.setValue(message);
+        this.toast.error(event.message || 'toast.chatError');
+        break;
+      }
+    }
+  }
+
+  private finishStreamSuccess(
+    event: ChatStreamEvent,
+    tempUserId: string,
+    attachments: AttachmentItem[],
+  ): void {
+    this.sending.set(false);
+    this.activeNodeName.set(null);
+    this.streamingContent.set('');
+
+    if (!event.response || !event.conversationId) {
+      this.toast.error('toast.chatError');
+      return;
+    }
+
+    this.conversationId.set(event.conversationId);
+    if (event.title) {
+      this.conversationTitle.set(event.title);
+    }
+
+    this.messages.update((list) => {
+      const withoutTemp = list.filter((m) => m.id !== tempUserId);
+      const hasUser = event.userMessage
+        ? withoutTemp.some((m) => m.id === `u-${event.userMessage!.id}`)
+        : true;
+      const next = [...withoutTemp];
+      if (event.userMessage && !hasUser) {
+        next.push({
+          id: `u-${event.userMessage.id}`,
+          role: 'user',
+          content: event.userMessage.content,
+          createdAt: event.userMessage.createdAt,
+          attachments: event.userMessage.attachments ?? attachments,
+        });
+      }
+      next.push({
+        id: `a-${event.response!.id}`,
+        role: 'assistant',
+        content: event.response!.content,
+        model: event.response!.model,
+        createdAt: event.response!.createdAt,
+      });
+      return next;
+    });
+
+    this.pendingAttachments.set([]);
+
+    this.conversations.update((list) => {
+      const existing = list.find((c) => c.id === event.conversationId);
+      const item: ConversationListItem = {
+        id: event.conversationId!,
+        title: event.title || existing?.title || 'Chat',
+        createdAt: existing?.createdAt ?? new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        isPinned: existing?.isPinned ?? false,
+        folderId: existing?.folderId ?? null,
+      };
+      return [item, ...list.filter((c) => c.id !== event.conversationId)].sort(
+        (a, b) => Number(Boolean(b.isPinned)) - Number(Boolean(a.isPinned)),
+      );
+    });
+
+    if (!this.route.snapshot.paramMap.get('conversationId')) {
+      const workflowId = this.selectedWorkflowId();
+      void this.router.navigate(['/chat', event.conversationId], {
+        replaceUrl: true,
+        queryParams: workflowId > 0 ? { workflowId } : {},
+      });
+    }
+
+    this.scrollToBottom();
+    this.focusComposer();
+  }
+
+  private tryApplyPendingWorkflow(): void {
+    if (!this.pendingWorkflowId || !this.workflows().length) {
+      return;
+    }
+    this.applyWorkflowSelection(this.pendingWorkflowId, { syncUrl: false });
+  }
+
+  private applyWorkflowSelection(
+    workflowId: number,
+    options: { syncUrl?: boolean } = {},
+  ): void {
+    if (workflowId > 0 && !this.workflows().some((w) => w.id === workflowId)) {
+      return;
+    }
+
+    const syncUrl = options.syncUrl !== false && !this.syncingWorkflowFromRoute;
+    this.selectedWorkflowId.set(workflowId);
+    this.composerForm.controls.workflowId.setValue(workflowId, { emitEvent: false });
+    const enabled = workflowId > 0;
+    this.workflowMode.set(enabled);
+
+    // Provider/Model UI is hidden in chat; always use account defaults for Default model.
+    const providerCtrl = this.composerForm.controls.userProviderId;
+    const modelCtrl = this.composerForm.controls.model;
+    providerCtrl.disable({ emitEvent: false });
+    modelCtrl.disable({ emitEvent: false });
+    const provider = this.selectedProvider();
+    if (provider) {
+      providerCtrl.setValue(provider.id, { emitEvent: false });
+      if (provider.defaultModel) {
+        modelCtrl.setValue(provider.defaultModel, { emitEvent: false });
+      }
+    }
+
+    if (syncUrl) {
+      void this.router.navigate([], {
+        relativeTo: this.route,
+        queryParams: { workflowId: workflowId > 0 ? workflowId : null },
+        queryParamsHandling: 'merge',
+        replaceUrl: true,
+      });
+    }
   }
 
   private loadConversation(id: number): void {

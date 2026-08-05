@@ -1,16 +1,17 @@
-import { ChangeDetectionStrategy, Component, OnInit, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, computed, signal } from '@angular/core';
 import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
-import { TranslatePipe } from '@ngx-translate/core';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { forkJoin, switchMap } from 'rxjs';
 import { AIProvider, ConnectedProvider } from '../../core/models/provider.model';
 import { ProviderService } from '../../core/services/provider.service';
 import { ToastService } from '../../core/services/toast.service';
 import { ModelSelect } from '../../shared/components/model-select/model-select';
 import { FieldError } from '../../shared/components/field-error/field-error';
+import { AppSelect, AppSelectOption } from '../../shared/components/app-select/app-select';
 
 @Component({
   selector: 'app-providers',
-  imports: [FormsModule, ReactiveFormsModule, TranslatePipe, ModelSelect, FieldError],
+  imports: [FormsModule, ReactiveFormsModule, TranslatePipe, ModelSelect, FieldError, AppSelect],
   templateUrl: './providers.html',
   styleUrl: './providers.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -20,11 +21,21 @@ export class Providers implements OnInit {
   readonly connected = signal<ConnectedProvider[]>([]);
   readonly defaultModelDrafts = signal<Record<number, string>>({});
   readonly providerForm;
+  readonly selectedProviderId = signal('0');
+
+  readonly providerOptions = computed<AppSelectOption[]>(() => [
+    { value: '0', label: this.translate.instant('profile.selectProvider') },
+    ...this.providers().map((provider) => ({
+      value: String(provider.id),
+      label: provider.name,
+    })),
+  ]);
 
   constructor(
     fb: FormBuilder,
     private readonly providerService: ProviderService,
     private readonly toast: ToastService,
+    private readonly translate: TranslateService,
   ) {
     this.providerForm = fb.nonNullable.group({
       providerId: [0, [Validators.required, Validators.min(1)]],
@@ -45,6 +56,11 @@ export class Providers implements OnInit {
     });
   }
 
+  onProviderSelect(value: string): void {
+    this.selectedProviderId.set(value);
+    this.providerForm.controls.providerId.setValue(Number(value) || 0);
+  }
+
   connect(): void {
     if (this.providerForm.invalid) {
       this.providerForm.markAllAsTouched();
@@ -58,7 +74,8 @@ export class Providers implements OnInit {
       .subscribe({
         next: (connected) => {
           this.setConnected(connected);
-          this.providerForm.patchValue({ apiKey: '' });
+          this.providerForm.patchValue({ apiKey: '', providerId: 0 });
+          this.selectedProviderId.set('0');
           this.toast.showSuccess('toast.providerConnected');
         },
         error: () => this.toast.error('toast.providerError'),

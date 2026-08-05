@@ -2,7 +2,6 @@
   @if (historyOpen()) {
     <aside class="chat-history" [attr.aria-label]="'chat.history' | translate">
       <div class="chat-history__header">
-        <h2>{{ 'chat.history' | translate }}</h2>
         <div class="chat-history__header-actions">
           <button class="secondary compact" type="button" (click)="createFolder()">
             + {{ 'chat.newFolder' | translate }}
@@ -189,54 +188,37 @@
         }
       }
 
-      @if (sending()) {
-        <article class="chat-bubble assistant pending">
+      @if (sending() && activeNodeName()) {
+        <div class="node-pulse" role="status" aria-live="polite">
+          <span class="node-pulse__dot" aria-hidden="true"></span>
+          <span>{{ 'chat.processingNode' | translate: { name: activeNodeName() } }}</span>
+        </div>
+      }
+
+      @if (sending() && (streamingContent() || !activeNodeName())) {
+        <article class="chat-bubble assistant pending streaming">
           <header><strong>{{ 'chat.assistant' | translate }}</strong></header>
-          <p>{{ 'chat.thinking' | translate }}</p>
+          @if (streamingContent()) {
+            <pre>{{ streamingContent() }}<span class="stream-caret" aria-hidden="true"></span></pre>
+          } @else {
+            <p>{{ 'chat.thinking' | translate }}</p>
+          }
         </article>
       }
     </div>
 
     <form class="chat-composer" [formGroup]="composerForm" (ngSubmit)="send()">
-      <div class="chat-composer__toolbar">
-        <select
-          class="chat-select"
-          [value]="composerForm.controls.workflowId.value"
-          [attr.aria-label]="'chat.workflowOptional' | translate"
-          (change)="onWorkflowChange($event)"
-        >
-          <option [value]="0">{{ 'chat.noWorkflow' | translate }}</option>
-          @for (workflow of workflows(); track workflow.id) {
-            <option [value]="workflow.id">{{ workflow.name }}</option>
-          }
-        </select>
-
-        @if (!workflowMode()) {
-          <div class="chat-select-wrap">
-            <select
-              class="chat-select"
-              [value]="providerIdValue()"
-              [attr.aria-label]="'chat.provider' | translate"
-              (change)="onProviderChange($event)"
-            >
-              <option [value]="0">{{ 'profile.selectProvider' | translate }}</option>
-              @for (provider of providers(); track provider.id) {
-                <option [value]="provider.id">{{ provider.providerName }}</option>
-              }
-            </select>
-            <app-field-error [control]="composerForm.controls.userProviderId" fieldKey="chat.provider" />
-          </div>
-
-          <div class="chat-model">
-            <app-model-select
-              formControlName="model"
-              [userProviderId]="providerIdValue() || null"
-              [defaultModel]="selectedProvider()?.defaultModel"
-              [supportsModelListing]="selectedProvider()?.supportsModelListing !== false"
-            />
-            <app-field-error [control]="composerForm.controls.model" fieldKey="workflow.model" />
-          </div>
-        }
+      <div class="composer-filters">
+        <label class="filter-field">
+          <span class="filter-field__label">{{ 'chat.workflowOptional' | translate }}</span>
+          <app-select
+            [options]="workflowOptions()"
+            [value]="'' + selectedWorkflowId()"
+            [placeholder]="'chat.defaultModel' | translate"
+            [ariaLabel]="'chat.workflowOptional' | translate"
+            (valueChange)="onWorkflowSelect($event)"
+          />
+        </label>
       </div>
 
       @if (pendingAttachments().length) {

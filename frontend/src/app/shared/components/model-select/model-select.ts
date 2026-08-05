@@ -10,14 +10,15 @@ import {
   signal,
 } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
-import { TranslatePipe } from '@ngx-translate/core';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { Subscription } from 'rxjs';
 import { AIModel } from '../../../core/models/provider.model';
 import { ProviderService } from '../../../core/services/provider.service';
+import { AppSelect, AppSelectOption } from '../app-select/app-select';
 
 @Component({
   selector: 'app-model-select',
-  imports: [TranslatePipe],
+  imports: [AppSelect, TranslatePipe],
   templateUrl: './model-select.html',
   styleUrl: './model-select.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -31,6 +32,7 @@ import { ProviderService } from '../../../core/services/provider.service';
 })
 export class ModelSelect implements ControlValueAccessor, OnDestroy {
   private readonly providerService = inject(ProviderService);
+  private readonly translate = inject(TranslateService);
 
   readonly userProviderId = input<number | null>(null);
   readonly defaultModel = input<string | null | undefined>(null);
@@ -48,6 +50,23 @@ export class ModelSelect implements ControlValueAccessor, OnDestroy {
       this.loadFailed() ||
       (!this.loading() && this.models().length === 0),
   );
+
+  readonly options = computed<AppSelectOption[]>(() => {
+    const preferred = this.defaultModel()?.trim() || '';
+    const models = [...this.models()].sort((a, b) => {
+      if (preferred) {
+        if (a.id === preferred) return -1;
+        if (b.id === preferred) return 1;
+      }
+      return a.name.localeCompare(b.name);
+    });
+
+    return models.map((model) => ({
+      value: model.id,
+      label: model.id === preferred ? `${model.name} · Default` : model.name,
+      hint: model.id === preferred ? this.translate.instant('modelSelect.defaultHint') : undefined,
+    }));
+  });
 
   private onChange: (value: string) => void = () => undefined;
   private onTouchedFn: () => void = () => undefined;
@@ -101,12 +120,15 @@ export class ModelSelect implements ControlValueAccessor, OnDestroy {
     this.isDisabled.set(isDisabled);
   }
 
-  onSelectChange(event: Event): void {
-    const next = (event.target as HTMLSelectElement | HTMLInputElement).value;
+  onValueChange(next: string): void {
     this.preferDefault = false;
     this.value.set(next);
     this.onChange(next);
     this.onTouchedFn();
+  }
+
+  onManualInput(event: Event): void {
+    this.onValueChange((event.target as HTMLInputElement).value);
   }
 
   markTouched(): void {

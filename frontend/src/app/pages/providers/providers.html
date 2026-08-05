@@ -47,12 +47,12 @@
 
   <form [formGroup]="providerForm" (ngSubmit)="connect()">
     <label>{{ 'profile.provider' | translate }}
-      <select formControlName="providerId">
-        <option [value]="0">{{ 'profile.selectProvider' | translate }}</option>
-        @for (provider of providers(); track provider.id) {
-          <option [value]="provider.id">{{ provider.name }}</option>
-        }
-      </select>
+      <app-select
+        [options]="providerOptions()"
+        [value]="selectedProviderId()"
+        [placeholder]="'profile.selectProvider' | translate"
+        (valueChange)="onProviderSelect($event)"
+      />
     </label>
     <app-field-error [control]="providerForm.controls.providerId" fieldKey="profile.provider" />
     <label>{{ 'profile.apiKey' | translate }}

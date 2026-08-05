@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, ElementRef, HostListener, OnInit, ViewChild, computed, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 import { forkJoin } from 'rxjs';
 import { ConnectedProvider } from '../../../core/models/provider.model';
@@ -16,6 +16,7 @@ import { ToastService } from '../../../core/services/toast.service';
 import { WorkflowService } from '../../../core/services/workflow.service';
 import { ModelSelect } from '../../../shared/components/model-select/model-select';
 import { FieldError } from '../../../shared/components/field-error/field-error';
+import { AppSelect, AppSelectOption } from '../../../shared/components/app-select/app-select';
 
 interface DragState {
   id: number;
@@ -28,6 +29,13 @@ interface Point {
   y: number;
 }
 
+interface PanState {
+  startX: number;
+  startY: number;
+  originPanX: number;
+  originPanY: number;
+}
+
 type PendingDelete =
   | { kind: 'node'; node: WorkflowNode }
   | { kind: 'connection'; connection: WorkflowConnection };
@@ -38,9 +46,12 @@ interface PendingBranchConnection {
   options: string[];
 }
 
+const MIN_ZOOM = 0.25;
+const MAX_ZOOM = 2.5;
+
 @Component({
   selector: 'app-workflow-editor',
-  imports: [ReactiveFormsModule, RouterLink, TranslatePipe, ModelSelect, FieldError],
+  imports: [ReactiveFormsModule, RouterLink, TranslatePipe, ModelSelect, FieldError, AppSelect],
   templateUrl: './workflow-editor.html',
   styleUrl: './workflow-editor.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -62,13 +73,23 @@ export class WorkflowEditor implements OnInit {
   readonly pendingDelete = signal<PendingDelete | null>(null);
   readonly pendingBranch = signal<PendingBranchConnection | null>(null);
   readonly drag = signal<DragState | null>(null);
+  readonly panSession = signal<PanState | null>(null);
+  readonly zoom = signal(1);
+  readonly panX = signal(0);
+  readonly panY = signal(0);
   readonly addProviderId = signal(0);
   readonly editProviderId = signal(0);
+  readonly addNodeType = signal('AI');
 
   readonly canvasWidth = computed(() => Math.max(1200, ...this.nodes().map((n) => n.positionX + 350), 0));
   readonly canvasHeight = computed(() => Math.max(700, ...this.nodes().map((n) => n.positionY + 280), 0));
   readonly viewBox = computed(() => `0 0 ${this.canvasWidth()} ${this.canvasHeight()}`);
   readonly isConnecting = computed(() => this.sourceNodeId() !== null);
+  readonly isPanning = computed(() => this.panSession() !== null);
+  readonly zoomPercent = computed(() => Math.round(this.zoom() * 100));
+  readonly worldTransform = computed(
+    () => `translate(${this.panX()}px, ${this.panY()}px) scale(${this.zoom()})`,
+  );
   readonly previewPath = computed(() => {
     const sourceId = this.sourceNodeId();
     const pointer = this.pointer();
@@ -95,6 +116,7 @@ export class WorkflowEditor implements OnInit {
   constructor(
     route: ActivatedRoute,
     fb: FormBuilder,
+    private readonly router: Router,
     private readonly service: WorkflowService,
     private readonly providerService: ProviderService,
     private readonly toast: ToastService,
@@ -153,8 +175,46 @@ export class WorkflowEditor implements OnInit {
     return this.providers().find((p) => p.id === id) ?? null;
   }
 
+  readonly nodeTypeOptions: AppSelectOption[] = [
+    { value: 'AI', label: 'AI' },
+    { value: 'If', label: 'If / Else' },
+    { value: 'Parallel', label: 'Parallel' },
+    { value: 'Join', label: 'Join' },
+    { value: 'Loop', label: 'Loop' },
+  ];
+
+  readonly providerOptions = computed<AppSelectOption[]>(() =>
+    this.providers().map((provider) => ({
+      value: String(provider.id),
+      label: provider.providerName,
+    })),
+  );
+
   onAddProviderChange(event: Event): void {
     const id = Number((event.target as HTMLSelectElement).value);
+    this.applyAddProvider(id);
+  }
+
+  onAddProviderSelect(value: string): void {
+    this.applyAddProvider(Number(value) || 0);
+  }
+
+  onEditProviderSelect(value: string): void {
+    const id = Number(value) || 0;
+    const provider = this.providerById(id);
+    this.editProviderId.set(id);
+    this.editForm.patchValue({
+      userAIProviderId: id,
+      model: provider?.defaultModel ?? this.editForm.controls.model.value,
+    });
+  }
+
+  onAddNodeTypeSelect(value: string): void {
+    this.addNodeType.set(value);
+    this.addForm.controls.nodeType.setValue(value);
+  }
+
+  private applyAddProvider(id: number): void {
     const provider = this.providerById(id);
     this.addProviderId.set(id);
     this.addForm.patchValue({
@@ -283,6 +343,7 @@ export class WorkflowEditor implements OnInit {
           this.nodes.update((rows) => [...rows, this.normalizeNode(node)]);
           this.showAdd.set(false);
           this.addForm.patchValue({ name: '', prompt: '', nodeType: 'AI' });
+          this.addNodeType.set('AI');
           this.toast.showSuccess('toast.nodeAdded');
         },
         error: () => this.toast.error('toast.saveError'),
@@ -448,6 +509,12 @@ export class WorkflowEditor implements OnInit {
   }
 
   onCanvasPointerMove(event: PointerEvent): void {
+    const pan = this.panSession();
+    if (pan) {
+      this.panX.set(pan.originPanX + (event.clientX - pan.startX));
+      this.panY.set(pan.originPanY + (event.clientY - pan.startY));
+      return;
+    }
     this.moveDrag(event);
     if (this.sourceNodeId() !== null) {
       this.setPointerFromEvent(event);
@@ -455,14 +522,78 @@ export class WorkflowEditor implements OnInit {
   }
 
   onCanvasPointerDown(event: PointerEvent): void {
-    if (!this.isConnecting()) {
-      return;
-    }
     const target = event.target as HTMLElement;
-    if (target.classList.contains('port') || target.closest('.node-card')) {
+    const onNode = Boolean(target.closest('.node-card') || target.closest('.port'));
+    const onEdge = Boolean(target.closest('.edge-hit'));
+
+    if (this.isConnecting()) {
+      if (!onNode && !onEdge) {
+        this.cancelConnection();
+      }
       return;
     }
-    this.cancelConnection();
+
+    const middle = event.button === 1;
+    const emptyLeft = event.button === 0 && !onNode && !onEdge;
+    if (!middle && !emptyLeft) {
+      return;
+    }
+
+    event.preventDefault();
+    this.panSession.set({
+      startX: event.clientX,
+      startY: event.clientY,
+      originPanX: this.panX(),
+      originPanY: this.panY(),
+    });
+    this.canvas?.nativeElement.setPointerCapture(event.pointerId);
+  }
+
+  onCanvasWheel(event: WheelEvent): void {
+    event.preventDefault();
+    const factor = event.deltaY < 0 ? 1.08 : 1 / 1.08;
+    this.zoomAtClient(event.clientX, event.clientY, factor);
+  }
+
+  zoomIn(): void {
+    this.zoomAtCenter(1.15);
+  }
+
+  zoomOut(): void {
+    this.zoomAtCenter(1 / 1.15);
+  }
+
+  resetView(): void {
+    this.zoom.set(1);
+    this.panX.set(0);
+    this.panY.set(0);
+  }
+
+  fitToView(): void {
+    const canvasEl = this.canvas?.nativeElement;
+    const nodes = this.nodes();
+    if (!canvasEl) {
+      return;
+    }
+    if (!nodes.length) {
+      this.resetView();
+      return;
+    }
+
+    const minX = Math.min(...nodes.map((n) => n.positionX));
+    const minY = Math.min(...nodes.map((n) => n.positionY));
+    const maxX = Math.max(...nodes.map((n) => n.positionX + 240));
+    const maxY = Math.max(...nodes.map((n) => n.positionY + 160));
+    const worldW = Math.max(1, maxX - minX);
+    const worldH = Math.max(1, maxY - minY);
+    const rect = canvasEl.getBoundingClientRect();
+    const pad = 96;
+    const nextZoom = this.clampZoom(
+      Math.min((rect.width - pad) / worldW, (rect.height - pad) / worldH),
+    );
+    this.zoom.set(nextZoom);
+    this.panX.set((rect.width - worldW * nextZoom) / 2 - minX * nextZoom);
+    this.panY.set((rect.height - worldH * nextZoom) / 2 - minY * nextZoom);
   }
 
   startDrag(node: WorkflowNode, event: PointerEvent): void {
@@ -471,33 +602,35 @@ export class WorkflowEditor implements OnInit {
       target.classList.contains('port') ||
       target.closest('.port') ||
       target.closest('.node-delete') ||
-      this.isConnecting()
+      this.isConnecting() ||
+      event.button !== 0
     ) {
       return;
     }
-    const canvasEl = this.canvas?.nativeElement;
-    if (!canvasEl) {
-      return;
-    }
-    const rect = canvasEl.getBoundingClientRect();
+    event.stopPropagation();
+    const world = this.screenToWorld(event);
     this.drag.set({
       id: node.id,
-      offsetX: event.clientX - rect.left + canvasEl.scrollLeft - node.positionX,
-      offsetY: event.clientY - rect.top + canvasEl.scrollTop - node.positionY,
+      offsetX: world.x - node.positionX,
+      offsetY: world.y - node.positionY,
     });
     (event.currentTarget as HTMLElement).setPointerCapture(event.pointerId);
   }
 
   moveDrag(event: PointerEvent): void {
     const drag = this.drag();
-    const canvasEl = this.canvas?.nativeElement;
-    if (!drag || !canvasEl) {
+    if (!drag) {
       return;
     }
-    const rect = canvasEl.getBoundingClientRect();
-    const positionX = Math.max(20, event.clientX - rect.left + canvasEl.scrollLeft - drag.offsetX);
-    const positionY = Math.max(20, event.clientY - rect.top + canvasEl.scrollTop - drag.offsetY);
+    const world = this.screenToWorld(event);
+    const positionX = Math.max(20, world.x - drag.offsetX);
+    const positionY = Math.max(20, world.y - drag.offsetY);
     this.nodes.update((rows) => rows.map((row) => (row.id === drag.id ? { ...row, positionX, positionY } : row)));
+  }
+
+  endPointer(): void {
+    this.panSession.set(null);
+    this.endDrag();
   }
 
   endDrag(): void {
@@ -546,22 +679,20 @@ export class WorkflowEditor implements OnInit {
     return (source.positionY + target.positionY) / 2 + 50;
   }
 
+  goToChat(): void {
+    void this.router.navigate(['/chat'], {
+      queryParams: { workflowId: this.workflowId },
+    });
+  }
+
   execute(): void {
     if (this.executeForm.invalid) {
       this.executeForm.markAllAsTouched();
       return;
     }
-    this.executing.set(true);
-    this.results.set([]);
-    this.service.execute(this.workflowId, this.executeForm.controls.input.value).subscribe({
-      next: (result) => {
-        this.results.set(this.normalizeResults(result));
-        this.executing.set(false);
-      },
-      error: () => {
-        this.executing.set(false);
-        this.toast.error('toast.executeError');
-      },
+    this.showExecute.set(false);
+    void this.router.navigate(['/chat'], {
+      queryParams: { workflowId: this.workflowId },
     });
   }
 
@@ -571,15 +702,53 @@ export class WorkflowEditor implements OnInit {
   }
 
   private setPointerFromEvent(event: PointerEvent): void {
+    this.pointer.set(this.screenToWorld(event));
+  }
+
+  private screenToWorld(event: { clientX: number; clientY: number }): Point {
+    const canvasEl = this.canvas?.nativeElement;
+    if (!canvasEl) {
+      return { x: 0, y: 0 };
+    }
+    const rect = canvasEl.getBoundingClientRect();
+    const zoom = this.zoom() || 1;
+    return {
+      x: (event.clientX - rect.left - this.panX()) / zoom,
+      y: (event.clientY - rect.top - this.panY()) / zoom,
+    };
+  }
+
+  private zoomAtCenter(factor: number): void {
     const canvasEl = this.canvas?.nativeElement;
     if (!canvasEl) {
       return;
     }
     const rect = canvasEl.getBoundingClientRect();
-    this.pointer.set({
-      x: event.clientX - rect.left + canvasEl.scrollLeft,
-      y: event.clientY - rect.top + canvasEl.scrollTop,
-    });
+    this.zoomAtClient(rect.left + rect.width / 2, rect.top + rect.height / 2, factor);
+  }
+
+  private zoomAtClient(clientX: number, clientY: number, factor: number): void {
+    const canvasEl = this.canvas?.nativeElement;
+    if (!canvasEl) {
+      return;
+    }
+    const rect = canvasEl.getBoundingClientRect();
+    const mx = clientX - rect.left;
+    const my = clientY - rect.top;
+    const prev = this.zoom();
+    const next = this.clampZoom(prev * factor);
+    if (next === prev) {
+      return;
+    }
+    const worldX = (mx - this.panX()) / prev;
+    const worldY = (my - this.panY()) / prev;
+    this.zoom.set(next);
+    this.panX.set(mx - worldX * next);
+    this.panY.set(my - worldY * next);
+  }
+
+  private clampZoom(value: number): number {
+    return Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, value));
   }
 
   private normalizeNode(node: WorkflowNode | Record<string, unknown>): WorkflowNode {

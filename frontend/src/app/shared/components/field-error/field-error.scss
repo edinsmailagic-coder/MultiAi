@@ -1,0 +1,11 @@
+.field-error {
+  color: var(--danger-text, #f87171);
+  display: block;
+  font-size: 0.82rem;
+  font-weight: 600;
+  margin-top: 0.35rem;
+}
+
+:host-context(.auth-card) .field-error {
+  color: #dc2626;
+}

@@ -1,19 +1,22 @@
 import { HttpClient } from '@angular/common/http';
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import {
   AttachmentItem,
+  ChatStreamEvent,
   ConversationDetail,
   ConversationFolder,
   ConversationListItem,
   SendChatRequest,
   SendChatResult,
 } from '../models/chat.model';
+import { AuthService } from './auth.service';
 
 @Injectable({ providedIn: 'root' })
 export class ChatService {
   private readonly api = `${environment.apiUrl}/api/chat`;
+  private readonly auth = inject(AuthService);
 
   constructor(private readonly http: HttpClient) {}
 
@@ -27,6 +30,91 @@ export class ChatService {
 
   send(request: SendChatRequest): Observable<SendChatResult> {
     return this.http.post<SendChatResult>(`${this.api}/sendChat`, request);
+  }
+
+  streamSend(request: SendChatRequest): Observable<ChatStreamEvent> {
+    return new Observable<ChatStreamEvent>((subscriber) => {
+      const controller = new AbortController();
+      const token = this.auth.token();
+
+      void (async () => {
+        try {
+          const response = await fetch(`${this.api}/stream`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Accept: 'text/event-stream',
+              ...(token ? { Authorization: `Bearer ${token}` } : {}),
+            },
+            body: JSON.stringify(request),
+            signal: controller.signal,
+          });
+
+          if (!response.ok || !response.body) {
+            let message = `HTTP ${response.status}`;
+            try {
+              const body = (await response.json()) as { error?: string };
+              if (body?.error) {
+                message = body.error;
+              }
+            } catch {
+              // ignore parse errors
+            }
+            subscriber.error(new Error(message));
+            return;
+          }
+
+          const reader = response.body.getReader();
+          const decoder = new TextDecoder();
+          let buffer = '';
+
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) {
+              break;
+            }
+
+            buffer += decoder.decode(value, { stream: true });
+            const chunks = buffer.split('\n\n');
+            buffer = chunks.pop() ?? '';
+
+            for (const chunk of chunks) {
+              const dataLine = chunk
+                .split('\n')
+                .map((line) => line.trim())
+                .find((line) => line.startsWith('data:'));
+              if (!dataLine) {
+                continue;
+              }
+
+              const raw = dataLine.slice('data:'.length).trim();
+              if (!raw || raw === '[DONE]') {
+                continue;
+              }
+
+              const event = JSON.parse(raw) as ChatStreamEvent;
+              subscriber.next(event);
+
+              if (event.type === 'done' || event.type === 'error') {
+                subscriber.complete();
+                controller.abort();
+                return;
+              }
+            }
+          }
+
+          subscriber.complete();
+        } catch (error) {
+          if (controller.signal.aborted) {
+            subscriber.complete();
+            return;
+          }
+          subscriber.error(error);
+        }
+      })();
+
+      return () => controller.abort();
+    });
   }
 
   rename(id: number, title: string): Observable<ConversationListItem> {

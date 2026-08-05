@@ -82,3 +82,17 @@ export interface ChatUiMessage {
   createdAt?: string;
   attachments?: AttachmentItem[];
 }
+
+export interface ChatStreamEvent {
+  type: 'ready' | 'node-progress' | 'delta' | 'done' | 'error' | string;
+  conversationId?: number | null;
+  title?: string | null;
+  userMessage?: ChatMessageResult | null;
+  nodeId?: number | null;
+  nodeName?: string | null;
+  nodeType?: string | null;
+  status?: string | null;
+  content?: string | null;
+  response?: ChatResponse | null;
+  message?: string | null;
+}

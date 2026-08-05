@@ -8,8 +8,16 @@
       }
     </div>
     <span class="toolbar-space"></span>
+    <div class="canvas-zoom" role="group" [attr.aria-label]="'workflow.zoomControls' | translate">
+      <button class="secondary compact" type="button" (click)="zoomOut()" [attr.title]="'workflow.zoomOut' | translate">−</button>
+      <button class="secondary compact canvas-zoom__label" type="button" (click)="resetView()" [attr.title]="'workflow.zoomReset' | translate">
+        {{ zoomPercent() }}%
+      </button>
+      <button class="secondary compact" type="button" (click)="zoomIn()" [attr.title]="'workflow.zoomIn' | translate">+</button>
+      <button class="secondary compact" type="button" (click)="fitToView()" [attr.title]="'workflow.zoomFit' | translate">⛶</button>
+    </div>
     <button class="secondary" type="button" (click)="showAdd.set(true)">+ {{ 'workflow.addNode' | translate }}</button>
-    <button class="primary" type="button" (click)="showExecute.set(true)">▶ {{ 'workflow.execute' | translate }}</button>
+    <button class="primary" type="button" (click)="goToChat()">▶ {{ 'workflow.execute' | translate }}</button>
   </header>
 
   @if (isConnecting()) {
@@ -22,12 +30,19 @@
   <div
     #canvas
     class="canvas"
+    [class.panning]="isPanning()"
+    (wheel)="onCanvasWheel($event)"
     (pointermove)="onCanvasPointerMove($event)"
     (pointerdown)="onCanvasPointerDown($event)"
-    (pointerup)="endDrag()"
-    (pointercancel)="endDrag()"
+    (pointerup)="endPointer()"
+    (pointercancel)="endPointer()"
   >
-    <div class="canvas-inner" [style.width.px]="canvasWidth()" [style.height.px]="canvasHeight()">
+    <div
+      class="canvas-world"
+      [style.transform]="worldTransform()"
+      [style.width.px]="canvasWidth()"
+      [style.height.px]="canvasHeight()"
+    >
       <svg
         class="connections"
         [attr.width]="canvasWidth()"
@@ -141,11 +156,12 @@
           </label>
           <app-field-error [control]="editForm.controls.model" fieldKey="workflow.model" />
           <label>{{ 'workflow.provider' | translate }}
-            <select formControlName="userAIProviderId">
-              @for (provider of providers(); track provider.id) {
-                <option [value]="provider.id">{{ provider.providerName }}</option>
-              }
-            </select>
+            <app-select
+              [options]="providerOptions()"
+              [value]="'' + editProviderId()"
+              [placeholder]="'workflow.provider' | translate"
+              (valueChange)="onEditProviderSelect($event)"
+            />
           </label>
           <label>{{ 'workflow.prompt' | translate }}
             <textarea formControlName="prompt" rows="7"></textarea>
@@ -183,25 +199,25 @@
         } @else {
           <form [formGroup]="addForm" (ngSubmit)="addNode()">
             <label>{{ 'workflow.nodeType' | translate }}
-              <select formControlName="nodeType">
-                <option value="AI">AI</option>
-                <option value="If">If / Else</option>
-                <option value="Parallel">Parallel</option>
-                <option value="Join">Join</option>
-                <option value="Loop">Loop</option>
-              </select>
+              <app-select
+                [options]="nodeTypeOptions"
+                [value]="addNodeType()"
+                [placeholder]="'workflow.nodeType' | translate"
+                (valueChange)="onAddNodeTypeSelect($event)"
+              />
             </label>
             <label>{{ 'workflow.nodeName' | translate }}
               <input formControlName="name">
             </label>
             <app-field-error [control]="addForm.controls.name" fieldKey="workflow.nodeName" />
-            @if (addForm.controls.nodeType.value === 'AI') {
+            @if (addNodeType() === 'AI') {
               <label>{{ 'workflow.provider' | translate }}
-                <select [value]="addProviderId()" (change)="onAddProviderChange($event)">
-                  @for (provider of providers(); track provider.id) {
-                    <option [value]="provider.id">{{ provider.providerName }}</option>
-                  }
-                </select>
+                <app-select
+                  [options]="providerOptions()"
+                  [value]="'' + addProviderId()"
+                  [placeholder]="'workflow.provider' | translate"
+                  (valueChange)="onAddProviderSelect($event)"
+                />
               </label>
               <app-field-error [control]="addForm.controls.userAIProviderId" fieldKey="workflow.provider" />
               <label>{{ 'workflow.model' | translate }}
@@ -217,12 +233,12 @@
                 <textarea formControlName="prompt" rows="5"></textarea>
               </label>
               <app-field-error [control]="addForm.controls.prompt" fieldKey="workflow.prompt" />
-            } @else if (addForm.controls.nodeType.value === 'If') {
+            } @else if (addNodeType() === 'If') {
               <label>{{ 'workflow.ifPrompt' | translate }}
                 <textarea formControlName="prompt" rows="3" placeholder="contains:yes | equals:ok | notEmpty"></textarea>
               </label>
               <app-field-error [control]="addForm.controls.prompt" fieldKey="workflow.ifPrompt" />
-            } @else if (addForm.controls.nodeType.value === 'Loop') {
+            } @else if (addNodeType() === 'Loop') {
               <label>{{ 'workflow.loopMax' | translate }}
                 <input formControlName="prompt" placeholder="5">
               </label>
