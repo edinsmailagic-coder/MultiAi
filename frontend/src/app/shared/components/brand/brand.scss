@@ -11,7 +11,7 @@
 }
 
 .brand__mark {
-  color: #a7adb8;
+  color: var(--muted-dim);
   display: inline-flex;
   flex: 0 0 auto;
   height: 1.55rem;
@@ -35,7 +35,7 @@
 }
 
 .brand__node {
-  fill: #a7adb8;
+  fill: var(--muted-dim);
 }
 
 .brand__node--accent {
@@ -43,7 +43,7 @@
 }
 
 .brand__path {
-  color: #a7adb8;
+  color: var(--muted-dim);
 }
 
 .brand__name {

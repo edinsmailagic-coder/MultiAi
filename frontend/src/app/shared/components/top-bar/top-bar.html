@@ -1,6 +1,6 @@
 <header class="top-bar" [class.top-bar--app]="appMode()">
   <div class="top-bar__inner">
-    <app-brand [link]="appMode() ? '/dashboard' : '/'" />
+    <app-brand link="/" />
 
     <nav class="top-bar__nav" [class.is-open]="mobileOpen()" aria-label="Primary">
       @for (item of navItems; track item.labelKey) {

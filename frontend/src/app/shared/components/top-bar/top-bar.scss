@@ -84,7 +84,7 @@
 .top-bar__link:hover,
 .top-bar__link:focus-visible,
 .top-bar__link.is-active {
-  background: rgb(255 255 255 / 4%);
+  background: var(--accent-softer);
   color: var(--text);
 }
 
@@ -122,7 +122,7 @@
 
 .top-bar__dropdown a:hover,
 .top-bar__dropdown a:focus-visible {
-  background: rgb(255 255 255 / 5%);
+  background: var(--accent-softer);
   color: var(--text);
 }
 

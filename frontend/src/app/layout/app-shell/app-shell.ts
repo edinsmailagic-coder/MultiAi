@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, HostListener, OnInit, computed, sig
 import { RouterLink, RouterOutlet } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 import { AuthService } from '../../core/services/auth.service';
+import { ThemeService } from '../../core/services/theme.service';
 import { TopBar } from '../../shared/components/top-bar/top-bar';
 
 @Component({
@@ -19,12 +20,20 @@ export class AppShell implements OnInit {
     return u ? `${u.firstName[0] ?? ''}${u.lastName[0] ?? ''}`.toUpperCase() : 'NX';
   });
 
-  constructor(readonly auth: AuthService) {}
+  constructor(
+    readonly auth: AuthService,
+    readonly theme: ThemeService,
+  ) {}
 
   ngOnInit(): void {
     if (!this.auth.currentUser()) {
       this.auth.loadCurrentUser().subscribe({ error: () => this.auth.logout() });
     }
+  }
+
+  toggleTheme(event: Event): void {
+    event.stopPropagation();
+    this.theme.toggle();
   }
 
   toggleMenu(event: Event): void {

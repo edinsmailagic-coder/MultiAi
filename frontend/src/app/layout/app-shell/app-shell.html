@@ -1,6 +1,20 @@
 <div class="shell">
   <app-top-bar [appMode]="true" [showSubBar]="false">
     <div actions class="shell-actions">
+      <button
+        type="button"
+        class="theme-toggle"
+        (click)="toggleTheme($event)"
+        [attr.aria-label]="theme.theme() === 'dark' ? ('nav.themeLight' | translate) : ('nav.themeDark' | translate)"
+        [attr.title]="theme.theme() === 'dark' ? ('nav.themeLight' | translate) : ('nav.themeDark' | translate)"
+      >
+        @if (theme.theme() === 'dark') {
+          <span aria-hidden="true">☀</span>
+        } @else {
+          <span aria-hidden="true">☾</span>
+        }
+      </button>
+
       <div class="user-menu" [class.is-open]="menuOpen()">
         <button
           type="button"
@@ -46,6 +60,9 @@
           <small>{{ auth.currentUser()?.email }}</small>
         </div>
       </div>
+      <button class="btn btn--ghost" type="button" (click)="toggleTheme($event)">
+        {{ theme.theme() === 'dark' ? ('nav.themeLight' | translate) : ('nav.themeDark' | translate) }}
+      </button>
       <a class="btn btn--ghost" routerLink="/profile" fragment="profile" (click)="closeMenu()">
         {{ 'nav.accountProfile' | translate }}
       </a>
