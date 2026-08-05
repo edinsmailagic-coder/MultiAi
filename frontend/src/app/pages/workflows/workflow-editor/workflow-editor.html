@@ -72,7 +72,19 @@
           ></button>
           <div class="node-head">
             <span class="node-badge">{{ node.nodeType }}</span>
-            <span class="drag-handle" aria-hidden="true">⋮⋮</span>
+            <div class="node-head-actions">
+              <span class="drag-handle" aria-hidden="true">⋮⋮</span>
+              <button
+                class="node-delete"
+                type="button"
+                (pointerdown)="$event.stopPropagation()"
+                (click)="deleteNode(node, $event)"
+                [attr.aria-label]="'common.delete' | translate"
+                [attr.title]="'common.delete' | translate"
+              >
+                ×
+              </button>
+            </div>
           </div>
           <h3>{{ node.name }}</h3>
           <p>{{ node.model }}</p>

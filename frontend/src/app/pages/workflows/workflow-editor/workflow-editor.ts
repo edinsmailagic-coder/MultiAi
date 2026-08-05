@@ -247,7 +247,16 @@ export class WorkflowEditor implements OnInit {
 
   deleteSelected(): void {
     const node = this.selected();
-    if (!node || !confirm(node.name)) {
+    if (!node) {
+      return;
+    }
+    this.deleteNode(node);
+  }
+
+  deleteNode(node: WorkflowNode, event?: Event): void {
+    event?.stopPropagation();
+    event?.preventDefault();
+    if (!confirm(node.name)) {
       return;
     }
 
@@ -257,7 +266,12 @@ export class WorkflowEditor implements OnInit {
         this.connections.update((rows) =>
           rows.filter((row) => row.sourceNodeId !== node.id && row.targetNodeId !== node.id),
         );
-        this.selected.set(null);
+        if (this.selected()?.id === node.id) {
+          this.selected.set(null);
+        }
+        if (this.sourceNodeId() === node.id) {
+          this.cancelConnection();
+        }
         this.toast.showSuccess('toast.nodeDeleted');
       },
       error: () => this.toast.error('toast.deleteError'),
@@ -333,7 +347,12 @@ export class WorkflowEditor implements OnInit {
 
   startDrag(node: WorkflowNode, event: PointerEvent): void {
     const target = event.target as HTMLElement;
-    if (target.classList.contains('port') || target.closest('.port') || this.isConnecting()) {
+    if (
+      target.classList.contains('port') ||
+      target.closest('.port') ||
+      target.closest('.node-delete') ||
+      this.isConnecting()
+    ) {
       return;
     }
     const canvasEl = this.canvas?.nativeElement;
