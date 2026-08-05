@@ -35,13 +35,13 @@
               <strong>{{ auth.currentUser()?.firstName }} {{ auth.currentUser()?.lastName }}</strong>
               <small>{{ auth.currentUser()?.email }}</small>
             </div>
-            <a role="menuitem" routerLink="/profile" fragment="profile" (click)="closeMenu()">
+            <a role="menuitem" routerLink="/profile" (click)="closeMenu()">
               {{ 'nav.accountProfile' | translate }}
             </a>
-            <a role="menuitem" routerLink="/profile" fragment="providers" (click)="closeMenu()">
+            <a role="menuitem" routerLink="/providers" (click)="closeMenu()">
               {{ 'nav.accountProviders' | translate }}
             </a>
-            <a role="menuitem" routerLink="/profile" fragment="settings" (click)="closeMenu()">
+            <a role="menuitem" routerLink="/settings" (click)="closeMenu()">
               {{ 'nav.accountSettings' | translate }}
             </a>
             <button role="menuitem" type="button" class="user-menu__logout" (click)="logout()">
@@ -63,13 +63,13 @@
       <button class="btn btn--ghost" type="button" (click)="toggleTheme($event)">
         {{ theme.theme() === 'dark' ? ('nav.themeLight' | translate) : ('nav.themeDark' | translate) }}
       </button>
-      <a class="btn btn--ghost" routerLink="/profile" fragment="profile" (click)="closeMenu()">
+      <a class="btn btn--ghost" routerLink="/profile" (click)="closeMenu()">
         {{ 'nav.accountProfile' | translate }}
       </a>
-      <a class="btn btn--ghost" routerLink="/profile" fragment="providers" (click)="closeMenu()">
+      <a class="btn btn--ghost" routerLink="/providers" (click)="closeMenu()">
         {{ 'nav.accountProviders' | translate }}
       </a>
-      <a class="btn btn--ghost" routerLink="/profile" fragment="settings" (click)="closeMenu()">
+      <a class="btn btn--ghost" routerLink="/settings" (click)="closeMenu()">
         {{ 'nav.accountSettings' | translate }}
       </a>
       <button class="btn btn--ghost" type="button" (click)="logout()">{{ 'nav.logout' | translate }}</button>

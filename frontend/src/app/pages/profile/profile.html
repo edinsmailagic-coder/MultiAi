@@ -1,117 +1,23 @@
 <section class="page-heading">
   <div>
-    <p class="eyebrow">{{ 'nav.profile' | translate }}</p>
-    <h1>{{ 'profile.title' | translate }}</h1>
-    <p>{{ 'profile.subtitle' | translate }}</p>
+    <p class="eyebrow">{{ 'nav.accountProfile' | translate }}</p>
+    <h1>{{ 'profile.pageTitle' | translate }}</h1>
+    <p>{{ 'profile.pageSubtitle' | translate }}</p>
   </div>
 </section>
 
-<div class="profile-grid">
-  <section id="profile" class="panel profile-anchor">
-    <h2>{{ 'profile.personal' | translate }}</h2>
-    <p class="muted">{{ auth.currentUser()?.email }}</p>
-    <form [formGroup]="profileForm" (ngSubmit)="saveProfile()">
-      <div class="form-row">
-        <label>{{ 'auth.firstName' | translate }}
-          <input formControlName="firstName">
-        </label>
-        <label>{{ 'auth.lastName' | translate }}
-          <input formControlName="lastName">
-        </label>
-      </div>
-      <button class="primary" type="submit">{{ 'common.save' | translate }}</button>
-    </form>
-  </section>
-
-  <section id="settings" class="panel profile-anchor">
-    <h2>{{ 'profile.password' | translate }}</h2>
-    <form [formGroup]="passwordForm" (ngSubmit)="changePassword()">
-      <label>{{ 'profile.currentPassword' | translate }}
-        <input type="password" formControlName="currentPassword" autocomplete="current-password">
+<section class="panel account-card">
+  <h2>{{ 'profile.personal' | translate }}</h2>
+  <p class="muted">{{ auth.currentUser()?.email }}</p>
+  <form [formGroup]="profileForm" (ngSubmit)="saveProfile()">
+    <div class="form-row">
+      <label>{{ 'auth.firstName' | translate }}
+        <input formControlName="firstName">
       </label>
-      <label>{{ 'profile.newPassword' | translate }}
-        <input type="password" formControlName="newPassword" autocomplete="new-password">
+      <label>{{ 'auth.lastName' | translate }}
+        <input formControlName="lastName">
       </label>
-      <button class="primary" type="submit">{{ 'profile.changePassword' | translate }}</button>
-    </form>
-  </section>
-
-  <section class="panel profile-anchor" aria-labelledby="language-heading">
-    <h2 id="language-heading">{{ 'profile.language' | translate }}</h2>
-    <p class="muted">{{ 'profile.languageHint' | translate }}</p>
-    <div class="language-switch" role="group" [attr.aria-label]="'profile.language' | translate">
-      <button
-        type="button"
-        class="secondary"
-        [class.active]="currentLang() === 'bs'"
-        (click)="setLanguage('bs')"
-      >Bosanski</button>
-      <button
-        type="button"
-        class="secondary"
-        [class.active]="currentLang() === 'en'"
-        (click)="setLanguage('en')"
-      >English</button>
     </div>
-  </section>
-
-  <section id="providers" class="panel providers-panel profile-anchor">
-    <h2>{{ 'profile.providers' | translate }}</h2>
-
-    <div class="connected-cards">
-      @for (item of connected(); track item.id) {
-        <article class="connected-card">
-          <div class="connected-card__head">
-            <strong>{{ item.providerName }}</strong>
-            @if (item.isDefault) {
-              <span class="badge">{{ 'profile.defaultProvider' | translate }}</span>
-            }
-          </div>
-
-          <label>{{ 'profile.defaultModel' | translate }}
-            <app-model-select
-              [userProviderId]="item.id"
-              [defaultModel]="item.defaultModel"
-              [supportsModelListing]="item.supportsModelListing !== false"
-              [ngModel]="defaultModelDrafts()[item.id] || ''"
-              (ngModelChange)="onDefaultModelChange(item.id, $event)"
-            />
-          </label>
-
-          <div class="connected-card__actions">
-            <button class="secondary compact" type="button" (click)="saveDefaultModel(item)">
-              {{ 'profile.saveDefaultModel' | translate }}
-            </button>
-            @if (!item.isDefault) {
-              <button class="secondary compact" type="button" (click)="setAsDefaultProvider(item)">
-                {{ 'profile.setDefaultProvider' | translate }}
-              </button>
-            }
-          </div>
-        </article>
-      } @empty {
-        <p class="muted">{{ 'profile.noProviders' | translate }}</p>
-      }
-    </div>
-
-    <form [formGroup]="providerForm" (ngSubmit)="connect()">
-      <label>{{ 'profile.provider' | translate }}
-        <select formControlName="providerId">
-          <option [value]="0">{{ 'profile.selectProvider' | translate }}</option>
-          @for (provider of providers(); track provider.id) {
-            <option [value]="provider.id">{{ provider.name }}</option>
-          }
-        </select>
-      </label>
-      <label>{{ 'profile.apiKey' | translate }}
-        <input type="password" formControlName="apiKey" autocomplete="off">
-      </label>
-      <button class="primary" type="submit">{{ 'profile.connect' | translate }}</button>
-    </form>
-  </section>
-
-  <section class="panel danger-zone">
-    <h2>{{ 'profile.session' | translate }}</h2>
-    <button class="danger-button" type="button" (click)="auth.logout()">{{ 'nav.logout' | translate }}</button>
-  </section>
-</div>
+    <button class="primary" type="submit">{{ 'common.save' | translate }}</button>
+  </form>
+</section>

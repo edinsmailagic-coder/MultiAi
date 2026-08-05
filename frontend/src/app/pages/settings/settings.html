@@ -1,0 +1,46 @@
+<section class="page-heading">
+  <div>
+    <p class="eyebrow">{{ 'nav.accountSettings' | translate }}</p>
+    <h1>{{ 'settings.pageTitle' | translate }}</h1>
+    <p>{{ 'settings.pageSubtitle' | translate }}</p>
+  </div>
+</section>
+
+<div class="settings-grid">
+  <section class="panel">
+    <h2>{{ 'profile.password' | translate }}</h2>
+    <form [formGroup]="passwordForm" (ngSubmit)="changePassword()">
+      <label>{{ 'profile.currentPassword' | translate }}
+        <input type="password" formControlName="currentPassword" autocomplete="current-password">
+      </label>
+      <label>{{ 'profile.newPassword' | translate }}
+        <input type="password" formControlName="newPassword" autocomplete="new-password">
+      </label>
+      <button class="primary" type="submit">{{ 'profile.changePassword' | translate }}</button>
+    </form>
+  </section>
+
+  <section class="panel" aria-labelledby="language-heading">
+    <h2 id="language-heading">{{ 'profile.language' | translate }}</h2>
+    <p class="muted">{{ 'profile.languageHint' | translate }}</p>
+    <div class="language-switch" role="group" [attr.aria-label]="'profile.language' | translate">
+      <button
+        type="button"
+        class="secondary"
+        [class.active]="currentLang() === 'bs'"
+        (click)="setLanguage('bs')"
+      >Bosanski</button>
+      <button
+        type="button"
+        class="secondary"
+        [class.active]="currentLang() === 'en'"
+        (click)="setLanguage('en')"
+      >English</button>
+    </div>
+  </section>
+
+  <section class="panel danger-zone">
+    <h2>{{ 'profile.session' | translate }}</h2>
+    <button class="danger-button" type="button" (click)="auth.logout()">{{ 'nav.logout' | translate }}</button>
+  </section>
+</div>

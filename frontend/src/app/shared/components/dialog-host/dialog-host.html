@@ -1,0 +1,47 @@
+@if (dialogs.dialog(); as dialog) {
+  <div class="modal-backdrop" (click)="dialogs.dismiss()">
+    <section
+      class="modal confirm-modal"
+      (click)="$event.stopPropagation()"
+      role="dialog"
+      aria-modal="true"
+      [attr.aria-labelledby]="'app-dialog-title'"
+    >
+      <h2 id="app-dialog-title">{{ dialog.title }}</h2>
+
+      @if (dialog.message) {
+        <p>{{ dialog.message }}</p>
+      }
+
+      @if (dialog.kind === 'prompt') {
+        <label class="prompt-field">
+          <span class="sr-only">{{ dialog.title }}</span>
+          <input
+            #promptInput
+            [ngModel]="dialog.value"
+            (ngModelChange)="dialogs.setPromptValue($event)"
+            [placeholder]="dialog.placeholder || ''"
+            (keydown.enter)="dialogs.accept()"
+            (keydown.escape)="dialogs.dismiss()"
+          />
+        </label>
+      }
+
+      <div class="modal-actions">
+        <button class="secondary" type="button" (click)="dialogs.dismiss()">
+          {{ dialog.cancelLabel || ('common.cancel' | translate) }}
+        </button>
+        <button
+          [class]="dialog.kind === 'confirm' && dialog.danger !== false ? 'danger-button' : 'primary'"
+          type="button"
+          (click)="dialogs.accept()"
+        >
+          {{
+            dialog.confirmLabel ||
+              ((dialog.kind === 'confirm' ? 'common.delete' : 'common.save') | translate)
+          }}
+        </button>
+      </div>
+    </section>
+  </div>
+}

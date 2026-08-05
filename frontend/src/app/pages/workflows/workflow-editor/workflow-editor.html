@@ -171,7 +171,7 @@
         @if (!providers().length) {
           <div class="notice">
             {{ 'workflow.connectFirst' | translate }}
-            <a routerLink="/profile">{{ 'nav.profile' | translate }}</a>
+            <a routerLink="/providers">{{ 'nav.accountProviders' | translate }}</a>
           </div>
         } @else {
           <form [formGroup]="addForm" (ngSubmit)="addNode()">

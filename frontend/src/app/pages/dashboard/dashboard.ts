@@ -2,11 +2,12 @@ import { CurrencyPipe, DecimalPipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, OnInit, computed, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
-import { TranslatePipe } from '@ngx-translate/core';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { catchError, forkJoin, of } from 'rxjs';
 import { UsageStats } from '../../core/models/usage.model';
 import { Workflow } from '../../core/models/workflow.model';
 import { AuthService } from '../../core/services/auth.service';
+import { AppDialogService } from '../../core/services/app-dialog.service';
 import { ProviderService } from '../../core/services/provider.service';
 import { ToastService } from '../../core/services/toast.service';
 import { UsageService } from '../../core/services/usage.service';
@@ -41,6 +42,8 @@ export class Dashboard implements OnInit {
     private readonly providerService: ProviderService,
     private readonly usageService: UsageService,
     private readonly toast: ToastService,
+    private readonly dialogs: AppDialogService,
+    private readonly translate: TranslateService,
     private readonly router: Router,
   ) {
     this.createForm = fb.nonNullable.group({
@@ -86,10 +89,14 @@ export class Dashboard implements OnInit {
     });
   }
 
-  delete(workflow: Workflow, event: Event): void {
+  async delete(workflow: Workflow, event: Event): Promise<void> {
     event.preventDefault();
     event.stopPropagation();
-    if (!confirm(`${workflow.name}?`)) {
+    const ok = await this.dialogs.confirm({
+      title: this.translate.instant('workflow.deleteTitle'),
+      message: this.translate.instant('workflow.deleteText', { name: workflow.name }),
+    });
+    if (!ok) {
       return;
     }
     this.workflowService.delete(workflow.id).subscribe({

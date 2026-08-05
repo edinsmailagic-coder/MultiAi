@@ -77,9 +77,17 @@
 
 .chat-history__section-header {
   align-items: center;
+  border: 1px dashed transparent;
+  border-radius: 8px;
   display: flex;
   justify-content: space-between;
   padding: 0.35rem 0.45rem;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.chat-history__section-header.drop-target {
+  background: var(--accent-soft);
+  border-color: var(--accent);
 }
 
 .chat-history__section-header h3 {
@@ -95,10 +103,20 @@
 .chat-history__item {
   align-items: center;
   border-radius: 8px;
+  cursor: grab;
   display: grid;
   gap: 0.35rem;
   grid-template-columns: 1fr auto;
   padding: 0.35rem;
+  position: relative;
+}
+
+.chat-history__item.dragging {
+  opacity: 0.45;
+}
+
+.chat-history__item:active {
+  cursor: grabbing;
 }
 
 .chat-history__item.active {
@@ -124,6 +142,7 @@
 }
 
 .chat-history__actions {
+  align-items: center;
   display: flex;
   gap: 0.15rem;
 }
@@ -133,16 +152,70 @@
   width: 100%;
 }
 
-.chat-history__folder-select {
-  background: var(--input-bg);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  color: var(--muted);
-  font-size: 0.72rem;
-  grid-column: 1 / -1;
-  min-width: 0;
-  padding: 0.25rem 0.4rem;
+.chat-history__menu-wrap {
+  position: relative;
+}
+
+.chat-history__menu,
+.chat-history__submenu {
+  background: var(--panel);
+  border: 1px solid var(--border-strong);
+  border-radius: 10px;
+  box-shadow: var(--shadow-soft);
+  display: grid;
+  gap: 0.15rem;
+  min-width: 170px;
+  padding: 0.35rem;
+  z-index: 20;
+}
+
+.chat-history__menu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 0.25rem);
+}
+
+.chat-history__menu-group {
+  position: relative;
+}
+
+.chat-history__submenu {
+  left: auto;
+  max-height: 220px;
+  min-width: 160px;
+  overflow: auto;
+  position: absolute;
+  right: calc(100% + 0.25rem);
+  top: 0;
+}
+
+.chat-history__menu button,
+.chat-history__submenu button {
+  background: transparent;
+  border: 0;
+  border-radius: 7px;
+  color: var(--text);
+  cursor: pointer;
+  font-size: 0.85rem;
+  padding: 0.55rem 0.65rem;
+  text-align: left;
   width: 100%;
+}
+
+.chat-history__menu-parent {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+}
+
+.chat-history__menu button:hover,
+.chat-history__submenu button:hover,
+.chat-history__submenu button.active {
+  background: var(--accent-soft);
+}
+
+.chat-history__menu button.danger {
+  color: var(--danger-text);
 }
 
 .chat-history__empty {

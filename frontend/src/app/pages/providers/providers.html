@@ -1,0 +1,62 @@
+<section class="page-heading">
+  <div>
+    <p class="eyebrow">{{ 'nav.accountProviders' | translate }}</p>
+    <h1>{{ 'providers.pageTitle' | translate }}</h1>
+    <p>{{ 'providers.pageSubtitle' | translate }}</p>
+  </div>
+</section>
+
+<section class="panel providers-panel">
+  <h2>{{ 'profile.providers' | translate }}</h2>
+
+  <div class="connected-cards">
+    @for (item of connected(); track item.id) {
+      <article class="connected-card">
+        <div class="connected-card__head">
+          <strong>{{ item.providerName }}</strong>
+          @if (item.isDefault) {
+            <span class="badge">{{ 'profile.defaultProvider' | translate }}</span>
+          }
+        </div>
+
+        <label>{{ 'profile.defaultModel' | translate }}
+          <app-model-select
+            [userProviderId]="item.id"
+            [defaultModel]="item.defaultModel"
+            [supportsModelListing]="item.supportsModelListing !== false"
+            [ngModel]="defaultModelDrafts()[item.id] || ''"
+            (ngModelChange)="onDefaultModelChange(item.id, $event)"
+          />
+        </label>
+
+        <div class="connected-card__actions">
+          <button class="secondary compact" type="button" (click)="saveDefaultModel(item)">
+            {{ 'profile.saveDefaultModel' | translate }}
+          </button>
+          @if (!item.isDefault) {
+            <button class="secondary compact" type="button" (click)="setAsDefaultProvider(item)">
+              {{ 'profile.setDefaultProvider' | translate }}
+            </button>
+          }
+        </div>
+      </article>
+    } @empty {
+      <p class="muted">{{ 'profile.noProviders' | translate }}</p>
+    }
+  </div>
+
+  <form [formGroup]="providerForm" (ngSubmit)="connect()">
+    <label>{{ 'profile.provider' | translate }}
+      <select formControlName="providerId">
+        <option [value]="0">{{ 'profile.selectProvider' | translate }}</option>
+        @for (provider of providers(); track provider.id) {
+          <option [value]="provider.id">{{ provider.name }}</option>
+        }
+      </select>
+    </label>
+    <label>{{ 'profile.apiKey' | translate }}
+      <input type="password" formControlName="apiKey" autocomplete="off">
+    </label>
+    <button class="primary" type="submit">{{ 'profile.connect' | translate }}</button>
+  </form>
+</section>

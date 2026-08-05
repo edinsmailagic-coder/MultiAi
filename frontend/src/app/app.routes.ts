@@ -46,6 +46,8 @@ export const routes: Routes = [
         loadComponent: () => import('./pages/workflows/workflow-editor/workflow-editor').then((m) => m.WorkflowEditor),
       },
       { path: 'profile', loadComponent: () => import('./pages/profile/profile').then((m) => m.Profile) },
+      { path: 'providers', loadComponent: () => import('./pages/providers/providers').then((m) => m.Providers) },
+      { path: 'settings', loadComponent: () => import('./pages/settings/settings').then((m) => m.Settings) },
     ],
   },
   { path: '**', redirectTo: '' },

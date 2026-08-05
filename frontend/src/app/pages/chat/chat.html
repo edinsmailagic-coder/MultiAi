@@ -15,7 +15,13 @@
       <nav class="chat-history__list" role="list">
         @for (folder of folders(); track folder.id) {
           <section class="chat-history__section">
-            <header class="chat-history__section-header">
+            <header
+              class="chat-history__section-header"
+              [class.drop-target]="isDropTarget(folder.id)"
+              (dragover)="onFolderDragOver(folder.id, $event)"
+              (dragleave)="onFolderDragLeave(folder.id, $event)"
+              (drop)="onFolderDrop(folder.id, $event)"
+            >
               <h3>📁 {{ folder.name }}</h3>
               <div class="chat-history__actions">
                 <button type="button" class="icon-btn" [attr.aria-label]="'chat.rename' | translate" (click)="renameFolder(folder, $event)">✎</button>
@@ -24,59 +30,25 @@
             </header>
 
             @for (item of conversationsForFolder(folder.id); track item.id) {
-              <div class="chat-history__item" role="listitem" [class.active]="conversationId() === item.id">
-                @if (renamingId() === item.id) {
-                  <input class="chat-history__rename" [value]="item.title" (click)="$event.stopPropagation()" (keydown.enter)="commitRename(item, $event)" (blur)="commitRename(item, $event)">
-                } @else {
-                  <button type="button" class="chat-history__open" (click)="openConversation(item.id)">
-                    <span>@if (item.isPinned) { 📌 } {{ item.title }}</span>
-                  </button>
-                  <div class="chat-history__actions">
-                    <button type="button" class="icon-btn" [class.pinned]="item.isPinned" [attr.aria-label]="(item.isPinned ? 'chat.unpin' : 'chat.pin') | translate" (click)="togglePinned(item, $event)">📌</button>
-                    <button type="button" class="icon-btn" [attr.aria-label]="'chat.rename' | translate" (click)="startRename(item, $event)">✎</button>
-                    <button type="button" class="icon-btn danger" [attr.aria-label]="'common.delete' | translate" (click)="deleteConversation(item, $event)">×</button>
-                  </div>
-                  <select class="chat-history__folder-select" [value]="item.folderId ?? ''" [attr.aria-label]="'chat.moveToFolder' | translate" (change)="moveToFolder(item, $event)">
-                    <option value="">{{ 'chat.ungrouped' | translate }}</option>
-                    @for (targetFolder of folders(); track targetFolder.id) {
-                      <option [value]="targetFolder.id">{{ targetFolder.name }}</option>
-                    }
-                  </select>
-                }
-              </div>
+              <ng-container *ngTemplateOutlet="conversationRow; context: { $implicit: item }" />
             }
           </section>
         }
 
-        @if (conversationsForFolder(null).length) {
-          <section class="chat-history__section">
-            <header class="chat-history__section-header">
-              <h3>{{ 'chat.ungrouped' | translate }}</h3>
-            </header>
-            @for (item of conversationsForFolder(null); track item.id) {
-              <div class="chat-history__item" role="listitem" [class.active]="conversationId() === item.id">
-                @if (renamingId() === item.id) {
-                  <input class="chat-history__rename" [value]="item.title" (click)="$event.stopPropagation()" (keydown.enter)="commitRename(item, $event)" (blur)="commitRename(item, $event)">
-                } @else {
-                  <button type="button" class="chat-history__open" (click)="openConversation(item.id)">
-                    <span>@if (item.isPinned) { 📌 } {{ item.title }}</span>
-                  </button>
-                  <div class="chat-history__actions">
-                    <button type="button" class="icon-btn" [class.pinned]="item.isPinned" [attr.aria-label]="(item.isPinned ? 'chat.unpin' : 'chat.pin') | translate" (click)="togglePinned(item, $event)">📌</button>
-                    <button type="button" class="icon-btn" [attr.aria-label]="'chat.rename' | translate" (click)="startRename(item, $event)">✎</button>
-                    <button type="button" class="icon-btn danger" [attr.aria-label]="'common.delete' | translate" (click)="deleteConversation(item, $event)">×</button>
-                  </div>
-                  <select class="chat-history__folder-select" [value]="item.folderId ?? ''" [attr.aria-label]="'chat.moveToFolder' | translate" (change)="moveToFolder(item, $event)">
-                    <option value="">{{ 'chat.ungrouped' | translate }}</option>
-                    @for (targetFolder of folders(); track targetFolder.id) {
-                      <option [value]="targetFolder.id">{{ targetFolder.name }}</option>
-                    }
-                  </select>
-                }
-              </div>
-            }
-          </section>
-        }
+        <section class="chat-history__section">
+          <header
+            class="chat-history__section-header"
+            [class.drop-target]="isDropTarget(null)"
+            (dragover)="onFolderDragOver(null, $event)"
+            (dragleave)="onFolderDragLeave(null, $event)"
+            (drop)="onFolderDrop(null, $event)"
+          >
+            <h3>{{ 'chat.ungrouped' | translate }}</h3>
+          </header>
+          @for (item of conversationsForFolder(null); track item.id) {
+            <ng-container *ngTemplateOutlet="conversationRow; context: { $implicit: item }" />
+          }
+        </section>
 
         @if (!conversations().length) {
           <p class="muted chat-history__empty">{{ 'chat.noHistory' | translate }}</p>
@@ -84,6 +56,98 @@
       </nav>
     </aside>
   }
+
+  <ng-template #conversationRow let-item>
+    <div
+      class="chat-history__item"
+      role="listitem"
+      [class.active]="conversationId() === item.id"
+      [class.dragging]="dragConversationId() === item.id"
+      [attr.draggable]="renamingId() !== item.id"
+      (dragstart)="onConversationDragStart(item, $event)"
+      (dragend)="onConversationDragEnd()"
+    >
+      @if (renamingId() === item.id) {
+        <input
+          class="chat-history__rename"
+          [value]="item.title"
+          (click)="$event.stopPropagation()"
+          (keydown.enter)="commitRename(item, $event)"
+          (blur)="commitRename(item, $event)"
+        >
+      } @else {
+        <button type="button" class="chat-history__open" (click)="openConversation(item.id)">
+          <span>{{ item.title }}</span>
+        </button>
+        <div class="chat-history__actions">
+          <button
+            type="button"
+            class="icon-btn"
+            [class.pinned]="item.isPinned"
+            [attr.aria-label]="(item.isPinned ? 'chat.unpin' : 'chat.pin') | translate"
+            (click)="togglePinned(item, $event)"
+          >📌</button>
+
+          <div class="chat-history__menu-wrap">
+            <button
+              type="button"
+              class="icon-btn"
+              [attr.aria-label]="'chat.moreActions' | translate"
+              [attr.aria-expanded]="menuOpenId() === item.id"
+              (click)="toggleMenu(item, $event)"
+            >⋮</button>
+
+            @if (menuOpenId() === item.id) {
+              <div class="chat-history__menu" role="menu" (click)="$event.stopPropagation()">
+                <button type="button" role="menuitem" (click)="onMenuRename(item, $event)">
+                  {{ 'chat.rename' | translate }}
+                </button>
+
+                <div class="chat-history__menu-group">
+                  <button
+                    type="button"
+                    role="menuitem"
+                    class="chat-history__menu-parent"
+                    (click)="toggleFolderSubmenu($event)"
+                  >
+                    {{ 'chat.moveToFolder' | translate }}
+                    <span aria-hidden="true">›</span>
+                  </button>
+
+                  @if (folderSubmenuOpen()) {
+                    <div class="chat-history__submenu" role="menu">
+                      <button
+                        type="button"
+                        role="menuitem"
+                        [class.active]="!item.folderId"
+                        (click)="assignToFolder(item, null, $event)"
+                      >
+                        {{ 'chat.ungrouped' | translate }}
+                      </button>
+                      @for (target of folders(); track target.id) {
+                        <button
+                          type="button"
+                          role="menuitem"
+                          [class.active]="item.folderId === target.id"
+                          (click)="assignToFolder(item, target.id, $event)"
+                        >
+                          {{ target.name }}
+                        </button>
+                      }
+                    </div>
+                  }
+                </div>
+
+                <button type="button" role="menuitem" class="danger" (click)="onMenuDelete(item, $event)">
+                  {{ 'common.delete' | translate }}
+                </button>
+              </div>
+            }
+          </div>
+        </div>
+      }
+    </div>
+  </ng-template>
 
   <section class="chat-main">
     <header class="chat-main__header">

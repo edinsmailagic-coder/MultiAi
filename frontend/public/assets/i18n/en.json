@@ -58,6 +58,8 @@
     "allTitle": "All workflows",
     "allSubtitle": "Build, inspect, and run your AI workflows.",
     "createOnDashboard": "Create on dashboard",
+    "deleteTitle": "Delete workflow?",
+    "deleteText": "Do you want to delete “{{name}}”?",
     "addNode": "Add node",
     "execute": "Execute",
     "editNode": "Edit node",
@@ -88,6 +90,8 @@
   "profile": {
     "title": "Profile & providers",
     "subtitle": "Manage your identity, security, and AI connections.",
+    "pageTitle": "Profile",
+    "pageSubtitle": "Update your account details.",
     "personal": "Personal details",
     "password": "Change password",
     "currentPassword": "Current password",
@@ -106,6 +110,14 @@
     "defaultProvider": "Default",
     "language": "Language",
     "languageHint": "Choose the interface language."
+  },
+  "providers": {
+    "pageTitle": "Providers",
+    "pageSubtitle": "Connect AI providers and manage default models."
+  },
+  "settings": {
+    "pageTitle": "Settings",
+    "pageSubtitle": "Password, language, and session."
   },
   "chat": {
     "title": "New chat",
@@ -133,7 +145,13 @@
     "newFolder": "New folder",
     "ungrouped": "Ungrouped",
     "moveToFolder": "Move to folder",
+    "moreActions": "More actions",
     "deleteFolder": "Delete folder",
+    "deleteFolderText": "Do you want to delete folder “{{name}}”? Conversations become ungrouped.",
+    "renameFolder": "Rename folder",
+    "folderNamePlaceholder": "Folder name",
+    "deleteConversation": "Delete conversation?",
+    "deleteConversationText": "Do you want to delete “{{name}}”?",
     "attach": "Attach",
     "removeAttachment": "Remove attachment"
   },

@@ -1,8 +1,9 @@
-import { ChangeDetectionStrategy, Component, OnInit, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
-import { TranslatePipe } from '@ngx-translate/core';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { Workflow } from '../../../core/models/workflow.model';
+import { AppDialogService } from '../../../core/services/app-dialog.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { WorkflowService } from '../../../core/services/workflow.service';
 
@@ -19,12 +20,13 @@ export class WorkflowList implements OnInit {
   readonly showCreate = signal(false);
   readonly createForm;
 
-  constructor(
-    fb: FormBuilder,
-    private readonly service: WorkflowService,
-    private readonly toast: ToastService,
-    private readonly router: Router,
-  ) {
+  private readonly service = inject(WorkflowService);
+  private readonly toast = inject(ToastService);
+  private readonly dialogs = inject(AppDialogService);
+  private readonly translate = inject(TranslateService);
+  private readonly router = inject(Router);
+
+  constructor(fb: FormBuilder) {
     this.createForm = fb.nonNullable.group({
       name: ['', Validators.required],
       description: ['', Validators.required],
@@ -62,10 +64,14 @@ export class WorkflowList implements OnInit {
     });
   }
 
-  delete(item: Workflow, event: Event): void {
+  async delete(item: Workflow, event: Event): Promise<void> {
     event.preventDefault();
     event.stopPropagation();
-    if (!confirm(`${item.name}?`)) {
+    const ok = await this.dialogs.confirm({
+      title: this.translate.instant('workflow.deleteTitle'),
+      message: this.translate.instant('workflow.deleteText', { name: item.name }),
+    });
+    if (!ok) {
       return;
     }
     this.service.delete(item.id).subscribe({

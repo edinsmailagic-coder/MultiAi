@@ -2,12 +2,14 @@ import {
   ChangeDetectionStrategy,
   Component,
   ElementRef,
+  HostListener,
   OnInit,
   ViewChild,
   computed,
   inject,
   signal,
 } from '@angular/core';
+import { NgTemplateOutlet } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
@@ -21,6 +23,7 @@ import {
 import { ConnectedProvider } from '../../core/models/provider.model';
 import { Workflow } from '../../core/models/workflow.model';
 import { ChatService } from '../../core/services/chat.service';
+import { AppDialogService } from '../../core/services/app-dialog.service';
 import { ProviderService } from '../../core/services/provider.service';
 import { ToastService } from '../../core/services/toast.service';
 import { WorkflowService } from '../../core/services/workflow.service';
@@ -28,7 +31,7 @@ import { ModelSelect } from '../../shared/components/model-select/model-select';
 
 @Component({
   selector: 'app-chat',
-  imports: [ReactiveFormsModule, TranslatePipe, ModelSelect],
+  imports: [NgTemplateOutlet, ReactiveFormsModule, TranslatePipe, ModelSelect],
   templateUrl: './chat.html',
   styleUrl: './chat.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -44,6 +47,7 @@ export class Chat implements OnInit {
   private readonly workflowService = inject(WorkflowService);
   private readonly toast = inject(ToastService);
   private readonly translate = inject(TranslateService);
+  private readonly dialogs = inject(AppDialogService);
   private readonly fb = inject(FormBuilder);
 
   readonly conversations = signal<ConversationListItem[]>([]);
@@ -58,6 +62,10 @@ export class Chat implements OnInit {
   readonly sending = signal(false);
   readonly historyOpen = signal(false);
   readonly renamingId = signal<number | null>(null);
+  readonly menuOpenId = signal<number | null>(null);
+  readonly folderSubmenuOpen = signal(false);
+  readonly dragConversationId = signal<number | null>(null);
+  readonly dropTargetKey = signal<string | null>(null);
   readonly selectedProviderId = signal(0);
   readonly workflowMode = signal(false);
   readonly uploadingAttachments = signal(0);
@@ -165,8 +173,12 @@ export class Chat implements OnInit {
     return this.conversations().filter((item) => (item.folderId ?? null) === folderId);
   }
 
-  createFolder(): void {
-    const name = prompt(this.translate.instant('chat.newFolder'))?.trim();
+  async createFolder(): Promise<void> {
+    const name = await this.dialogs.prompt({
+      title: this.translate.instant('chat.newFolder'),
+      placeholder: this.translate.instant('chat.folderNamePlaceholder'),
+      confirmLabel: this.translate.instant('common.create'),
+    });
     if (!name) {
       return;
     }
@@ -177,9 +189,14 @@ export class Chat implements OnInit {
     });
   }
 
-  renameFolder(folder: ConversationFolder, event: Event): void {
+  async renameFolder(folder: ConversationFolder, event: Event): Promise<void> {
     event.stopPropagation();
-    const name = prompt(this.translate.instant('chat.folder'), folder.name)?.trim();
+    const name = await this.dialogs.prompt({
+      title: this.translate.instant('chat.renameFolder'),
+      defaultValue: folder.name,
+      placeholder: this.translate.instant('chat.folderNamePlaceholder'),
+      confirmLabel: this.translate.instant('common.save'),
+    });
     if (!name || name === folder.name) {
       return;
     }
@@ -193,9 +210,13 @@ export class Chat implements OnInit {
     });
   }
 
-  deleteFolder(folder: ConversationFolder, event: Event): void {
+  async deleteFolder(folder: ConversationFolder, event: Event): Promise<void> {
     event.stopPropagation();
-    if (!confirm(`${this.translate.instant('chat.deleteFolder')}: ${folder.name}?`)) {
+    const ok = await this.dialogs.confirm({
+      title: this.translate.instant('chat.deleteFolder'),
+      message: this.translate.instant('chat.deleteFolderText', { name: folder.name }),
+    });
+    if (!ok) {
       return;
     }
 
@@ -224,6 +245,118 @@ export class Chat implements OnInit {
     event.stopPropagation();
     const raw = (event.target as HTMLSelectElement).value;
     const folderId = raw ? Number(raw) : null;
+    this.assignConversationFolder(item, folderId);
+  }
+
+  toggleMenu(item: ConversationListItem, event: Event): void {
+    event.stopPropagation();
+    if (this.menuOpenId() === item.id) {
+      this.closeMenu();
+      return;
+    }
+    this.menuOpenId.set(item.id);
+    this.folderSubmenuOpen.set(false);
+  }
+
+  toggleFolderSubmenu(event: Event): void {
+    event.stopPropagation();
+    this.folderSubmenuOpen.update((open) => !open);
+  }
+
+  closeMenu(): void {
+    this.menuOpenId.set(null);
+    this.folderSubmenuOpen.set(false);
+  }
+
+  onMenuRename(item: ConversationListItem, event: Event): void {
+    this.closeMenu();
+    this.startRename(item, event);
+  }
+
+  onMenuDelete(item: ConversationListItem, event: Event): void {
+    this.closeMenu();
+    void this.deleteConversation(item, event);
+  }
+
+  assignToFolder(item: ConversationListItem, folderId: number | null, event: Event): void {
+    event.stopPropagation();
+    this.closeMenu();
+    this.assignConversationFolder(item, folderId);
+  }
+
+  onConversationDragStart(item: ConversationListItem, event: DragEvent): void {
+    if (this.renamingId() === item.id) {
+      event.preventDefault();
+      return;
+    }
+    this.closeMenu();
+    this.dragConversationId.set(item.id);
+    event.dataTransfer?.setData('text/plain', String(item.id));
+    if (event.dataTransfer) {
+      event.dataTransfer.effectAllowed = 'move';
+    }
+  }
+
+  onConversationDragEnd(): void {
+    this.dragConversationId.set(null);
+    this.dropTargetKey.set(null);
+  }
+
+  onFolderDragOver(folderId: number | null, event: DragEvent): void {
+    if (this.dragConversationId() === null) {
+      return;
+    }
+    event.preventDefault();
+    if (event.dataTransfer) {
+      event.dataTransfer.dropEffect = 'move';
+    }
+    this.dropTargetKey.set(this.dropKey(folderId));
+  }
+
+  onFolderDragLeave(folderId: number | null, event: DragEvent): void {
+    const related = event.relatedTarget as Node | null;
+    const current = event.currentTarget as HTMLElement;
+    if (related && current.contains(related)) {
+      return;
+    }
+    if (this.dropTargetKey() === this.dropKey(folderId)) {
+      this.dropTargetKey.set(null);
+    }
+  }
+
+  onFolderDrop(folderId: number | null, event: DragEvent): void {
+    event.preventDefault();
+    const raw = event.dataTransfer?.getData('text/plain');
+    const conversationId = Number(raw || this.dragConversationId());
+    this.dragConversationId.set(null);
+    this.dropTargetKey.set(null);
+    if (!Number.isFinite(conversationId) || conversationId <= 0) {
+      return;
+    }
+    const item = this.conversations().find((row) => row.id === conversationId);
+    if (!item) {
+      return;
+    }
+    this.assignConversationFolder(item, folderId);
+  }
+
+  isDropTarget(folderId: number | null): boolean {
+    return this.dropTargetKey() === this.dropKey(folderId);
+  }
+
+  @HostListener('document:click')
+  onDocumentClick(): void {
+    this.closeMenu();
+  }
+
+  private dropKey(folderId: number | null): string {
+    return folderId === null ? 'ungrouped' : `folder:${folderId}`;
+  }
+
+  private assignConversationFolder(item: ConversationListItem, folderId: number | null): void {
+    if ((item.folderId ?? null) === folderId) {
+      return;
+    }
     this.chatService.assignFolder(item.id, folderId).subscribe({
       next: (updated) => this.replaceAndSortConversation(updated),
       error: () => this.toast.error('toast.folderError'),
@@ -257,9 +390,13 @@ export class Chat implements OnInit {
     });
   }
 
-  deleteConversation(item: ConversationListItem, event: Event): void {
+  async deleteConversation(item: ConversationListItem, event: Event): Promise<void> {
     event.stopPropagation();
-    if (!confirm(`Delete "${item.title}"?`)) {
+    const ok = await this.dialogs.confirm({
+      title: this.translate.instant('chat.deleteConversation'),
+      message: this.translate.instant('chat.deleteConversationText', { name: item.title }),
+    });
+    if (!ok) {
       return;
     }
 

@@ -58,6 +58,8 @@
     "allTitle": "Svi tokovi rada",
     "allSubtitle": "Kreirajte, pregledajte i pokrenite AI tokove.",
     "createOnDashboard": "Kreiraj na kontrolnoj tabli",
+    "deleteTitle": "Obriši tok?",
+    "deleteText": "Želite li obrisati „{{name}}“?",
     "addNode": "Dodaj Node",
     "execute": "Pokreni",
     "editNode": "Uredi Node",
@@ -88,6 +90,8 @@
   "profile": {
     "title": "Profil i provajderi",
     "subtitle": "Upravljajte identitetom, sigurnošću i AI vezama.",
+    "pageTitle": "Profil",
+    "pageSubtitle": "Ažurirajte lične podatke naloga.",
     "personal": "Lični podaci",
     "password": "Promjena lozinke",
     "currentPassword": "Trenutna lozinka",
@@ -106,6 +110,14 @@
     "defaultProvider": "Podrazumijevani",
     "language": "Jezik",
     "languageHint": "Odaberite jezik interfejsa."
+  },
+  "providers": {
+    "pageTitle": "Provajderi",
+    "pageSubtitle": "Povežite AI provajdere i upravljajte podrazumijevanim modelima."
+  },
+  "settings": {
+    "pageTitle": "Postavke",
+    "pageSubtitle": "Lozinka, jezik i sesija."
   },
   "chat": {
     "title": "Novi chat",
@@ -133,7 +145,13 @@
     "newFolder": "Novi folder",
     "ungrouped": "Bez foldera",
     "moveToFolder": "Premjesti u folder",
+    "moreActions": "Više akcija",
     "deleteFolder": "Obriši folder",
+    "deleteFolderText": "Želite li obrisati folder „{{name}}“? Konverzacije ostaju bez foldera.",
+    "renameFolder": "Preimenuj folder",
+    "folderNamePlaceholder": "Naziv foldera",
+    "deleteConversation": "Obriši konverzaciju?",
+    "deleteConversationText": "Želite li obrisati „{{name}}“?",
     "attach": "Priloži",
     "removeAttachment": "Ukloni prilog"
   },
