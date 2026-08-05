@@ -14,13 +14,33 @@
 
 .chat-history {
   background: var(--panel-gradient);
-  border-right: 1px solid var(--border);
+  border-right: 1px solid transparent;
   display: flex;
-  flex: 0 0 340px;
+  flex: 0 0 0;
   flex-direction: column;
+  max-width: 0;
   min-height: 0;
   min-width: 0;
+  opacity: 0;
   overflow: hidden;
+  pointer-events: none;
+  transform: translateX(-10px);
+  transition:
+    flex-basis 0.24s cubic-bezier(0.22, 1, 0.36, 1),
+    max-width 0.24s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.18s ease,
+    transform 0.24s cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 0.18s ease;
+}
+
+.chat-layout.history-open .chat-history,
+.chat-history.is-open {
+  border-right-color: var(--border);
+  flex-basis: 340px;
+  max-width: 340px;
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateX(0);
 }
 
 .chat-history__header {
@@ -148,6 +168,7 @@
 
 .chat-history__menu,
 .chat-history__submenu {
+  animation: ui-pop-in 0.16s cubic-bezier(0.22, 1, 0.36, 1);
   background: var(--panel);
   border: 1px solid var(--border-strong);
   border-radius: 10px;
@@ -608,10 +629,20 @@
     bottom: 0;
     flex: none;
     left: 0;
+    max-width: min(340px, 92vw);
     position: absolute;
     top: 0;
+    transform: translateX(-105%);
     width: min(340px, 92vw);
     z-index: 40;
+  }
+
+  .chat-layout.history-open .chat-history,
+  .chat-history.is-open {
+    box-shadow: 12px 0 30px rgb(0 0 0 / 28%);
+    flex-basis: auto;
+    max-width: min(340px, 92vw);
+    transform: translateX(0);
   }
 
   .chat-composer__row {

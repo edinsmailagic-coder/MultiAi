@@ -1,6 +1,10 @@
 <div class="chat-layout" [class.history-open]="historyOpen()">
-  @if (historyOpen()) {
-    <aside class="chat-history" [attr.aria-label]="'chat.history' | translate">
+  <aside
+    class="chat-history"
+    [class.is-open]="historyOpen()"
+    [attr.aria-hidden]="!historyOpen()"
+    [attr.aria-label]="'chat.history' | translate"
+  >
       <div class="chat-history__header">
         <div class="chat-history__header-actions">
           <button class="secondary compact" type="button" (click)="createFolder()">
@@ -53,8 +57,7 @@
           <p class="muted chat-history__empty">{{ 'chat.noHistory' | translate }}</p>
         }
       </nav>
-    </aside>
-  }
+  </aside>
 
   <ng-template #conversationRow let-item>
     <div

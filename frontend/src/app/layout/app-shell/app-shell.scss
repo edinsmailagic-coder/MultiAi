@@ -112,6 +112,7 @@
 }
 
 .user-menu__dropdown {
+  animation: ui-pop-in 0.16s cubic-bezier(0.22, 1, 0.36, 1);
   background: var(--bg-elevated);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius);

@@ -2,6 +2,47 @@
 @use '@angular/material/prebuilt-themes/azure-blue.css';
 @use './styles/theme';
 
+@keyframes ui-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes ui-pop-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes ui-slide-in-right {
+  from {
+    opacity: 0;
+    transform: translateX(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
 * {
   box-sizing: border-box;
 }
@@ -612,6 +653,7 @@ form {
 
 .modal-backdrop {
   align-items: center;
+  animation: ui-fade-in 0.18s ease;
   background: rgb(0 0 0 / 72%);
   display: flex;
   inset: 0;
@@ -622,6 +664,7 @@ form {
 }
 
 .modal {
+  animation: ui-pop-in 0.2s cubic-bezier(0.22, 1, 0.36, 1);
   background: var(--panel-gradient);
   border: 1px solid var(--border);
   border-radius: var(--radius);
@@ -969,6 +1012,7 @@ form {
 
 .connect-hint {
   align-items: center;
+  animation: ui-pop-in 0.18s cubic-bezier(0.22, 1, 0.36, 1);
   background: var(--accent-soft);
   border-bottom: 1px solid rgb(217 119 87 / 30%);
   color: var(--text-secondary);
@@ -997,6 +1041,7 @@ form {
 }
 
 .side-panel {
+  animation: ui-slide-in-right 0.22s cubic-bezier(0.22, 1, 0.36, 1);
   background: var(--panel);
   border-left: 1px solid var(--border);
   bottom: 0;

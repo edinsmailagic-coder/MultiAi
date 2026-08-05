@@ -79,6 +79,7 @@
 }
 
 .app-select__panel {
+  animation: ui-pop-in 0.16s cubic-bezier(0.22, 1, 0.36, 1);
   background: var(--panel);
   border: 1px solid var(--border);
   border-radius: var(--radius);
