@@ -5,7 +5,8 @@ import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { finalize, switchMap } from 'rxjs';
 import { AuthService } from '../../core/services/auth.service';
 import { ToastService } from '../../core/services/toast.service';
-@Component({ selector: 'app-login', imports: [ReactiveFormsModule, RouterLink, TranslatePipe], templateUrl: './login.html', styleUrl: './login.scss', changeDetection: ChangeDetectionStrategy.OnPush })
+import { Brand } from '../../shared/components/brand/brand';
+@Component({ selector: 'app-login', imports: [ReactiveFormsModule, RouterLink, TranslatePipe, Brand], templateUrl: './login.html', styleUrl: './login.scss', changeDetection: ChangeDetectionStrategy.OnPush })
 export class Login {
   readonly loading = signal(false);
   readonly form;

@@ -1,0 +1,21 @@
+<a class="brand" [class.brand--sm]="size() === 'sm'" [class.brand--lg]="size() === 'lg'" [routerLink]="link()">
+  <span class="brand__mark" aria-hidden="true">
+    <svg viewBox="0 0 40 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path
+        d="M5 24 L14 8 L26 22 L35 7"
+        stroke="currentColor"
+        stroke-width="2.4"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        class="brand__path"
+      />
+      <circle cx="5" cy="24" r="3.2" class="brand__node" />
+      <circle cx="14" cy="8" r="3.2" class="brand__node" />
+      <circle cx="26" cy="22" r="3.2" class="brand__node" />
+      <circle cx="35" cy="7" r="3.4" class="brand__node brand__node--accent" />
+    </svg>
+  </span>
+  @if (showName()) {
+    <span class="brand__name">Nodexa</span>
+  }
+</a>

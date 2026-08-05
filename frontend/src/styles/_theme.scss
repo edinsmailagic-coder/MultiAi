@@ -1,81 +1,110 @@
-// MultiAI black & orange theme tokens (dark by default).
-// Change values here to restyle the whole app.
+// MultiAI design tokens — Anthropic / Claude warm dark mode.
+// Change values here to restyle the whole product.
 
 :root,
 [data-theme='dark'] {
-  // Core surfaces
-  --bg: #0a0a0a;
-  --sidebar: #0a0a0a;
-  --panel: #161616;
-  --panel-soft: #121212;
-  --panel-gradient: linear-gradient(160deg, #1a1a1a 0%, #141414 55%, #101010 100%);
-  --border: #2a2a2a;
-  --border-strong: #3a3a3a;
+  // Surfaces
+  --bg: #141413;
+  --bg-elevated: #1a1918;
+  --sidebar: #141413;
+  --panel: #1c1b1a;
+  --panel-soft: #181716;
+  --panel-gradient: linear-gradient(165deg, #1c1b1a 0%, #161514 55%, #141413 100%);
+  --border: rgb(255 255 255 / 8%);
+  --border-strong: rgb(255 255 255 / 14%);
+  --border-subtle: rgb(255 255 255 / 8%);
+  --border-cta: rgb(255 255 255 / 20%);
 
   // Text
   --text: #ffffff;
-  --text-secondary: #d1d1d1;
-  --muted: #d1d1d1;
-  --muted-dim: #9a9a9a;
+  --text-secondary: #b4b4b0;
+  --muted: #b4b4b0;
+  --muted-dim: #8a8a86;
 
-  // Accent (primary orange)
-  --accent: #ff6a00;
-  --accent-hover: #ff8126;
-  --accent-pressed: #e55f00;
-  --accent-soft: rgb(255 106 0 / 14%);
-  --accent-softer: rgb(255 106 0 / 8%);
-  --accent-ring: rgb(255 106 0 / 22%);
-  --accent-muted: #cc6914;
+  // Accent — terracotta / brick
+  --accent: #d97757;
+  --accent-hover: #e0896c;
+  --accent-pressed: #cc6b49;
+  --accent-soft: rgb(217 119 87 / 16%);
+  --accent-softer: rgb(217 119 87 / 9%);
+  --accent-ring: rgb(217 119 87 / 24%);
+  --accent-muted: #cc6b49;
   --on-accent: #ffffff;
 
-  // Status (aligned to orange family + deep red for errors)
-  --success: #e8892a;
-  --success-soft: rgb(232 137 42 / 14%);
-  --warning: #ff8c33;
-  --warning-soft: rgb(255 140 51 / 14%);
-  --danger: #c62828;
-  --danger-soft: rgb(198 40 40 / 14%);
-  --danger-text: #ff8a80;
+  // CTA system (landing / primary actions)
+  --cta-primary-bg: #ffffff;
+  --cta-primary-text: #141413;
+  --cta-primary-hover: #f2f1ef;
+  --cta-secondary-bg: transparent;
+  --cta-secondary-border: rgb(255 255 255 / 20%);
+  --cta-secondary-text: #ffffff;
+  --cta-secondary-hover-bg: rgb(255 255 255 / 6%);
 
-  // Legacy aliases used across existing styles
+  // Status
+  --success: #c98a6b;
+  --success-soft: rgb(201 138 107 / 14%);
+  --warning: #d9a066;
+  --warning-soft: rgb(217 160 102 / 14%);
+  --danger: #c44b4b;
+  --danger-soft: rgb(196 75 75 / 14%);
+  --danger-text: #f0a0a0;
+
+  // Legacy aliases
   --violet: var(--accent);
   --blue: var(--accent-hover);
 
   // Inputs / chrome
-  --input-bg: #111111;
-  --topbar-bg: #0a0a0a;
-  --search-bg: #1c1c1c;
+  --input-bg: #1a1918;
+  --topbar-bg: #141413;
+  --search-bg: #1c1b1a;
   --icon-bg: var(--accent);
   --icon-fg: var(--on-accent);
 
+  // Typography
+  --font-display: 'Plus Jakarta Sans', Inter, system-ui, sans-serif;
+  --font-body: 'Plus Jakarta Sans', Inter, 'SF Pro Text', system-ui, -apple-system, sans-serif;
+
   // Shape & elevation
-  --radius-sm: 8px;
-  --radius: 14px;
-  --radius-lg: 22px;
+  --radius-sm: 6px;
+  --radius: 10px;
+  --radius-lg: 16px;
   --space-1: 0.5rem;
   --space-2: 0.75rem;
   --space-3: 1rem;
   --space-4: 1.5rem;
   --space-5: 2rem;
-  --shadow: 0 20px 50px rgb(0 0 0 / 45%);
-  --shadow-soft: 0 10px 28px rgb(0 0 0 / 35%);
+  --space-6: 3rem;
+  --space-7: 4.5rem;
+  --shadow: 0 24px 60px rgb(0 0 0 / 40%);
+  --shadow-soft: 0 12px 30px rgb(0 0 0 / 28%);
+
+  // Layout
+  --topbar-height: 64px;
+  --subbar-height: 44px;
+  --content-max: 1180px;
 }
 
-// Optional light override if toggled later
 [data-theme='light'] {
-  --bg: #f4f4f4;
-  --sidebar: #111111;
+  --bg: #f7f6f4;
+  --bg-elevated: #ffffff;
+  --sidebar: #141413;
   --panel: #ffffff;
-  --panel-soft: #f7f7f7;
-  --panel-gradient: linear-gradient(160deg, #ffffff 0%, #f5f5f5 100%);
-  --border: #e2e2e2;
-  --border-strong: #cfcfcf;
-  --text: #111111;
-  --text-secondary: #444444;
-  --muted: #555555;
-  --muted-dim: #777777;
+  --panel-soft: #f2f1ef;
+  --panel-gradient: linear-gradient(165deg, #ffffff 0%, #f7f6f4 100%);
+  --border: rgb(20 20 19 / 10%);
+  --border-strong: rgb(20 20 19 / 16%);
+  --border-subtle: rgb(20 20 19 / 8%);
+  --border-cta: rgb(20 20 19 / 18%);
+  --text: #141413;
+  --text-secondary: #5c5c58;
+  --muted: #5c5c58;
+  --muted-dim: #7a7a76;
+  --cta-primary-bg: #141413;
+  --cta-primary-text: #ffffff;
+  --cta-primary-hover: #2a2928;
+  --cta-secondary-text: #141413;
   --input-bg: #ffffff;
-  --topbar-bg: #ffffff;
-  --search-bg: #f0f0f0;
-  --shadow: 0 18px 40px rgb(0 0 0 / 12%);
+  --topbar-bg: #f7f6f4;
+  --search-bg: #ffffff;
+  --shadow: 0 18px 40px rgb(20 20 19 / 10%);
 }

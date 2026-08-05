@@ -1,0 +1,28 @@
+<section class="hero">
+  <div class="hero__inner">
+    <div class="hero__content">
+      <h1 class="hero__title">{{ 'landing.hero.title' | translate }}</h1>
+      <p class="hero__subtitle">{{ 'landing.hero.subtitle' | translate }}</p>
+      <div class="hero__actions">
+        <a class="btn btn--solid" routerLink="/login">{{ 'landing.hero.start' | translate }}</a>
+        <a class="btn btn--ghost" routerLink="/login">{{ 'landing.hero.docs' | translate }}</a>
+      </div>
+    </div>
+
+    <div class="hero__art" aria-hidden="true">
+      <svg class="hero__svg" viewBox="0 0 520 420" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="260" cy="210" r="148" stroke="rgba(255,255,255,0.14)" stroke-width="1.25"/>
+        <circle cx="260" cy="210" r="98" stroke="rgba(255,255,255,0.18)" stroke-width="1.25"/>
+        <path d="M260 42 L292 180 L430 148 L320 220 L430 292 L292 260 L260 378 L228 260 L90 292 L200 220 L90 148 L228 180 Z"
+              stroke="rgba(255,255,255,0.55)" stroke-width="1.4" fill="none"/>
+        <path d="M260 92 L280 176 L364 156 L300 220 L364 284 L280 264 L260 328 L240 264 L156 284 L220 220 L156 156 L240 176 Z"
+              fill="var(--accent)" fill-opacity="0.92"/>
+        <circle cx="260" cy="210" r="18" fill="#ffffff"/>
+        <path d="M120 70 L150 95" stroke="var(--accent)" stroke-width="2" stroke-linecap="round"/>
+        <path d="M390 80 L360 110" stroke="rgba(255,255,255,0.45)" stroke-width="1.5" stroke-linecap="round"/>
+        <path d="M100 310 L140 290" stroke="rgba(255,255,255,0.35)" stroke-width="1.5" stroke-linecap="round"/>
+        <path d="M410 320 L370 295" stroke="var(--accent)" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+    </div>
+  </div>
+</section>

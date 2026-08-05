@@ -7,7 +7,7 @@
 </section>
 
 <div class="profile-grid">
-  <section class="panel">
+  <section id="profile" class="panel profile-anchor">
     <h2>{{ 'profile.personal' | translate }}</h2>
     <p class="muted">{{ auth.currentUser()?.email }}</p>
     <form [formGroup]="profileForm" (ngSubmit)="saveProfile()">
@@ -23,7 +23,7 @@
     </form>
   </section>
 
-  <section class="panel">
+  <section id="settings" class="panel profile-anchor">
     <h2>{{ 'profile.password' | translate }}</h2>
     <form [formGroup]="passwordForm" (ngSubmit)="changePassword()">
       <label>{{ 'profile.currentPassword' | translate }}
@@ -36,7 +36,26 @@
     </form>
   </section>
 
-  <section class="panel providers-panel">
+  <section class="panel profile-anchor" aria-labelledby="language-heading">
+    <h2 id="language-heading">{{ 'profile.language' | translate }}</h2>
+    <p class="muted">{{ 'profile.languageHint' | translate }}</p>
+    <div class="language-switch" role="group" [attr.aria-label]="'profile.language' | translate">
+      <button
+        type="button"
+        class="secondary"
+        [class.active]="currentLang() === 'bs'"
+        (click)="setLanguage('bs')"
+      >Bosanski</button>
+      <button
+        type="button"
+        class="secondary"
+        [class.active]="currentLang() === 'en'"
+        (click)="setLanguage('en')"
+      >English</button>
+    </div>
+  </section>
+
+  <section id="providers" class="panel providers-panel profile-anchor">
     <h2>{{ 'profile.providers' | translate }}</h2>
 
     <div class="connected-cards">

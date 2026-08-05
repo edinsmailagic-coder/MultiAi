@@ -32,7 +32,7 @@ export class AuthService {
     localStorage.removeItem(this.storageKey);
     this.tokenState.set(null);
     this.currentUser.set(null);
-    void this.router.navigate(['/login']);
+    void this.router.navigate(['/']);
   }
 
   private storeSession(token: string): void {

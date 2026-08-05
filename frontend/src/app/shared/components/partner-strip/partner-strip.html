@@ -1,0 +1,10 @@
+<section class="partner-strip" [attr.aria-label]="'landing.partners.label' | translate">
+  <div class="partner-strip__inner">
+    @for (partner of partners; track partner.nameKey; let last = $last) {
+      <article class="partner-card" [class.is-last]="last">
+        <strong>{{ partner.nameKey | translate }}</strong>
+        <p>{{ partner.quoteKey | translate }}</p>
+      </article>
+    }
+  </div>
+</section>

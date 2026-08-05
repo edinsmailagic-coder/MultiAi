@@ -1,1 +1,198 @@
-/* Component styles are defined by the shared MultiAI design system. */
+:host {
+  display: block;
+  min-height: 100vh;
+}
+
+.shell {
+  background: var(--bg);
+  min-height: 100vh;
+}
+
+.shell-main {
+  margin: 0;
+  min-height: calc(100vh - var(--topbar-height));
+  padding: 2rem;
+  width: 100%;
+}
+
+.shell-actions,
+.shell-mobile-actions {
+  align-items: center;
+  display: flex;
+  gap: 0.65rem;
+}
+
+.shell-mobile-actions {
+  flex-direction: column;
+  width: 100%;
+}
+
+.shell-mobile-actions .btn {
+  width: 100%;
+}
+
+.user-menu {
+  position: relative;
+}
+
+.user-menu__trigger {
+  align-items: center;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  cursor: pointer;
+  display: inline-flex;
+  gap: 0.55rem;
+  min-height: 40px;
+  min-width: 0;
+  padding: 0.25rem 0.45rem;
+}
+
+.user-menu__trigger:hover,
+.user-menu.is-open .user-menu__trigger {
+  background: rgb(255 255 255 / 4%);
+  border-color: var(--border-subtle);
+}
+
+.shell-user {
+  align-items: center;
+  display: flex;
+  gap: 0.55rem;
+  min-width: 0;
+}
+
+.shell-user__name {
+  color: var(--text);
+  font-size: 0.9rem;
+  font-weight: 600;
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.user-menu__chevron {
+  color: var(--muted);
+  font-size: 0.7rem;
+}
+
+.shell-user strong,
+.shell-user small,
+.user-menu__meta strong,
+.user-menu__meta small {
+  display: block;
+}
+
+.shell-user small,
+.user-menu__meta small {
+  color: var(--muted);
+  font-size: 0.75rem;
+}
+
+.user-menu__dropdown {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-soft);
+  display: grid;
+  gap: 0.15rem;
+  min-width: 220px;
+  padding: 0.45rem;
+  position: absolute;
+  right: 0;
+  top: calc(100% + 0.45rem);
+  z-index: 60;
+}
+
+.user-menu__meta {
+  border-bottom: 1px solid var(--border-subtle);
+  margin-bottom: 0.2rem;
+  padding: 0.55rem 0.7rem 0.75rem;
+}
+
+.user-menu__meta strong {
+  color: var(--text);
+  font-size: 0.92rem;
+}
+
+.user-menu__dropdown a,
+.user-menu__logout {
+  background: transparent;
+  border: 0;
+  border-radius: var(--radius-sm);
+  color: var(--muted);
+  cursor: pointer;
+  display: block;
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 500;
+  padding: 0.55rem 0.7rem;
+  text-align: left;
+  text-decoration: none;
+  width: 100%;
+}
+
+.user-menu__dropdown a:hover,
+.user-menu__dropdown a:focus-visible,
+.user-menu__logout:hover,
+.user-menu__logout:focus-visible {
+  background: rgb(255 255 255 / 5%);
+  color: var(--text);
+}
+
+.user-menu__logout {
+  border-top: 1px solid var(--border-subtle);
+  color: var(--danger-text);
+  margin-top: 0.2rem;
+  padding-top: 0.7rem;
+}
+
+.avatar {
+  align-items: center;
+  background: var(--accent);
+  border-radius: 50%;
+  color: var(--on-accent);
+  display: inline-flex;
+  flex: 0 0 34px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  height: 34px;
+  justify-content: center;
+  width: 34px;
+}
+
+.btn {
+  align-items: center;
+  border-radius: var(--radius-sm);
+  display: inline-flex;
+  font-size: 0.88rem;
+  font-weight: 600;
+  justify-content: center;
+  min-height: 36px;
+  padding: 0.45rem 0.85rem;
+  text-decoration: none;
+}
+
+.btn--ghost {
+  background: transparent;
+  border: 1px solid var(--cta-secondary-border);
+  color: var(--text);
+  cursor: pointer;
+}
+
+.btn--ghost:hover,
+.btn--ghost:focus-visible {
+  background: var(--cta-secondary-hover-bg);
+}
+
+@media (max-width: 800px) {
+  .shell-main {
+    padding: 1rem;
+  }
+
+  .shell-user__name,
+  .user-menu__chevron {
+    display: none;
+  }
+}

@@ -1,0 +1,14 @@
+:host {
+  display: block;
+  min-height: 100vh;
+}
+
+.landing {
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+}
+
+.landing main {
+  min-height: calc(100vh - var(--topbar-height) - var(--subbar-height));
+}

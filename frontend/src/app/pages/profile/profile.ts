@@ -1,6 +1,6 @@
-import { ChangeDetectionStrategy, Component, OnInit, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
 import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
-import { TranslatePipe } from '@ngx-translate/core';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { forkJoin, switchMap } from 'rxjs';
 import { AIProvider, ConnectedProvider } from '../../core/models/provider.model';
 import { AuthService } from '../../core/services/auth.service';
@@ -17,8 +17,11 @@ import { ModelSelect } from '../../shared/components/model-select/model-select';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Profile implements OnInit {
+  private readonly translate = inject(TranslateService);
+
   readonly providers = signal<AIProvider[]>([]);
   readonly connected = signal<ConnectedProvider[]>([]);
+  readonly currentLang = signal(localStorage.getItem('lang') ?? 'bs');
   readonly profileForm;
   readonly passwordForm;
   readonly providerForm;
@@ -46,6 +49,11 @@ export class Profile implements OnInit {
   }
 
   ngOnInit(): void {
+    const active = this.resolveCurrentLang();
+    if (active) {
+      this.currentLang.set(active);
+    }
+
     const user = this.auth.currentUser();
     if (user) {
       this.profileForm.patchValue(user);
@@ -63,6 +71,16 @@ export class Profile implements OnInit {
       },
       error: () => this.toast.error('toast.loadError'),
     });
+  }
+
+  setLanguage(lang: 'bs' | 'en'): void {
+    if (this.currentLang() === lang) {
+      return;
+    }
+    localStorage.setItem('lang', lang);
+    this.translate.use(lang);
+    this.currentLang.set(lang);
+    this.toast.showSuccess('toast.languageChanged');
   }
 
   saveProfile(): void {
@@ -161,6 +179,21 @@ export class Profile implements OnInit {
       },
       error: () => this.toast.error('toast.saveError'),
     });
+  }
+
+  private resolveCurrentLang(): string {
+    const service = this.translate as TranslateService & {
+      getCurrentLang?: () => string | null;
+      currentLang: string | null | (() => string | null);
+    };
+
+    if (typeof service.getCurrentLang === 'function') {
+      return service.getCurrentLang() || localStorage.getItem('lang') || 'bs';
+    }
+
+    const current = service.currentLang;
+    const value = typeof current === 'function' ? current() : current;
+    return value || localStorage.getItem('lang') || 'bs';
   }
 
   private setConnected(connected: ConnectedProvider[]): void {

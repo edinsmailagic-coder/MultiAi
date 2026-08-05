@@ -24,7 +24,13 @@
     "chat": "Chat",
     "workflows": "Tokovi rada",
     "profile": "Profil i provajderi",
-    "logout": "Odjava"
+    "accountProfile": "Profil",
+    "accountProviders": "Provajderi",
+    "accountSettings": "Postavke",
+    "logout": "Odjava",
+    "collapseSidebar": "Skloplji bočnu traku",
+    "expandSidebar": "Otvori bočnu traku",
+    "closeSidebar": "Zatvori bočnu traku"
   },
   "dashboard": {
     "overview": "Pregled",
@@ -82,7 +88,9 @@
     "defaultModel": "Podrazumijevani model",
     "saveDefaultModel": "Sačuvaj podrazumijevani model",
     "setDefaultProvider": "Postavi kao podrazumijevanog provajdera",
-    "defaultProvider": "Podrazumijevani"
+    "defaultProvider": "Podrazumijevani",
+    "language": "Jezik",
+    "languageHint": "Odaberite jezik interfejsa."
   },
   "chat": {
     "title": "Novi chat",
@@ -139,6 +147,7 @@
     "providerError": "Provajder se ne može povezati.",
     "defaultModelSaved": "Podrazumijevani model je sačuvan.",
     "defaultProviderSaved": "Podrazumijevani provajder je ažuriran.",
+    "languageChanged": "Jezik je ažuriran.",
     "chatError": "Poruka se ne može poslati.",
     "nodeSaved": "Čvor je ažuriran.",
     "nodeAdded": "Čvor je dodat.",
@@ -147,5 +156,44 @@
     "connectionError": "Veza se ne može kreirati.",
     "moveError": "Pozicija čvora se ne može sačuvati.",
     "executeError": "Izvršavanje toka nije uspjelo."
+  },
+  "landing": {
+    "nav": {
+      "meet": "Upoznaj Nodexa",
+      "meetClaude": "Upoznaj modele",
+      "meetTeam": "Kompanija",
+      "platform": "Platforma",
+      "api": "API pristup",
+      "workflows": "Workflow canvas",
+      "solutions": "Rješenja",
+      "enterprise": "Enterprise",
+      "startup": "Startupi",
+      "pricing": "Cijene",
+      "resources": "Resursi",
+      "docs": "Developer docs",
+      "blog": "Blog",
+      "login": "Prijava",
+      "contact": "Kontaktiraj sales",
+      "try": "Isprobaj Nodexa",
+      "menu": "Otvori meni",
+      "closeMenu": "Zatvori meni"
+    },
+    "sub": {
+      "platform": "Platforma",
+      "explore": "Istraži ovdje →"
+    },
+    "hero": {
+      "title": "Gradite na Nodexa Platformi",
+      "subtitle": "Povežite providere, složite vizuelne workflowe i chatajte s modelima koje odaberete — u jednom toplom, fokusiranom radnom prostoru.",
+      "start": "Počni graditi",
+      "docs": "Pogledaj docs"
+    },
+    "partners": {
+      "label": "Partneri",
+      "p1": { "name": "Northstar", "quote": "Orkestracija modela bez ljepljivog koda." },
+      "p2": { "name": "Helix Labs", "quote": "Agent stack isporučen za nekoliko dana." },
+      "p3": { "name": "Cobalt", "quote": "Jedan canvas za svakog providera." },
+      "p4": { "name": "Signal Co.", "quote": "Čist UI koji tim stvarno koristi." }
+    }
   }
 }

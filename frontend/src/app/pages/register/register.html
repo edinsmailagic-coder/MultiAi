@@ -5,7 +5,7 @@
       <button type="button" [class.active]="currentLanguage() === 'en'" (click)="changeLanguage('en')">EN</button>
     </div>
 
-    <a class="brand" routerLink="/">Multi<span>AI</span></a>
+    <app-brand link="/" size="lg" />
     <h1>{{ 'auth.registerTitle' | translate }}</h1>
     <p class="subtitle">{{ 'auth.registerSubtitle' | translate }}</p>
 

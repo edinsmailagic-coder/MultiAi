@@ -24,7 +24,13 @@
     "chat": "Chat",
     "workflows": "Workflows",
     "profile": "Profile & providers",
-    "logout": "Log out"
+    "accountProfile": "Profile",
+    "accountProviders": "Providers",
+    "accountSettings": "Settings",
+    "logout": "Log out",
+    "collapseSidebar": "Collapse sidebar",
+    "expandSidebar": "Expand sidebar",
+    "closeSidebar": "Close sidebar"
   },
   "dashboard": {
     "overview": "Overview",
@@ -82,7 +88,9 @@
     "defaultModel": "Default model",
     "saveDefaultModel": "Save default model",
     "setDefaultProvider": "Set as default provider",
-    "defaultProvider": "Default"
+    "defaultProvider": "Default",
+    "language": "Language",
+    "languageHint": "Choose the interface language."
   },
   "chat": {
     "title": "New chat",
@@ -139,6 +147,7 @@
     "providerError": "Unable to connect provider.",
     "defaultModelSaved": "Default model saved.",
     "defaultProviderSaved": "Default provider updated.",
+    "languageChanged": "Language updated.",
     "chatError": "Unable to send message.",
     "nodeSaved": "Node updated.",
     "nodeAdded": "Node added.",
@@ -147,5 +156,44 @@
     "connectionError": "Unable to create connection.",
     "moveError": "Unable to save node position.",
     "executeError": "Workflow execution failed."
+  },
+  "landing": {
+    "nav": {
+      "meet": "Meet Nodexa",
+      "meetClaude": "Meet the models",
+      "meetTeam": "Company",
+      "platform": "Platform",
+      "api": "API access",
+      "workflows": "Workflow canvas",
+      "solutions": "Solutions",
+      "enterprise": "Enterprise",
+      "startup": "Startups",
+      "pricing": "Pricing",
+      "resources": "Resources",
+      "docs": "Developer docs",
+      "blog": "Blog",
+      "login": "Log in",
+      "contact": "Contact sales",
+      "try": "Try Nodexa",
+      "menu": "Open menu",
+      "closeMenu": "Close menu"
+    },
+    "sub": {
+      "platform": "Platform",
+      "explore": "Explore here →"
+    },
+    "hero": {
+      "title": "Build on the Nodexa Platform",
+      "subtitle": "Connect providers, compose visual workflows, and chat with the models you choose — in one warm, focused workspace.",
+      "start": "Start building",
+      "docs": "See developer docs"
+    },
+    "partners": {
+      "label": "Partners",
+      "p1": { "name": "Northstar", "quote": "Orchestrates models without the glue code." },
+      "p2": { "name": "Helix Labs", "quote": "Shipped our agent stack in days." },
+      "p3": { "name": "Cobalt", "quote": "One canvas for every provider we trust." },
+      "p4": { "name": "Signal Co.", "quote": "Clean UI our team actually uses." }
+    }
   }
 }

@@ -1,0 +1,118 @@
+:host {
+  display: block;
+}
+
+.hero {
+  background: var(--bg);
+  border-bottom: 1px solid var(--border-subtle);
+  overflow: hidden;
+  padding: clamp(3rem, 8vw, 6.5rem) 0;
+}
+
+.hero__inner {
+  align-items: center;
+  display: grid;
+  gap: clamp(2rem, 5vw, 4rem);
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+  margin: 0 auto;
+  max-width: var(--content-max);
+  padding: 0 1.5rem;
+}
+
+.hero__title {
+  font-family: var(--font-display);
+  font-size: clamp(2.6rem, 6vw, 4.4rem);
+  font-weight: 650;
+  letter-spacing: -0.035em;
+  line-height: 1.05;
+  margin: 0 0 1.25rem;
+}
+
+.hero__subtitle {
+  color: var(--muted);
+  font-size: clamp(1rem, 1.6vw, 1.15rem);
+  line-height: 1.6;
+  margin: 0 0 1.75rem;
+  max-width: 34rem;
+}
+
+.hero__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.btn {
+  align-items: center;
+  border-radius: var(--radius-sm);
+  display: inline-flex;
+  font-size: 0.95rem;
+  font-weight: 600;
+  justify-content: center;
+  min-height: 44px;
+  padding: 0.7rem 1.15rem;
+  text-decoration: none;
+  transition: 0.15s ease;
+}
+
+.btn--solid {
+  background: var(--cta-primary-bg);
+  color: var(--cta-primary-text);
+}
+
+.btn--solid:hover,
+.btn--solid:focus-visible {
+  background: var(--cta-primary-hover);
+  transform: translateY(-1px);
+}
+
+.btn--ghost {
+  background: var(--cta-secondary-bg);
+  border: 1px solid var(--cta-secondary-border);
+  color: var(--cta-secondary-text);
+}
+
+.btn--ghost:hover,
+.btn--ghost:focus-visible {
+  background: var(--cta-secondary-hover-bg);
+}
+
+.hero__art {
+  align-items: center;
+  display: flex;
+  justify-content: center;
+  min-height: 280px;
+}
+
+.hero__svg {
+  display: block;
+  height: auto;
+  max-width: 100%;
+  width: min(520px, 100%);
+}
+
+@media (max-width: 900px) {
+  .hero__inner {
+    grid-template-columns: 1fr;
+    text-align: left;
+  }
+
+  .hero__art {
+    order: -1;
+    min-height: 220px;
+  }
+
+  .hero__svg {
+    width: min(360px, 88%);
+  }
+}
+
+@media (max-width: 560px) {
+  .hero__actions {
+    flex-direction: column;
+  }
+
+  .btn {
+    width: 100%;
+  }
+}

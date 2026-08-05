@@ -1,0 +1,63 @@
+:host {
+  display: inline-flex;
+}
+
+.brand {
+  align-items: center;
+  color: inherit;
+  display: inline-flex;
+  gap: 0.7rem;
+  text-decoration: none;
+}
+
+.brand__mark {
+  color: #a7adb8;
+  display: inline-flex;
+  flex: 0 0 auto;
+  height: 1.55rem;
+  width: 1.95rem;
+}
+
+.brand--sm .brand__mark {
+  height: 1.25rem;
+  width: 1.55rem;
+}
+
+.brand--lg .brand__mark {
+  height: 2.1rem;
+  width: 2.6rem;
+}
+
+.brand__mark svg {
+  display: block;
+  height: 100%;
+  width: 100%;
+}
+
+.brand__node {
+  fill: #a7adb8;
+}
+
+.brand__node--accent {
+  fill: var(--accent);
+}
+
+.brand__path {
+  color: #a7adb8;
+}
+
+.brand__name {
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 1.2rem;
+  font-weight: 650;
+  letter-spacing: -0.03em;
+}
+
+.brand--sm .brand__name {
+  font-size: 1rem;
+}
+
+.brand--lg .brand__name {
+  font-size: 1.55rem;
+}

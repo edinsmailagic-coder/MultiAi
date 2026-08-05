@@ -1,0 +1,82 @@
+<header class="top-bar" [class.top-bar--app]="appMode()">
+  <div class="top-bar__inner">
+    <app-brand [link]="appMode() ? '/dashboard' : '/'" />
+
+    <nav class="top-bar__nav" [class.is-open]="mobileOpen()" aria-label="Primary">
+      @for (item of navItems; track item.labelKey) {
+        <div class="top-bar__item" [class.has-menu]="!!item.children?.length">
+          @if (item.children?.length) {
+            <button
+              type="button"
+              class="top-bar__link"
+              [attr.aria-expanded]="openDropdown() === item.labelKey"
+              (click)="toggleDropdown(item.labelKey, $event)"
+            >
+              {{ item.labelKey | translate }}
+              <span class="top-bar__chevron" aria-hidden="true">▾</span>
+            </button>
+            @if (openDropdown() === item.labelKey) {
+              <div class="top-bar__dropdown" role="menu">
+                @for (child of item.children; track child.labelKey) {
+                  <a role="menuitem" [routerLink]="child.href" (click)="closeMenus()">
+                    {{ child.labelKey | translate }}
+                  </a>
+                }
+              </div>
+            }
+          } @else {
+            <a
+              class="top-bar__link"
+              [routerLink]="item.href || '/login'"
+              routerLinkActive="is-active"
+              [routerLinkActiveOptions]="{ exact: item.href === '/dashboard' }"
+              (click)="closeMenus()"
+            >
+              {{ item.labelKey | translate }}
+            </a>
+          }
+        </div>
+      }
+
+      <div class="top-bar__mobile-ctas">
+        @if (appMode()) {
+          <ng-content select="[mobile-actions]" />
+        } @else {
+          <a class="top-bar__login" routerLink="/login" (click)="closeMenus()">{{ 'landing.nav.login' | translate }}</a>
+          <a class="btn btn--ghost" routerLink="/login" (click)="closeMenus()">{{ 'landing.nav.contact' | translate }}</a>
+          <a class="btn btn--solid" routerLink="/login" (click)="closeMenus()">{{ 'landing.nav.try' | translate }}</a>
+        }
+      </div>
+    </nav>
+
+    <div class="top-bar__actions">
+      @if (appMode()) {
+        <ng-content select="[actions]" />
+      } @else {
+        <a class="top-bar__login" routerLink="/login">{{ 'landing.nav.login' | translate }}</a>
+        <a class="btn btn--ghost" routerLink="/login">{{ 'landing.nav.contact' | translate }}</a>
+        <a class="btn btn--solid" routerLink="/login">{{ 'landing.nav.try' | translate }}</a>
+      }
+      <button
+        type="button"
+        class="top-bar__menu-toggle"
+        (click)="toggleMobile()"
+        [attr.aria-expanded]="mobileOpen()"
+        [attr.aria-label]="'landing.nav.menu' | translate"
+      >☰</button>
+    </div>
+  </div>
+
+  @if (showSubBar() && !appMode()) {
+    <div class="top-bar__sub">
+      <div class="top-bar__sub-inner">
+        <span class="top-bar__crumb">{{ 'landing.sub.platform' | translate }}</span>
+        <a class="top-bar__explore" routerLink="/login">{{ 'landing.sub.explore' | translate }}</a>
+      </div>
+    </div>
+  }
+</header>
+
+@if (mobileOpen()) {
+  <button class="top-bar__backdrop" type="button" [attr.aria-label]="'landing.nav.closeMenu' | translate" (click)="closeMenus()"></button>
+}

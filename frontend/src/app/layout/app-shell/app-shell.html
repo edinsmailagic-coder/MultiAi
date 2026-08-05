@@ -1,42 +1,65 @@
 <div class="shell">
-  <aside [class.open]="mobileOpen()">
-    <a class="shell-brand" routerLink="/dashboard">Multi<span>AI</span></a>
-    <nav>
-      <a routerLink="/dashboard" routerLinkActive="active" (click)="closeMenu()">
-        <span aria-hidden="true">⌂</span>{{ 'nav.dashboard' | translate }}
-      </a>
-      <a routerLink="/chat" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: false }" (click)="closeMenu()">
-        <span aria-hidden="true">✦</span>{{ 'nav.chat' | translate }}
-      </a>
-      <a routerLink="/workflows" routerLinkActive="active" (click)="closeMenu()">
-        <span aria-hidden="true">◈</span>{{ 'nav.workflows' | translate }}
-      </a>
-      <a routerLink="/profile" routerLinkActive="active" (click)="closeMenu()">
-        <span aria-hidden="true">◎</span>{{ 'nav.profile' | translate }}
-      </a>
-    </nav>
-    <div class="sidebar-user">
-      <div class="avatar">{{ initials() }}</div>
-      <div>
-        <strong>{{ auth.currentUser()?.firstName }} {{ auth.currentUser()?.lastName }}</strong>
-        <small>{{ auth.currentUser()?.email }}</small>
+  <app-top-bar [appMode]="true" [showSubBar]="false">
+    <div actions class="shell-actions">
+      <div class="user-menu" [class.is-open]="menuOpen()">
+        <button
+          type="button"
+          class="user-menu__trigger"
+          [attr.title]="auth.currentUser()?.email"
+          [attr.aria-expanded]="menuOpen()"
+          [attr.aria-haspopup]="true"
+          (click)="toggleMenu($event)"
+        >
+          <span class="avatar">{{ initials() }}</span>
+          <span class="shell-user__name">{{ auth.currentUser()?.firstName }}</span>
+          <span class="user-menu__chevron" aria-hidden="true">▾</span>
+        </button>
+
+        @if (menuOpen()) {
+          <div class="user-menu__dropdown" role="menu" (click)="$event.stopPropagation()">
+            <div class="user-menu__meta">
+              <strong>{{ auth.currentUser()?.firstName }} {{ auth.currentUser()?.lastName }}</strong>
+              <small>{{ auth.currentUser()?.email }}</small>
+            </div>
+            <a role="menuitem" routerLink="/profile" fragment="profile" (click)="closeMenu()">
+              {{ 'nav.accountProfile' | translate }}
+            </a>
+            <a role="menuitem" routerLink="/profile" fragment="providers" (click)="closeMenu()">
+              {{ 'nav.accountProviders' | translate }}
+            </a>
+            <a role="menuitem" routerLink="/profile" fragment="settings" (click)="closeMenu()">
+              {{ 'nav.accountSettings' | translate }}
+            </a>
+            <button role="menuitem" type="button" class="user-menu__logout" (click)="logout()">
+              {{ 'nav.logout' | translate }}
+            </button>
+          </div>
+        }
       </div>
     </div>
-    <button class="logout" type="button" (click)="logout()">{{ 'nav.logout' | translate }}</button>
-  </aside>
 
-  @if (mobileOpen()) {
-    <button class="backdrop" type="button" aria-label="Close menu" (click)="closeMenu()"></button>
-  }
+    <div mobile-actions class="shell-mobile-actions">
+      <div class="shell-user">
+        <span class="avatar">{{ initials() }}</span>
+        <div>
+          <strong>{{ auth.currentUser()?.firstName }} {{ auth.currentUser()?.lastName }}</strong>
+          <small>{{ auth.currentUser()?.email }}</small>
+        </div>
+      </div>
+      <a class="btn btn--ghost" routerLink="/profile" fragment="profile" (click)="closeMenu()">
+        {{ 'nav.accountProfile' | translate }}
+      </a>
+      <a class="btn btn--ghost" routerLink="/profile" fragment="providers" (click)="closeMenu()">
+        {{ 'nav.accountProviders' | translate }}
+      </a>
+      <a class="btn btn--ghost" routerLink="/profile" fragment="settings" (click)="closeMenu()">
+        {{ 'nav.accountSettings' | translate }}
+      </a>
+      <button class="btn btn--ghost" type="button" (click)="logout()">{{ 'nav.logout' | translate }}</button>
+    </div>
+  </app-top-bar>
 
-  <div class="shell-main">
-    <header>
-      <button class="hamburger" type="button" (click)="toggleMenu()" aria-label="Menu">☰</button>
-      <span class="spacer"></span>
-      <button class="language-button" type="button" (click)="changeLanguage()">BS / EN</button>
-    </header>
-    <main>
-      <router-outlet />
-    </main>
-  </div>
+  <main class="shell-main">
+    <router-outlet />
+  </main>
 </div>

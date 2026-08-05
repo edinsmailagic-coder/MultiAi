@@ -1,10 +1,31 @@
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { ApplicationConfig, provideBrowserGlobalErrorListeners, provideZonelessChangeDetection } from '@angular/core';
 import { provideAnimations } from '@angular/platform-browser/animations';
-import { provideRouter } from '@angular/router';
+import { provideRouter, withInMemoryScrolling } from '@angular/router';
 import { provideTranslateService } from '@ngx-translate/core';
 import { provideTranslateHttpLoader } from '@ngx-translate/http-loader';
 import { provideToastr } from 'ngx-toastr';
 import { routes } from './app.routes';
 import { authInterceptor } from './core/interceptors/auth.interceptor';
-export const appConfig: ApplicationConfig = { providers: [provideBrowserGlobalErrorListeners(), provideZonelessChangeDetection(), provideRouter(routes), provideHttpClient(withInterceptors([authInterceptor])), provideAnimations(), provideToastr({ positionClass: 'toast-top-right', preventDuplicates: true, closeButton: true, progressBar: true, timeOut: 3000 }), provideTranslateService({ loader: provideTranslateHttpLoader({ prefix: './assets/i18n/', suffix: '.json' }) })] };
+export const appConfig: ApplicationConfig = {
+  providers: [
+    provideBrowserGlobalErrorListeners(),
+    provideZonelessChangeDetection(),
+    provideRouter(
+      routes,
+      withInMemoryScrolling({ anchorScrolling: 'enabled', scrollPositionRestoration: 'enabled' }),
+    ),
+    provideHttpClient(withInterceptors([authInterceptor])),
+    provideAnimations(),
+    provideToastr({
+      positionClass: 'toast-top-right',
+      preventDuplicates: true,
+      closeButton: true,
+      progressBar: true,
+      timeOut: 3000,
+    }),
+    provideTranslateService({
+      loader: provideTranslateHttpLoader({ prefix: './assets/i18n/', suffix: '.json' }),
+    }),
+  ],
+};
