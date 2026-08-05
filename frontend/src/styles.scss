@@ -710,6 +710,8 @@ form {
 
 /* ——— Workflow editor ——— */
 .editor {
+  display: flex;
+  flex-direction: column;
   height: calc(100vh - 128px);
   margin: -2rem;
   overflow: hidden;
@@ -721,6 +723,8 @@ form {
   background: var(--panel);
   border-bottom: 1px solid var(--border);
   display: flex;
+  flex: 0 0 auto;
+  flex-wrap: wrap;
   gap: 0.8rem;
   min-height: 76px;
   padding: 0.7rem 1rem;
@@ -738,12 +742,16 @@ form {
 
 .canvas {
   background-color: var(--bg);
+  background-image: radial-gradient(var(--border-strong) 1px, transparent 1px);
+  background-repeat: repeat;
   cursor: grab;
-  height: calc(100% - 76px);
+  flex: 1 1 auto;
+  min-height: 0;
   overflow: hidden;
   position: relative;
   touch-action: none;
   user-select: none;
+  width: 100%;
 }
 
 .canvas.panning {
@@ -751,12 +759,9 @@ form {
 }
 
 .canvas-world {
-  background-image: radial-gradient(var(--border-strong) 1px, transparent 1px);
-  background-size: 22px 22px;
-  min-height: 100%;
-  min-width: 100%;
-  position: absolute;
   left: 0;
+  overflow: visible;
+  position: absolute;
   top: 0;
   transform-origin: 0 0;
   will-change: transform;
@@ -968,6 +973,7 @@ form {
   border-bottom: 1px solid rgb(217 119 87 / 30%);
   color: var(--text-secondary);
   display: flex;
+  flex: 0 0 auto;
   font-size: 0.9rem;
   font-weight: 600;
   gap: 1rem;

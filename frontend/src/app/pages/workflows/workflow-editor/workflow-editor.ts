@@ -81,15 +81,50 @@ export class WorkflowEditor implements OnInit {
   readonly editProviderId = signal(0);
   readonly addNodeType = signal('AI');
 
-  readonly canvasWidth = computed(() => Math.max(1200, ...this.nodes().map((n) => n.positionX + 350), 0));
-  readonly canvasHeight = computed(() => Math.max(700, ...this.nodes().map((n) => n.positionY + 280), 0));
-  readonly viewBox = computed(() => `0 0 ${this.canvasWidth()} ${this.canvasHeight()}`);
+  readonly contentMinX = computed(() => {
+    const nodes = this.nodes();
+    if (!nodes.length) {
+      return -2000;
+    }
+    return Math.min(...nodes.map((n) => n.positionX)) - 1200;
+  });
+  readonly contentMinY = computed(() => {
+    const nodes = this.nodes();
+    if (!nodes.length) {
+      return -2000;
+    }
+    return Math.min(...nodes.map((n) => n.positionY)) - 1200;
+  });
+  readonly contentMaxX = computed(() => {
+    const nodes = this.nodes();
+    if (!nodes.length) {
+      return 4000;
+    }
+    return Math.max(...nodes.map((n) => n.positionX + 280)) + 1200;
+  });
+  readonly contentMaxY = computed(() => {
+    const nodes = this.nodes();
+    if (!nodes.length) {
+      return 3000;
+    }
+    return Math.max(...nodes.map((n) => n.positionY + 200)) + 1200;
+  });
+  readonly canvasWidth = computed(() => Math.max(2000, this.contentMaxX() - this.contentMinX()));
+  readonly canvasHeight = computed(() => Math.max(1500, this.contentMaxY() - this.contentMinY()));
+  readonly viewBox = computed(
+    () => `${this.contentMinX()} ${this.contentMinY()} ${this.canvasWidth()} ${this.canvasHeight()}`,
+  );
   readonly isConnecting = computed(() => this.sourceNodeId() !== null);
   readonly isPanning = computed(() => this.panSession() !== null);
   readonly zoomPercent = computed(() => Math.round(this.zoom() * 100));
   readonly worldTransform = computed(
     () => `translate(${this.panX()}px, ${this.panY()}px) scale(${this.zoom()})`,
   );
+  readonly gridSize = computed(() => {
+    const size = 22 * this.zoom();
+    return `${size}px ${size}px`;
+  });
+  readonly gridPosition = computed(() => `${this.panX()}px ${this.panY()}px`);
   readonly previewPath = computed(() => {
     const sourceId = this.sourceNodeId();
     const pointer = this.pointer();
@@ -623,8 +658,8 @@ export class WorkflowEditor implements OnInit {
       return;
     }
     const world = this.screenToWorld(event);
-    const positionX = Math.max(20, world.x - drag.offsetX);
-    const positionY = Math.max(20, world.y - drag.offsetY);
+    const positionX = world.x - drag.offsetX;
+    const positionY = world.y - drag.offsetY;
     this.nodes.update((rows) => rows.map((row) => (row.id === drag.id ? { ...row, positionX, positionY } : row)));
   }
 

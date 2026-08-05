@@ -31,23 +31,22 @@
     #canvas
     class="canvas"
     [class.panning]="isPanning()"
+    [style.background-size]="gridSize()"
+    [style.background-position]="gridPosition()"
     (wheel)="onCanvasWheel($event)"
     (pointermove)="onCanvasPointerMove($event)"
     (pointerdown)="onCanvasPointerDown($event)"
     (pointerup)="endPointer()"
     (pointercancel)="endPointer()"
   >
-    <div
-      class="canvas-world"
-      [style.transform]="worldTransform()"
-      [style.width.px]="canvasWidth()"
-      [style.height.px]="canvasHeight()"
-    >
+    <div class="canvas-world" [style.transform]="worldTransform()">
       <svg
         class="connections"
         [attr.width]="canvasWidth()"
         [attr.height]="canvasHeight()"
         [attr.viewBox]="viewBox()"
+        [style.left.px]="contentMinX()"
+        [style.top.px]="contentMinY()"
         preserveAspectRatio="none"
       >
         <defs>
@@ -125,15 +124,15 @@
           ></button>
         </article>
       }
-
-      @if (!nodes().length) {
-        <div class="canvas-empty">
-          <h2>{{ 'workflow.noNodes' | translate }}</h2>
-          <p>{{ 'workflow.noNodesText' | translate }}</p>
-          <button class="primary" type="button" (click)="showAdd.set(true)">+ {{ 'workflow.addNode' | translate }}</button>
-        </div>
-      }
     </div>
+
+    @if (!nodes().length) {
+      <div class="canvas-empty">
+        <h2>{{ 'workflow.noNodes' | translate }}</h2>
+        <p>{{ 'workflow.noNodesText' | translate }}</p>
+        <button class="primary" type="button" (click)="showAdd.set(true)">+ {{ 'workflow.addNode' | translate }}</button>
+      </div>
+    }
   </div>
 
   @if (selected()) {
