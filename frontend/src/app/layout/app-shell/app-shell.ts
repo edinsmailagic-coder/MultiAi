@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, HostListener, OnInit, computed, signal } from '@angular/core';
 import { RouterLink, RouterOutlet } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
+import { AppPermissions } from '../../core/auth/permissions';
 import { AuthService } from '../../core/services/auth.service';
 import { ThemeService } from '../../core/services/theme.service';
 import { TopBar } from '../../shared/components/top-bar/top-bar';
@@ -14,6 +15,7 @@ import { TopBar } from '../../shared/components/top-bar/top-bar';
 })
 export class AppShell implements OnInit {
   readonly menuOpen = signal(false);
+  readonly permissions = AppPermissions;
 
   readonly initials = computed(() => {
     const u = this.auth.currentUser();
@@ -29,6 +31,10 @@ export class AppShell implements OnInit {
     if (!this.auth.currentUser()) {
       this.auth.loadCurrentUser().subscribe({ error: () => this.auth.logout() });
     }
+  }
+
+  can(permission: string): boolean {
+    return this.auth.can(permission);
   }
 
   toggleTheme(event: Event): void {

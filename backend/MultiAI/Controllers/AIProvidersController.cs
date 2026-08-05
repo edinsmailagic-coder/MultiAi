@@ -1,6 +1,6 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using MultiAI.Authorization;
 using MultiAI.Models.Data;
 using MultiAI.Models.Log;
 using MultiAI.Models.Request;
@@ -11,7 +11,6 @@ namespace MultiAI.Controllers
 {
     [Route("api/providers")]
     [ApiController]
-    [Authorize]
     public class AIProvidersController : ControllerBase
     {
         private readonly IAIProviderFactory providerFactory;
@@ -31,6 +30,7 @@ namespace MultiAI.Controllers
             this.userLog = userLog;
         }
 
+        [HasPermission(AppPermissions.ProvidersRead)]
         [HttpGet]
         public async Task<IActionResult> GetProviders()
         {
@@ -49,6 +49,7 @@ namespace MultiAI.Controllers
             return Ok(providers);
         }
 
+        [HasPermission(AppPermissions.ProvidersRead)]
         [HttpGet("connected")]
         public async Task<IActionResult> GetConnected()
         {
@@ -68,6 +69,7 @@ namespace MultiAI.Controllers
             }));
         }
 
+        [HasPermission(AppPermissions.ProvidersRead)]
         [HttpGet("connected/{id:int}/models")]
         public async Task<IActionResult> GetConnectedModels(int id)
         {
@@ -86,6 +88,7 @@ namespace MultiAI.Controllers
             }
         }
 
+        [HasPermission(AppPermissions.ProvidersManage)]
         [HttpPut("connected/{id:int}/default-model")]
         public async Task<IActionResult> SetDefaultModel(int id, [FromBody] SetDefaultModelRequest request)
         {
@@ -118,6 +121,7 @@ namespace MultiAI.Controllers
             }
         }
 
+        [HasPermission(AppPermissions.ProvidersManage)]
         [HttpPut("connected/{id:int}/set-default")]
         public async Task<IActionResult> SetDefaultProvider(int id)
         {
@@ -150,6 +154,7 @@ namespace MultiAI.Controllers
             }
         }
 
+        [HasPermission(AppPermissions.ProvidersManage)]
         [HttpPost("connect")]
         public async Task<IActionResult> Connect([FromBody] SaveApiKeyRequest request)
         {
@@ -184,6 +189,7 @@ namespace MultiAI.Controllers
             }
         }
 
+        [HasPermission(AppPermissions.ProvidersRead)]
         [HttpPost("validate")]
         public async Task<IActionResult> ValidateApiKey([FromBody] ValidateApiKeyRequest request)
         {
@@ -192,6 +198,7 @@ namespace MultiAI.Controllers
             return Ok(new { Sucess = valid });
         }
 
+        [HasPermission(AppPermissions.ProvidersRead)]
         [HttpPost("models")]
         public async Task<IActionResult> GetModels([FromBody] GetModelsRequest request)
         {

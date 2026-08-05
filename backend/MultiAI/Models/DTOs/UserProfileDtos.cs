@@ -26,6 +26,8 @@ namespace MultiAI.Models.DTOs
         public string LastName { get; set; } = string.Empty;
         public string UserName { get; set; } = string.Empty;
         public DateTime CreatedAt { get; set; }
+        public List<string> Roles { get; set; } = [];
+        public List<string> Permissions { get; set; } = [];
     }
 
     public class UpdateProfileDto

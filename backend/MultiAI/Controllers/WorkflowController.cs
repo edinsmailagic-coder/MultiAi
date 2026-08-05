@@ -1,5 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
+using MultiAI.Authorization;
 using MultiAI.Models.Entities;
 using MultiAI.Services.Interface;
 using System.Security.Claims;
@@ -8,7 +8,6 @@ namespace MultiAI.Controllers
 {
     [Route("api/workflow")]
     [ApiController]
-    [Authorize]
     public class WorkflowController : ControllerBase
     {
         private readonly IWorkflowService service;
@@ -18,6 +17,7 @@ namespace MultiAI.Controllers
             this.service = service;
         }
 
+        [HasPermission(AppPermissions.WorkflowsRead)]
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
@@ -30,6 +30,7 @@ namespace MultiAI.Controllers
             return Ok(response);
         }
 
+        [HasPermission(AppPermissions.WorkflowsRead)]
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(int id)
         {
@@ -43,6 +44,7 @@ namespace MultiAI.Controllers
             return Ok(response);
         }
 
+        [HasPermission(AppPermissions.WorkflowsWrite)]
         [HttpPost("create")]
         public async Task<IActionResult> CreateWorkflow(string name, string description)
         {
@@ -55,6 +57,8 @@ namespace MultiAI.Controllers
 
             return Ok(response);
         }
+
+        [HasPermission(AppPermissions.WorkflowsWrite)]
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateWorkflow(int id, [FromBody] Workflow workflow)
         {
@@ -67,6 +71,7 @@ namespace MultiAI.Controllers
             return Ok();
         }
 
+        [HasPermission(AppPermissions.WorkflowsWrite)]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteWorkflow(int id)
         {

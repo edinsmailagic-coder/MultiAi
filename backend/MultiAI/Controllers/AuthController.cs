@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using MultiAI.Authorization;
 using MultiAI.Models.DTOs;
 using MultiAI.Models.Entities;
 using MultiAI.Models.Log;
@@ -17,19 +18,23 @@ namespace MultiAI.Controllers
         private readonly SignInManager<Users> signInManager;
         private readonly IJwtService jwtService;
         private readonly IUserLogService userLog;
+        private readonly IPermissionService permissionService;
 
         public AuthController(
             UserManager<Users> userManager,
             SignInManager<Users> signInManager,
             IJwtService jwtService,
-            IUserLogService userLog)
+            IUserLogService userLog,
+            IPermissionService permissionService)
         {
             this.userManager = userManager;
             this.signInManager = signInManager;
             this.jwtService = jwtService;
             this.userLog = userLog;
+            this.permissionService = permissionService;
         }
 
+        [AllowAnonymous]
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginDto dto)
         {
@@ -50,12 +55,13 @@ namespace MultiAI.Controllers
                 return Unauthorized();
             }
 
-            var token = jwtService.CreateToken(user);
+            var token = await jwtService.CreateTokenAsync(user);
             await userLog.LogAsync(user.Id, UserLogActions.Login, $"Email={user.Email}", ip);
 
             return Ok(new { token });
         }
 
+        [AllowAnonymous]
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterDto dto)
         {
@@ -72,7 +78,8 @@ namespace MultiAI.Controllers
             if (!result.Succeeded)
                 return BadRequest(result.Errors);
 
-            var token = jwtService.CreateToken(user);
+            await permissionService.EnsureDefaultRoleAsync(user);
+            var token = await jwtService.CreateTokenAsync(user);
             await userLog.LogAsync(
                 user.Id,
                 UserLogActions.Register,
@@ -82,7 +89,7 @@ namespace MultiAI.Controllers
             return Ok(new { token });
         }
 
-        [Authorize]
+        [HasPermission(AppPermissions.AuthMe)]
         [HttpGet("me")]
         public async Task<IActionResult> GetProfile()
         {
@@ -90,10 +97,10 @@ namespace MultiAI.Controllers
             if (user == null)
                 return Unauthorized();
 
-            return Ok(ToProfileDto(user));
+            return Ok(await ToProfileDtoAsync(user));
         }
 
-        [Authorize]
+        [HasPermission(AppPermissions.AuthProfileWrite)]
         [HttpPut("profile")]
         public async Task<IActionResult> UpdateProfile([FromBody] UpdateProfileDto dto)
         {
@@ -119,10 +126,10 @@ namespace MultiAI.Controllers
                 $"FirstName: '{oldFirst}' -> '{user.FirstName}'; LastName: '{oldLast}' -> '{user.LastName}'",
                 HttpContext.Connection.RemoteIpAddress?.ToString());
 
-            return Ok(ToProfileDto(user));
+            return Ok(await ToProfileDtoAsync(user));
         }
 
-        [Authorize]
+        [HasPermission(AppPermissions.AuthPasswordChange)]
         [HttpPut("password")]
         public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDto dto)
         {
@@ -154,8 +161,11 @@ namespace MultiAI.Controllers
                 : await userManager.FindByIdAsync(userId);
         }
 
-        private static UserProfileDto ToProfileDto(Users user)
+        private async Task<UserProfileDto> ToProfileDtoAsync(Users user)
         {
+            var roles = await permissionService.GetUserRolesAsync(user);
+            var permissions = await permissionService.GetUserPermissionsAsync(user);
+
             return new UserProfileDto
             {
                 Id = user.Id,
@@ -163,7 +173,9 @@ namespace MultiAI.Controllers
                 FirstName = user.FirstName,
                 LastName = user.LastName,
                 UserName = user.UserName ?? string.Empty,
-                CreatedAt = user.CreatedAt
+                CreatedAt = user.CreatedAt,
+                Roles = roles.ToList(),
+                Permissions = permissions.ToList(),
             };
         }
     }

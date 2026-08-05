@@ -19,6 +19,7 @@ builder.Services.AddCors(options =>
     });
 });
 builder.Services.AddJwtAuth(builder.Configuration);
+builder.Services.AddPermissionAuthorization();
 
 
 var app = builder.Build();

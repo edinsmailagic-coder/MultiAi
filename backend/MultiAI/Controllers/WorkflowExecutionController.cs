@@ -1,5 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
+using MultiAI.Authorization;
 using MultiAI.Models.DTOs;
 using MultiAI.Models.Request;
 using MultiAI.Services.Interface;
@@ -9,7 +9,6 @@ namespace MultiAI.Controllers
 {
     [Route("api/workflows")]
     [ApiController]
-    [Authorize]
     public class WorkflowExecutionController : ControllerBase
     {
         private readonly IWorkflowExecutionService executionService;
@@ -19,6 +18,7 @@ namespace MultiAI.Controllers
             this.executionService = executionService;
         }
 
+        [HasPermission(AppPermissions.WorkflowsExecute)]
         [HttpPost("{workflowId}/execute")]
         public async Task<IActionResult> Execute(int workflowId, [FromBody] ExecuteWorkflowRequest request)
         {

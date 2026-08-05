@@ -1,5 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
+using MultiAI.Authorization;
 using MultiAI.Models.DTOs;
 using MultiAI.Services.Interface;
 
@@ -7,7 +7,6 @@ namespace MultiAI.Controllers
 {
     [Route("api/workflow-nodes")]
     [ApiController]
-    [Authorize]
     public class WorkflowNodesController : ControllerBase
     {
         private readonly IWorkflowNodeService service;
@@ -17,6 +16,7 @@ namespace MultiAI.Controllers
             this.service = service;
         }
 
+        [HasPermission(AppPermissions.WorkflowsRead)]
         [HttpGet("{workflowId}")]
         public async Task<IActionResult> GetNodes(int workflowId)
         {
@@ -25,6 +25,7 @@ namespace MultiAI.Controllers
             return Ok(response);
         }
 
+        [HasPermission(AppPermissions.WorkflowsWrite)]
         [HttpPost]
         public async Task<IActionResult> AddNode([FromBody] CreateWorkflowNodeDto dto)
         {
@@ -33,6 +34,7 @@ namespace MultiAI.Controllers
             return Ok(response);
         }
 
+        [HasPermission(AppPermissions.WorkflowsWrite)]
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateNode(
             int id,
@@ -46,6 +48,7 @@ namespace MultiAI.Controllers
             return NoContent();
         }
 
+        [HasPermission(AppPermissions.WorkflowsWrite)]
         [HttpPatch("{id}/move")]
         public async Task<IActionResult> MoveNode(
             int id,
@@ -59,6 +62,7 @@ namespace MultiAI.Controllers
             return NoContent();
         }
 
+        [HasPermission(AppPermissions.WorkflowsWrite)]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteNode(int id)
         {

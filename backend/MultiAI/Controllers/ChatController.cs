@@ -1,5 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
+using MultiAI.Authorization;
 using MultiAI.Models.Request;
 using MultiAI.Models.Response;
 using MultiAI.Services.Interface;
@@ -9,7 +9,6 @@ namespace MultiAI.Controllers
 {
     [Route("api/chat")]
     [ApiController]
-    [Authorize]
     public class ChatController : ControllerBase
     {
         private readonly IChatService service;
@@ -26,6 +25,7 @@ namespace MultiAI.Controllers
             this.attachmentService = attachmentService;
         }
 
+        [HasPermission(AppPermissions.ChatWrite)]
         [HttpPost("sendChat")]
         public async Task<IActionResult> Send([FromBody] ChatRequestDto request)
         {
@@ -43,6 +43,7 @@ namespace MultiAI.Controllers
             }
         }
 
+        [HasPermission(AppPermissions.ChatRead)]
         [HttpGet("conversations")]
         public async Task<IActionResult> GetConversations()
         {
@@ -53,6 +54,7 @@ namespace MultiAI.Controllers
             return Ok(await service.GetConversationsAsync(userId));
         }
 
+        [HasPermission(AppPermissions.ChatRead)]
         [HttpGet("conversations/{id:int}")]
         public async Task<IActionResult> GetConversation(int id)
         {
@@ -70,6 +72,7 @@ namespace MultiAI.Controllers
             }
         }
 
+        [HasPermission(AppPermissions.ChatWrite)]
         [HttpPatch("conversations/{id:int}")]
         public async Task<IActionResult> RenameConversation(int id, [FromBody] RenameConversationRequest request)
         {
@@ -87,6 +90,7 @@ namespace MultiAI.Controllers
             }
         }
 
+        [HasPermission(AppPermissions.ChatWrite)]
         [HttpPatch("conversations/{id:int}/pin")]
         public async Task<IActionResult> PinConversation(int id, [FromBody] PinConversationRequest request)
         {
@@ -104,6 +108,7 @@ namespace MultiAI.Controllers
             }
         }
 
+        [HasPermission(AppPermissions.ChatWrite)]
         [HttpPatch("conversations/{id:int}/folder")]
         public async Task<IActionResult> AssignFolder(int id, [FromBody] AssignFolderRequest request)
         {
@@ -121,6 +126,7 @@ namespace MultiAI.Controllers
             }
         }
 
+        [HasPermission(AppPermissions.ChatWrite)]
         [HttpDelete("conversations/{id:int}")]
         public async Task<IActionResult> DeleteConversation(int id)
         {
@@ -139,6 +145,7 @@ namespace MultiAI.Controllers
             }
         }
 
+        [HasPermission(AppPermissions.ChatRead)]
         [HttpGet("folders")]
         public async Task<IActionResult> GetFolders()
         {
@@ -149,6 +156,7 @@ namespace MultiAI.Controllers
             return Ok(await folderService.GetAsync(userId));
         }
 
+        [HasPermission(AppPermissions.ChatWrite)]
         [HttpPost("folders")]
         public async Task<IActionResult> CreateFolder([FromBody] CreateFolderRequest request)
         {
@@ -166,6 +174,7 @@ namespace MultiAI.Controllers
             }
         }
 
+        [HasPermission(AppPermissions.ChatWrite)]
         [HttpPatch("folders/{id:int}")]
         public async Task<IActionResult> RenameFolder(int id, [FromBody] RenameFolderRequest request)
         {
@@ -183,6 +192,7 @@ namespace MultiAI.Controllers
             }
         }
 
+        [HasPermission(AppPermissions.ChatWrite)]
         [HttpDelete("folders/{id:int}")]
         public async Task<IActionResult> DeleteFolder(int id)
         {
@@ -201,6 +211,7 @@ namespace MultiAI.Controllers
             }
         }
 
+        [HasPermission(AppPermissions.ChatWrite)]
         [HttpPost("attachments")]
         [RequestSizeLimit(10 * 1024 * 1024)]
         public async Task<IActionResult> UploadAttachment(IFormFile file)

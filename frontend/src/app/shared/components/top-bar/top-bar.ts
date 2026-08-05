@@ -1,14 +1,17 @@
-import { ChangeDetectionStrategy, Component, DestroyRef, HostListener, inject, input, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, HostListener, computed, inject, input, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 import { filter } from 'rxjs';
+import { AppPermissions } from '../../../core/auth/permissions';
+import { AuthService } from '../../../core/services/auth.service';
 import { Brand } from '../brand/brand';
 
 export interface TopBarNavItem {
   labelKey: string;
   href?: string;
-  children?: { labelKey: string; href: string }[];
+  permission?: string;
+  children?: { labelKey: string; href: string; permission?: string }[];
 }
 
 @Component({
@@ -21,8 +24,8 @@ export interface TopBarNavItem {
 export class TopBar {
   private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly auth = inject(AuthService);
 
-  /** When true, renders authenticated app navigation instead of marketing nav. */
   readonly appMode = input(false);
   readonly showSubBar = input(true);
 
@@ -35,11 +38,15 @@ export class TopBar {
     { labelKey: 'landing.nav.meet', href: '/' },
   ];
 
-  readonly appNav: TopBarNavItem[] = [
-    { labelKey: 'nav.dashboard', href: '/dashboard' },
-    { labelKey: 'nav.chat', href: '/chat' },
-    { labelKey: 'nav.workflows', href: '/workflows' },
+  private readonly allAppNav: TopBarNavItem[] = [
+    { labelKey: 'nav.dashboard', href: '/dashboard', permission: AppPermissions.UsageRead },
+    { labelKey: 'nav.chat', href: '/chat', permission: AppPermissions.ChatRead },
+    { labelKey: 'nav.workflows', href: '/workflows', permission: AppPermissions.WorkflowsRead },
   ];
+
+  readonly appNav = computed(() =>
+    this.allAppNav.filter((item) => !item.permission || this.auth.can(item.permission)),
+  );
 
   constructor() {
     this.router.events
@@ -51,7 +58,7 @@ export class TopBar {
   }
 
   get navItems(): TopBarNavItem[] {
-    return this.appMode() ? this.appNav : this.marketingNav;
+    return this.appMode() ? this.appNav() : this.marketingNav;
   }
 
   toggleMobile(): void {

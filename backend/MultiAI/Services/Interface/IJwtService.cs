@@ -4,6 +4,6 @@ namespace MultiAI.Services.Interface
 {
     public interface IJwtService
     {
-        string CreateToken(Users users);
+        Task<string> CreateTokenAsync(Users user, CancellationToken cancellationToken = default);
     }
 }

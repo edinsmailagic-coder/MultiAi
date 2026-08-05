@@ -1,5 +1,5 @@
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using MultiAI.Authorization;
 using MultiAI.Services.Interface;
 using System.Security.Claims;
 
@@ -7,7 +7,6 @@ namespace MultiAI.Controllers
 {
     [Route("api/usage")]
     [ApiController]
-    [Authorize]
     public class UsageStatsController : ControllerBase
     {
         private readonly IUsageStatsService statsService;
@@ -17,6 +16,7 @@ namespace MultiAI.Controllers
             this.statsService = statsService;
         }
 
+        [HasPermission(AppPermissions.UsageRead)]
         [HttpGet("dashboard")]
         public async Task<IActionResult> GetDashboardStats(CancellationToken cancellationToken)
         {
