@@ -41,9 +41,9 @@ namespace MultiAI.Controllers
             var user = await userManager.FindByEmailAsync(dto.Email);
             var ip = HttpContext.Connection.RemoteIpAddress?.ToString();
 
-            if (user == null)
+            if (user == null || user.IsDeleted)
             {
-                await userLog.LogAsync(null, UserLogActions.LoginFailed, $"Email={dto.Email}", ip);
+                await userLog.LogAsync(user?.Id, UserLogActions.LoginFailed, $"Email={dto.Email}", ip);
                 return Unauthorized();
             }
 

@@ -11,5 +11,12 @@ namespace MultiAI.Models.Log
         public const string ProviderConnected = "ProviderConnected";
         public const string DefaultProviderChanged = "DefaultProviderChanged";
         public const string DefaultModelChanged = "DefaultModelChanged";
+        public const string AdminUserCreated = "AdminUserCreated";
+        public const string AdminUserUpdated = "AdminUserUpdated";
+        public const string AdminUserDeleted = "AdminUserDeleted";
+        public const string AdminPasswordReset = "AdminPasswordReset";
+        public const string AdminRoleCreated = "AdminRoleCreated";
+        public const string AdminRoleUpdated = "AdminRoleUpdated";
+        public const string AdminRoleDeleted = "AdminRoleDeleted";
     }
 }

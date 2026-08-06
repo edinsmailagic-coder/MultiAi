@@ -1,0 +1,85 @@
+<section class="page-heading">
+  <div>
+    <p class="eyebrow">{{ 'admin.section' | translate }}</p>
+    <h1>{{ 'admin.roles.title' | translate }}</h1>
+    <p>{{ 'admin.roles.subtitle' | translate }}</p>
+  </div>
+  @if (canManage()) {
+    <button class="primary" type="button" (click)="openCreate()">+ {{ 'admin.roles.create' | translate }}</button>
+  }
+</section>
+
+<section class="panel">
+  @if (loading()) {
+    <div class="empty-state">{{ 'common.loading' | translate }}</div>
+  } @else if (!roles().length) {
+    <div class="empty-state">
+      <h3>{{ 'admin.roles.emptyTitle' | translate }}</h3>
+      <p>{{ 'admin.roles.emptyText' | translate }}</p>
+    </div>
+  } @else {
+    <div class="role-grid">
+      @for (role of roles(); track role.id) {
+        <article class="role-card">
+          <header>
+            <div>
+              <h3>{{ role.name }}</h3>
+              <p>{{ 'admin.roles.userCount' | translate: { count: role.userCount } }}</p>
+            </div>
+            <div class="role-card__actions">
+              @if (canManage()) {
+                <button class="secondary" type="button" (click)="openEdit(role)">{{ 'common.edit' | translate }}</button>
+                @if (!isSystemRole(role)) {
+                  <button class="danger-button" type="button" (click)="remove(role)">{{ 'common.delete' | translate }}</button>
+                }
+              }
+            </div>
+          </header>
+          <div class="chip-row">
+            @for (permission of role.permissions; track permission) {
+              <span class="chip">{{ permission }}</span>
+            } @empty {
+              <span class="muted">{{ 'admin.roles.noPermissions' | translate }}</span>
+            }
+          </div>
+        </article>
+      }
+    </div>
+  }
+</section>
+
+@if (showForm()) {
+  <div class="modal-backdrop" (click)="closeForm()">
+    <section class="modal modal--wide" (click)="$event.stopPropagation()" role="dialog" aria-modal="true">
+      <h2>{{ (editing() ? 'admin.roles.editTitle' : 'admin.roles.createTitle') | translate }}</h2>
+      <form [formGroup]="form" (ngSubmit)="save()">
+        <label>{{ 'admin.roles.name' | translate }}
+          <input formControlName="name">
+        </label>
+        <app-field-error [control]="form.controls.name" fieldKey="admin.roles.name" />
+
+        <fieldset class="role-fieldset">
+          <legend>{{ 'admin.roles.permissions' | translate }}</legend>
+          <div class="perm-list">
+            @for (permission of allPermissions(); track permission) {
+              <label class="perm-row">
+                <span class="perm-row__name">{{ permission }}</span>
+                <input
+                  class="perm-row__check"
+                  type="checkbox"
+                  [checked]="hasPermission(permission)"
+                  (change)="togglePermission(permission, $any($event.target).checked)"
+                >
+              </label>
+            }
+          </div>
+        </fieldset>
+
+        <div class="modal-actions">
+          <button class="secondary" type="button" (click)="closeForm()">{{ 'common.cancel' | translate }}</button>
+          <button class="primary" type="submit">{{ 'common.save' | translate }}</button>
+        </div>
+      </form>
+    </section>
+  </div>
+}

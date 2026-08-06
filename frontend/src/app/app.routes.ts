@@ -18,6 +18,10 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/docs/docs').then((m) => m.Docs),
   },
   {
+    path: 'contact',
+    loadComponent: () => import('./pages/contact/contact').then((m) => m.Contact),
+  },
+  {
     path: 'login',
     canActivate: [guestGuard],
     loadComponent: () => import('./pages/login/login').then((m) => m.Login),
@@ -79,6 +83,18 @@ export const routes: Routes = [
         canActivate: [permissionGuard],
         data: { permission: AppPermissions.AuthPasswordChange },
         loadComponent: () => import('./pages/settings/settings').then((m) => m.Settings),
+      },
+      {
+        path: 'users',
+        canActivate: [permissionGuard],
+        data: { permission: AppPermissions.UsersRead },
+        loadComponent: () => import('./pages/users-admin/users-admin').then((m) => m.UsersAdmin),
+      },
+      {
+        path: 'roles',
+        canActivate: [permissionGuard],
+        data: { permission: AppPermissions.RolesRead },
+        loadComponent: () => import('./pages/roles-admin/roles-admin').then((m) => m.RolesAdmin),
       },
     ],
   },

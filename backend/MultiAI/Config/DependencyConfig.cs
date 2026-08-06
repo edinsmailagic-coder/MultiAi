@@ -35,6 +35,8 @@ namespace MultiAI.Config
             
             services.AddScoped<IJwtService, JwtService>();
             services.AddScoped<IPermissionService, PermissionService>();
+            services.AddScoped<IAdminUserService, AdminUserService>();
+            services.AddScoped<IAdminRoleService, AdminRoleService>();
 
             //services.AddScoped<IAIProvider, OpenAIProvider>();
             services.AddScoped<IAIProviderFactory, AIProviderFactory>();

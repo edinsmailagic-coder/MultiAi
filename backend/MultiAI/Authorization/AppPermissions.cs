@@ -8,6 +8,7 @@ namespace MultiAI.Authorization
     public static class AppRoles
     {
         public const string Admin = "Admin";
+        public const string Moderator = "Moderator";
         public const string User = "User";
     }
 
@@ -29,6 +30,11 @@ namespace MultiAI.Authorization
 
         public const string UsageRead = "usage.read";
 
+        public const string UsersRead = "users.read";
+        public const string UsersManage = "users.manage";
+        public const string RolesRead = "roles.read";
+        public const string RolesManage = "roles.manage";
+
         public static readonly string[] All =
         [
             AuthMe,
@@ -42,6 +48,10 @@ namespace MultiAI.Authorization
             ChatRead,
             ChatWrite,
             UsageRead,
+            UsersRead,
+            UsersManage,
+            RolesRead,
+            RolesManage,
         ];
 
         public static readonly string[] UserDefaults =
@@ -58,5 +68,16 @@ namespace MultiAI.Authorization
             ChatWrite,
             UsageRead,
         ];
+
+        public static readonly string[] ModeratorExtras =
+        [
+            UsersRead,
+            UsersManage,
+            RolesRead,
+            RolesManage,
+        ];
+
+        public static string[] ModeratorDefaults =>
+            UserDefaults.Concat(ModeratorExtras).Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
     }
 }

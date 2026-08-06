@@ -35,13 +35,15 @@ export class TopBar {
   readonly marketingNav: TopBarNavItem[] = [
     { labelKey: 'landing.nav.overview', href: '/overview' },
     { labelKey: 'landing.nav.docs', href: '/docs' },
-    { labelKey: 'landing.nav.meet', href: '/' },
+    { labelKey: 'landing.nav.meet', href: '/contact' },
   ];
 
   private readonly allAppNav: TopBarNavItem[] = [
     { labelKey: 'nav.dashboard', href: '/dashboard', permission: AppPermissions.UsageRead },
     { labelKey: 'nav.chat', href: '/chat', permission: AppPermissions.ChatRead },
     { labelKey: 'nav.workflows', href: '/workflows', permission: AppPermissions.WorkflowsRead },
+    { labelKey: 'nav.users', href: '/users', permission: AppPermissions.UsersRead },
+    { labelKey: 'nav.roles', href: '/roles', permission: AppPermissions.RolesRead },
   ];
 
   readonly appNav = computed(() =>

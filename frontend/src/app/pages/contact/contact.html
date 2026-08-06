@@ -1,0 +1,30 @@
+<div class="landing-page">
+  <app-top-bar [showSubBar]="false" />
+  <section class="page">
+    <div class="page__inner">
+      <p class="eyebrow">{{ 'landing.contact.eyebrow' | translate }}</p>
+      <h1>{{ 'landing.contact.title' | translate }}</h1>
+      <p class="lede">{{ 'landing.contact.lede' | translate }}</p>
+
+      <dl class="contact-list">
+        @for (item of details; track item.labelKey) {
+          <div class="contact-row">
+            <dt>{{ item.labelKey | translate }}</dt>
+            <dd>
+              @if (item.href) {
+                <a [href]="item.href">{{ item.value }}</a>
+              } @else {
+                {{ item.value }}
+              }
+            </dd>
+          </div>
+        }
+      </dl>
+
+      <div class="page__cta">
+        <a class="btn btn--solid" routerLink="/login">{{ 'landing.nav.try' | translate }}</a>
+        <a class="btn btn--ghost" routerLink="/overview">{{ 'landing.nav.overview' | translate }}</a>
+      </div>
+    </div>
+  </section>
+</div>

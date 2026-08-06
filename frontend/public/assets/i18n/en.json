@@ -23,6 +23,8 @@
     "dashboard": "Dashboard",
     "chat": "Chat",
     "workflows": "Workflows",
+    "users": "Users",
+    "roles": "Roles",
     "profile": "Profile & providers",
     "accountProfile": "Profile",
     "accountProviders": "Providers",
@@ -179,6 +181,7 @@
     "cancel": "Cancel",
     "create": "Create",
     "save": "Save changes",
+    "edit": "Edit",
     "delete": "Delete",
     "add": "Add node",
     "back": "Back"
@@ -211,7 +214,55 @@
     "connectProviderFirst": "Connect a provider first.",
     "connectionError": "Unable to create connection.",
     "moveError": "Unable to save node position.",
-    "executeError": "Workflow execution failed."
+    "executeError": "Workflow execution failed.",
+    "userCreated": "User created.",
+    "userUpdated": "User updated.",
+    "userDeactivated": "User deactivated.",
+    "passwordReset": "Password reset.",
+    "roleCreated": "Role created.",
+    "roleUpdated": "Role updated.",
+    "roleDeleted": "Role deleted."
+  },
+  "admin": {
+    "section": "Administration",
+    "users": {
+      "title": "Users",
+      "subtitle": "Create users, change roles, and activate accounts.",
+      "create": "New user",
+      "createTitle": "Create user",
+      "editTitle": "Edit user",
+      "emptyTitle": "No users",
+      "emptyText": "Create the first user.",
+      "colName": "Name",
+      "colRoles": "Roles",
+      "colStatus": "Status",
+      "activeLabel": "Active account",
+      "deactivate": "Deactivate",
+      "reactivate": "Reactivate",
+      "deactivateTitle": "Deactivate user?",
+      "deactivateText": "User “{{email}}” will not be able to sign in.",
+      "resetPassword": "Reset password",
+      "resetPasswordTitle": "New password",
+      "resetPasswordText": "Enter a new password for “{{email}}”.",
+      "newPassword": "New password",
+      "passwordMin": "Password must be at least 8 characters.",
+      "roleRequired": "Select at least one role."
+    },
+    "roles": {
+      "title": "Roles",
+      "subtitle": "Manage roles and their permissions.",
+      "create": "New role",
+      "createTitle": "Create role",
+      "editTitle": "Edit role",
+      "emptyTitle": "No roles",
+      "emptyText": "Create the first role.",
+      "name": "Role name",
+      "permissions": "Permissions",
+      "userCount": "{{count}} users",
+      "noPermissions": "No permissions assigned.",
+      "deleteTitle": "Delete role?",
+      "deleteText": "Do you want to delete role “{{name}}”?"
+    }
   },
   "landing": {
     "nav": {
@@ -260,6 +311,16 @@
       "title": "Documentation",
       "lede": "Guides, API notes, and other documents you add will live here.",
       "empty": "No documents added yet. This space is ready — drop in links or content whenever you want."
+    },
+    "contact": {
+      "eyebrow": "Contact",
+      "title": "Contact sales",
+      "lede": "Reach the team for a demo, enterprise plan, or questions about adopting Nodexa.",
+      "email": "Email",
+      "phone": "Phone",
+      "location": "Location",
+      "hours": "Hours",
+      "company": "Company"
     },
     "partners": {
       "label": "Partners",

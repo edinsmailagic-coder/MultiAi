@@ -43,7 +43,7 @@
           <ng-content select="[mobile-actions]" />
         } @else {
           <a class="top-bar__login" routerLink="/login" (click)="closeMenus()">{{ 'landing.nav.login' | translate }}</a>
-          <a class="btn btn--ghost" routerLink="/login" (click)="closeMenus()">{{ 'landing.nav.contact' | translate }}</a>
+          <a class="btn btn--ghost" routerLink="/contact" (click)="closeMenus()">{{ 'landing.nav.contact' | translate }}</a>
           <a class="btn btn--solid" routerLink="/login" (click)="closeMenus()">{{ 'landing.nav.try' | translate }}</a>
         }
       </div>
@@ -54,7 +54,7 @@
         <ng-content select="[actions]" />
       } @else {
         <a class="top-bar__login" routerLink="/login">{{ 'landing.nav.login' | translate }}</a>
-        <a class="btn btn--ghost" routerLink="/login">{{ 'landing.nav.contact' | translate }}</a>
+        <a class="btn btn--ghost" routerLink="/contact">{{ 'landing.nav.contact' | translate }}</a>
         <a class="btn btn--solid" routerLink="/login">{{ 'landing.nav.try' | translate }}</a>
       }
       <button

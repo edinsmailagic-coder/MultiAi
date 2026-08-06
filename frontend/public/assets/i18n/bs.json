@@ -23,6 +23,8 @@
     "dashboard": "Kontrolna tabla",
     "chat": "Chat",
     "workflows": "Tokovi rada",
+    "users": "Korisnici",
+    "roles": "Uloge",
     "profile": "Profil i provajderi",
     "accountProfile": "Profil",
     "accountProviders": "Provajderi",
@@ -179,6 +181,7 @@
     "cancel": "Odustani",
     "create": "Kreiraj",
     "save": "Sačuvaj promjene",
+    "edit": "Uredi",
     "delete": "Obriši",
     "add": "Dodaj Node",
     "back": "Nazad"
@@ -211,7 +214,55 @@
     "connectProviderFirst": "Prvo povežite provajdera.",
     "connectionError": "Veza se ne može kreirati.",
     "moveError": "Pozicija Node se ne može sačuvati.",
-    "executeError": "Izvršavanje toka nije uspjelo."
+    "executeError": "Izvršavanje toka nije uspjelo.",
+    "userCreated": "Korisnik je kreiran.",
+    "userUpdated": "Korisnik je ažuriran.",
+    "userDeactivated": "Korisnik je deaktiviran.",
+    "passwordReset": "Lozinka je resetovana.",
+    "roleCreated": "Uloga je kreirana.",
+    "roleUpdated": "Uloga je ažurirana.",
+    "roleDeleted": "Uloga je obrisana."
+  },
+  "admin": {
+    "section": "Administracija",
+    "users": {
+      "title": "Korisnici",
+      "subtitle": "Kreirajte korisnike, mijenjajte uloge i aktivirajte račune.",
+      "create": "Novi korisnik",
+      "createTitle": "Kreiraj korisnika",
+      "editTitle": "Uredi korisnika",
+      "emptyTitle": "Nema korisnika",
+      "emptyText": "Kreirajte prvog korisnika.",
+      "colName": "Ime",
+      "colRoles": "Uloge",
+      "colStatus": "Status",
+      "activeLabel": "Aktivan račun",
+      "deactivate": "Deaktiviraj",
+      "reactivate": "Aktiviraj",
+      "deactivateTitle": "Deaktivirati korisnika?",
+      "deactivateText": "Korisnik „{{email}}“ neće moći da se prijavi.",
+      "resetPassword": "Reset lozinke",
+      "resetPasswordTitle": "Nova lozinka",
+      "resetPasswordText": "Unesite novu lozinku za „{{email}}“.",
+      "newPassword": "Nova lozinka",
+      "passwordMin": "Lozinka mora imati najmanje 8 karaktera.",
+      "roleRequired": "Odaberite barem jednu ulogu."
+    },
+    "roles": {
+      "title": "Uloge",
+      "subtitle": "Upravljajte ulogama i njihovim permisijama.",
+      "create": "Nova uloga",
+      "createTitle": "Kreiraj ulogu",
+      "editTitle": "Uredi ulogu",
+      "emptyTitle": "Nema uloga",
+      "emptyText": "Kreirajte prvu ulogu.",
+      "name": "Naziv uloge",
+      "permissions": "Permisije",
+      "userCount": "{{count}} korisnika",
+      "noPermissions": "Nema dodijeljenih permisija.",
+      "deleteTitle": "Obrisati ulogu?",
+      "deleteText": "Želite li obrisati ulogu „{{name}}“?"
+    }
   },
   "landing": {
     "nav": {
@@ -260,6 +311,16 @@
       "title": "Dokumentacija",
       "lede": "Ovdje će stati vodiči, API napomene i ostali dokumenti koje dodaš.",
       "empty": "Dokumenti još nisu dodani. Ovaj prostor je spreman — ubaci linkove ili sadržaj kad budeš spreman/na."
+    },
+    "contact": {
+      "eyebrow": "Kontakt",
+      "title": "Kontaktiraj sales",
+      "lede": "Javi se timu za demo, enterprise plan ili pitanja oko uvođenja Nodexa.",
+      "email": "Email",
+      "phone": "Broj",
+      "location": "Lokacija",
+      "hours": "Radno vrijeme",
+      "company": "Kompanija"
     },
     "partners": {
       "label": "Partneri",
