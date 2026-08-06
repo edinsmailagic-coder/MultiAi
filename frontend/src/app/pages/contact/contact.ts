@@ -11,11 +11,11 @@ import { TopBar } from '../../shared/components/top-bar/top-bar';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Contact {
-  readonly details = [
+  readonly details: { labelKey: string; value: string; href?: string }[] = [
     { labelKey: 'landing.contact.email', value: 'test@nodexa.test', href: 'mailto:test@nodexa.test' },
     { labelKey: 'landing.contact.phone', value: '+000 00 000 000', href: 'tel:+00000000000' },
     { labelKey: 'landing.contact.location', value: 'Test City, Test Street 1' },
     { labelKey: 'landing.contact.hours', value: 'Test: Mon–Fri 09:00–17:00' },
     { labelKey: 'landing.contact.company', value: 'Nodexa Test d.o.o.' },
-  ] as const;
+  ];
 }
