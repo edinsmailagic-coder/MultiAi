@@ -10,12 +10,14 @@ public class WorkflowEngineTests
     [Fact]
     public async Task IfNode_FollowsTrueBranch()
     {
-        var engine = new WorkflowEngineService(new INodeExecutorService[]
-        {
-            new IfNodeExecutorService(),
-            new MarkerExecutor("A"),
-            new MarkerExecutor("B"),
-        });
+        var engine = new WorkflowEngineService(
+            new INodeExecutorService[]
+            {
+                new IfNodeExecutorService(),
+                new MarkerExecutor("A"),
+                new MarkerExecutor("B"),
+            },
+            new NoopStreamNotifier());
 
         var nodes = new List<WorkflowNode>
         {
@@ -47,11 +49,13 @@ public class WorkflowEngineTests
     [Fact]
     public async Task LoopNode_StopsAfterMaxIterations()
     {
-        var engine = new WorkflowEngineService(new INodeExecutorService[]
-        {
-            new LoopNodeExecutorService(),
-            new MarkerExecutor("Body"),
-        });
+        var engine = new WorkflowEngineService(
+            new INodeExecutorService[]
+            {
+                new LoopNodeExecutorService(),
+                new MarkerExecutor("Body"),
+            },
+            new NoopStreamNotifier());
 
         var nodes = new List<WorkflowNode>
         {
@@ -88,6 +92,17 @@ public class WorkflowEngineTests
                 ExecutedAt = DateTime.UtcNow
             });
         }
+    }
+
+    private sealed class NoopStreamNotifier : IWorkflowStreamNotifier
+    {
+        public Func<MultiAI.Models.Response.ChatStreamEventDto, CancellationToken, Task>? Emit { get; set; }
+
+        public Task NodeStartedAsync(int nodeId, string nodeName, string nodeType, string? model, CancellationToken cancellationToken) =>
+            Task.CompletedTask;
+
+        public Task TokenDeltaAsync(string delta, CancellationToken cancellationToken) =>
+            Task.CompletedTask;
     }
 }
 

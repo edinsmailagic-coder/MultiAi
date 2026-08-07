@@ -56,6 +56,7 @@ namespace MultiAI.Config
             services.AddScoped<INodeExecutorService, LoopNodeExecutorService>();
             services.AddScoped<IWorkflowEngine, WorkflowEngineService>();
             services.AddScoped<IWorkflowExecutionService, WorkflowExecutionService>();
+            services.AddScoped<IWorkflowStreamNotifier, WorkflowStreamNotifier>();
             services.AddScoped<IUsageLogService, UsageLogService>();
             services.AddScoped<IUsageStatsService, UsageStatsService>();
             services.AddScoped<IUserLogService, UserLogService>();

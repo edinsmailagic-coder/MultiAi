@@ -1,9 +1,11 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Mvc;
 using MultiAI.Authorization;
 using MultiAI.Models.Request;
 using MultiAI.Models.Response;
 using MultiAI.Services.Interface;
 using System.Security.Claims;
+using System.Text.Json;
 
 namespace MultiAI.Controllers
 {
@@ -54,29 +56,27 @@ namespace MultiAI.Controllers
                 return;
             }
 
+            HttpContext.Features.Get<IHttpResponseBodyFeature>()?.DisableBuffering();
             Response.Headers.ContentType = "text/event-stream";
-            Response.Headers.CacheControl = "no-cache";
+            Response.Headers.CacheControl = "no-cache, no-transform";
             Response.Headers.Connection = "keep-alive";
+            Response.Headers.Append("X-Accel-Buffering", "no");
 
-            var jsonOptions = new System.Text.Json.JsonSerializerOptions
+            var jsonOptions = new JsonSerializerOptions
             {
-                PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
             };
+
+            async Task EmitAsync(ChatStreamEventDto evt, CancellationToken ct)
+            {
+                var payload = JsonSerializer.Serialize(evt, jsonOptions);
+                await Response.WriteAsync($"data: {payload}\n\n", ct);
+                await Response.Body.FlushAsync(ct);
+            }
 
             try
             {
-                await foreach (var evt in service.StreamAsync(userId, request, cancellationToken))
-                {
-                    var payload = System.Text.Json.JsonSerializer.Serialize(evt, jsonOptions);
-                    await Response.WriteAsync($"data: {payload}\n\n", cancellationToken);
-                    await Response.Body.FlushAsync(cancellationToken);
-
-                    if (string.Equals(evt.Type, "error", StringComparison.OrdinalIgnoreCase) ||
-                        string.Equals(evt.Type, "done", StringComparison.OrdinalIgnoreCase))
-                    {
-                        break;
-                    }
-                }
+                await service.StreamAsync(userId, request, EmitAsync, cancellationToken);
             }
             catch (OperationCanceledException)
             {
@@ -84,11 +84,19 @@ namespace MultiAI.Controllers
             }
             catch (Exception ex)
             {
-                var payload = System.Text.Json.JsonSerializer.Serialize(
-                    new ChatStreamEventDto { Type = "error", Message = ex.Message },
-                    jsonOptions);
-                await Response.WriteAsync($"data: {payload}\n\n", CancellationToken.None);
-                await Response.Body.FlushAsync(CancellationToken.None);
+                if (!Response.HasStarted || !HttpContext.RequestAborted.IsCancellationRequested)
+                {
+                    try
+                    {
+                        await EmitAsync(
+                            new ChatStreamEventDto { Type = "error", Message = ex.Message },
+                            CancellationToken.None);
+                    }
+                    catch
+                    {
+                        // Response may already be closed.
+                    }
+                }
             }
         }
 

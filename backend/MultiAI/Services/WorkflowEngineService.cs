@@ -7,11 +7,15 @@ namespace MultiAI.Services
     public class WorkflowEngineService : IWorkflowEngine
     {
         private readonly IEnumerable<INodeExecutorService> nodeExecutors;
+        private readonly IWorkflowStreamNotifier streamNotifier;
         private const int MaxSteps = 200;
 
-        public WorkflowEngineService(IEnumerable<INodeExecutorService> nodeExecutors)
+        public WorkflowEngineService(
+            IEnumerable<INodeExecutorService> nodeExecutors,
+            IWorkflowStreamNotifier streamNotifier)
         {
             this.nodeExecutors = nodeExecutors;
+            this.streamNotifier = streamNotifier;
         }
 
         public async Task ExecutionAsync(
@@ -165,13 +169,27 @@ namespace MultiAI.Services
             return result;
         }
 
-        private static async Task ReportProgressAsync(
+        private async Task ReportProgressAsync(
             WorkflowExecutionContext executionContext,
             WorkflowNode node,
             string status,
             bool success = true,
             string? error = null)
         {
+            var nodeName = string.IsNullOrWhiteSpace(node.Name) ? $"{node.NodeType} #{node.Id}" : node.Name;
+            var model = string.IsNullOrWhiteSpace(node.Model) || node.Model == "-" ? null : node.Model;
+
+            if (string.Equals(status, "started", StringComparison.OrdinalIgnoreCase))
+            {
+                // Prefer the scoped notifier (bound by ChatService) — this is the reliable SSE path.
+                await streamNotifier.NodeStartedAsync(
+                    node.Id,
+                    nodeName,
+                    node.NodeType,
+                    model,
+                    executionContext.CancellationToken);
+            }
+
             if (executionContext.OnNodeProgress == null)
                 return;
 
@@ -179,8 +197,9 @@ namespace MultiAI.Services
                 new WorkflowNodeProgress
                 {
                     NodeId = node.Id,
-                    NodeName = string.IsNullOrWhiteSpace(node.Name) ? $"{node.NodeType} #{node.Id}" : node.Name,
+                    NodeName = nodeName,
                     NodeType = node.NodeType,
+                    Model = model,
                     Status = status,
                     Success = success,
                     Error = error

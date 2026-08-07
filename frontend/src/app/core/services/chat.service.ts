@@ -92,8 +92,12 @@ export class ChatService {
                 continue;
               }
 
-              const event = JSON.parse(raw) as ChatStreamEvent;
+              const event = normalizeChatStreamEvent(JSON.parse(raw));
               subscriber.next(event);
+
+              // Yield so zoneless CD can paint node-progress / streaming tokens
+              // when multiple SSE frames arrive in one TCP read.
+              await new Promise<void>((resolve) => setTimeout(resolve, 0));
 
               if (event.type === 'done' || event.type === 'error') {
                 subscriber.complete();
@@ -154,4 +158,24 @@ export class ChatService {
     form.append('file', file, file.name);
     return this.http.post<AttachmentItem>(`${this.api}/attachments`, form);
   }
+}
+
+function normalizeChatStreamEvent(raw: Record<string, unknown>): ChatStreamEvent {
+  const read = (camel: string, pascal: string): unknown =>
+    raw[camel] !== undefined ? raw[camel] : raw[pascal];
+
+  return {
+    type: String(read('type', 'Type') ?? '').trim(),
+    conversationId: (read('conversationId', 'ConversationId') as number | null | undefined) ?? null,
+    title: (read('title', 'Title') as string | null | undefined) ?? null,
+    userMessage: (read('userMessage', 'UserMessage') as ChatStreamEvent['userMessage']) ?? null,
+    nodeId: (read('nodeId', 'NodeId') as number | null | undefined) ?? null,
+    nodeName: (read('nodeName', 'NodeName') as string | null | undefined) ?? null,
+    nodeType: (read('nodeType', 'NodeType') as string | null | undefined) ?? null,
+    model: (read('model', 'Model') as string | null | undefined) ?? null,
+    status: String(read('status', 'Status') ?? '').trim() || null,
+    content: (read('content', 'Content') as string | null | undefined) ?? null,
+    response: (read('response', 'Response') as ChatStreamEvent['response']) ?? null,
+    message: (read('message', 'Message') as string | null | undefined) ?? null,
+  };
 }

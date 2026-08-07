@@ -91,6 +91,7 @@ export interface ChatStreamEvent {
   nodeId?: number | null;
   nodeName?: string | null;
   nodeType?: string | null;
+  model?: string | null;
   status?: string | null;
   content?: string | null;
   response?: ChatResponse | null;

@@ -1,4 +1,5 @@
 import {
+  ApplicationRef,
   ChangeDetectionStrategy,
   Component,
   ElementRef,
@@ -52,6 +53,7 @@ export class Chat implements OnInit, OnDestroy {
   private readonly translate = inject(TranslateService);
   private readonly dialogs = inject(AppDialogService);
   private readonly fb = inject(FormBuilder);
+  private readonly appRef = inject(ApplicationRef);
 
   readonly conversations = signal<ConversationListItem[]>([]);
   readonly folders = signal<ConversationFolder[]>([]);
@@ -73,8 +75,19 @@ export class Chat implements OnInit, OnDestroy {
   readonly workflowMode = signal(false);
   readonly uploadingAttachments = signal(0);
   readonly activeNodeName = signal<string | null>(null);
+  readonly activeNodeModel = signal<string | null>(null);
   readonly streamingContent = signal('');
+  readonly thinking = signal(false);
   readonly selectedWorkflowId = signal(0);
+
+  readonly processingLabel = computed(() => {
+    const name = this.activeNodeName();
+    if (!name) {
+      return null;
+    }
+    const model = this.activeNodeModel();
+    return model ? `${name} · ${model}` : name;
+  });
 
   readonly composerForm = this.fb.nonNullable.group({
     message: ['', Validators.required],
@@ -507,7 +520,9 @@ export class Chat implements OnInit, OnDestroy {
     ]);
     this.composerForm.controls.message.setValue('');
     this.sending.set(true);
+    this.thinking.set(true);
     this.activeNodeName.set(null);
+    this.activeNodeModel.set(null);
     this.streamingContent.set('');
     this.scrollToBottom();
 
@@ -525,7 +540,9 @@ export class Chat implements OnInit, OnDestroy {
         next: (event) => this.handleStreamEvent(event, tempUserId, message, attachments),
         error: () => {
           this.sending.set(false);
+          this.thinking.set(false);
           this.activeNodeName.set(null);
+          this.activeNodeModel.set(null);
           this.streamingContent.set('');
           this.messages.update((list) => list.filter((m) => m.id !== tempUserId));
           this.composerForm.controls.message.setValue(message);
@@ -567,10 +584,30 @@ export class Chat implements OnInit, OnDestroy {
         this.scrollToBottom();
         break;
       }
-      case 'node-progress': {
-        if (event.status === 'started') {
-          this.activeNodeName.set(event.nodeName || event.nodeType || 'Node');
-        } else if (event.status === 'failed' && event.message) {
+      case 'node-progress':
+      case 'nodeProgress': {
+        const status = (event.status ?? '').toLowerCase();
+        // Prefer explicit node fields; Content is a BE display label ("Name · model").
+        const label = (event.content || '').trim();
+        const name = (event.nodeName || event.nodeType || '').trim() || label;
+        if (!status || status === 'started' || status === 'running') {
+          this.thinking.set(true);
+          if (name) {
+            // If Content already includes model, keep name/model fields separate when possible.
+            if (event.nodeName?.trim()) {
+              this.activeNodeName.set(event.nodeName.trim());
+              this.activeNodeModel.set(event.model?.trim() || null);
+            } else if (label.includes(' · ')) {
+              const [n, ...rest] = label.split(' · ');
+              this.activeNodeName.set(n.trim());
+              this.activeNodeModel.set(rest.join(' · ').trim() || null);
+            } else {
+              this.activeNodeName.set(name);
+              this.activeNodeModel.set(event.model?.trim() || null);
+            }
+          }
+          this.appRef.tick();
+        } else if (status === 'failed' && event.message) {
           this.toast.error(event.message);
         }
         this.scrollToBottom();
@@ -578,7 +615,8 @@ export class Chat implements OnInit, OnDestroy {
       }
       case 'delta': {
         if (event.content) {
-          this.activeNodeName.set(null);
+          // Keep node label visible; only leave thinking-pulse once tokens arrive.
+          this.thinking.set(false);
           this.streamingContent.update((text) => text + event.content);
           this.scrollToBottom();
         }
@@ -590,7 +628,9 @@ export class Chat implements OnInit, OnDestroy {
       }
       case 'error': {
         this.sending.set(false);
+        this.thinking.set(false);
         this.activeNodeName.set(null);
+        this.activeNodeModel.set(null);
         this.streamingContent.set('');
         this.messages.update((list) => list.filter((m) => m.id !== tempUserId));
         this.composerForm.controls.message.setValue(message);
@@ -606,7 +646,9 @@ export class Chat implements OnInit, OnDestroy {
     attachments: AttachmentItem[],
   ): void {
     this.sending.set(false);
+    this.thinking.set(false);
     this.activeNodeName.set(null);
+    this.activeNodeModel.set(null);
     this.streamingContent.set('');
 
     if (!event.response || !event.conversationId) {

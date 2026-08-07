@@ -6,9 +6,7 @@ using MultiAI.Models.Request;
 using MultiAI.Models.Response;
 using MultiAI.Models.Workflows;
 using MultiAI.Services.Interface;
-using System.Runtime.CompilerServices;
 using System.Text;
-using System.Threading.Channels;
 
 namespace MultiAI.Services
 {
@@ -20,6 +18,7 @@ namespace MultiAI.Services
         private readonly IWorkflowExecutionService workflowExecutionService;
         private readonly IMessageAttachmentService attachmentService;
         private readonly IUsageLogService usageLog;
+        private readonly IWorkflowStreamNotifier streamNotifier;
 
         public ChatService(
             AppDbContext context,
@@ -27,7 +26,8 @@ namespace MultiAI.Services
             IApiKeyEncryptionService encryptionService,
             IWorkflowExecutionService workflowExecutionService,
             IMessageAttachmentService attachmentService,
-            IUsageLogService usageLog)
+            IUsageLogService usageLog,
+            IWorkflowStreamNotifier streamNotifier)
         {
             this.context = context;
             this.providerFactory = providerFactory;
@@ -35,6 +35,7 @@ namespace MultiAI.Services
             this.workflowExecutionService = workflowExecutionService;
             this.attachmentService = attachmentService;
             this.usageLog = usageLog;
+            this.streamNotifier = streamNotifier;
         }
 
         public async Task<SendChatResultDto> SendAsync(string userId, ChatRequestDto request)
@@ -54,10 +55,11 @@ namespace MultiAI.Services
             return await SendDirectAsync(user, request);
         }
 
-        public async IAsyncEnumerable<ChatStreamEventDto> StreamAsync(
+        public async Task StreamAsync(
             string userId,
             ChatRequestDto request,
-            [EnumeratorCancellation] CancellationToken cancellationToken = default)
+            Func<ChatStreamEventDto, CancellationToken, Task> emit,
+            CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrWhiteSpace(request.Message))
                 throw new Exception("Message is required.");
@@ -67,16 +69,14 @@ namespace MultiAI.Services
 
             if (request.WorkflowId.HasValue)
             {
-                await foreach (var evt in StreamWithWorkflowAsync(user, request, cancellationToken))
-                    yield return evt;
-                yield break;
+                await StreamWithWorkflowAsync(user, request, emit, cancellationToken);
+                return;
             }
 
             if (!request.UserProviderId.HasValue || string.IsNullOrWhiteSpace(request.Model))
                 throw new Exception("UserProviderId and Model are required when no workflow is selected.");
 
-            await foreach (var evt in StreamDirectAsync(user, request, cancellationToken))
-                yield return evt;
+            await StreamDirectAsync(user, request, emit, cancellationToken);
         }
 
         public async Task<List<ConversationListItemDto>> GetConversationsAsync(string userId)
@@ -377,10 +377,11 @@ namespace MultiAI.Services
             };
         }
 
-        private async IAsyncEnumerable<ChatStreamEventDto> StreamDirectAsync(
+        private async Task StreamDirectAsync(
             Users user,
             ChatRequestDto request,
-            [EnumeratorCancellation] CancellationToken cancellationToken)
+            Func<ChatStreamEventDto, CancellationToken, Task> emit,
+            CancellationToken cancellationToken)
         {
             var conversation = await ResolveConversationAsync(user, request.ConversationId, request.Message);
             var pending = await attachmentService.GetOwnedPendingAsync(user.Id, request.AttachmentIds);
@@ -407,13 +408,13 @@ namespace MultiAI.Services
                 Attachments = pending.Select(MapAttachmentMeta).ToList()
             };
 
-            yield return new ChatStreamEventDto
+            await emit(new ChatStreamEventDto
             {
                 Type = "ready",
                 ConversationId = conversation.Id,
                 Title = conversation.Title,
                 UserMessage = userMessageDto
-            };
+            }, cancellationToken);
 
             var chatUserMessage = BuildProviderUserMessage(request.Message, pending);
             historyMessages.Add(chatUserMessage);
@@ -437,11 +438,11 @@ namespace MultiAI.Services
                 if (!string.IsNullOrEmpty(chunk.Delta))
                 {
                     content.Append(chunk.Delta);
-                    yield return new ChatStreamEventDto
+                    await emit(new ChatStreamEventDto
                     {
                         Type = "delta",
                         Content = chunk.Delta
-                    };
+                    }, cancellationToken);
                 }
 
                 if (chunk.IsDone)
@@ -498,20 +499,21 @@ namespace MultiAI.Services
                 workflowNodeId: null,
                 source: "chat");
 
-            yield return new ChatStreamEventDto
+            await emit(new ChatStreamEventDto
             {
                 Type = "done",
                 ConversationId = conversation.Id,
                 Title = conversation.Title,
                 UserMessage = userMessageDto,
                 Response = MapResponse(aiResponse)
-            };
+            }, cancellationToken);
         }
 
-        private async IAsyncEnumerable<ChatStreamEventDto> StreamWithWorkflowAsync(
+        private async Task StreamWithWorkflowAsync(
             Users user,
             ChatRequestDto request,
-            [EnumeratorCancellation] CancellationToken cancellationToken)
+            Func<ChatStreamEventDto, CancellationToken, Task> emit,
+            CancellationToken cancellationToken)
         {
             var conversation = await ResolveConversationAsync(user, request.ConversationId, request.Message);
             var pending = await attachmentService.GetOwnedPendingAsync(user.Id, request.AttachmentIds);
@@ -530,86 +532,61 @@ namespace MultiAI.Services
                 Attachments = pending.Select(MapAttachmentMeta).ToList()
             };
 
-            yield return new ChatStreamEventDto
+            await emit(new ChatStreamEventDto
             {
                 Type = "ready",
                 ConversationId = conversation.Id,
                 Title = conversation.Title,
                 UserMessage = userMessageDto
-            };
+            }, cancellationToken);
 
-            var channel = Channel.CreateUnbounded<ChatStreamEventDto>(new UnboundedChannelOptions
+            streamNotifier.Emit = emit;
+            WorkflowExecutionContext execution;
+            try
             {
-                SingleReader = true,
-                SingleWriter = false
-            });
-
-            WorkflowExecutionContext? execution = null;
-            var produceFailed = false;
-            var produceTask = ProduceWorkflowEventsAsync(
-                channel.Writer,
-                request.WorkflowId!.Value,
-                user.Id,
-                enrichedInput,
-                cancellationToken);
-
-            async Task ProduceWorkflowEventsAsync(
-                ChannelWriter<ChatStreamEventDto> writer,
-                int workflowId,
-                string uid,
-                string input,
-                CancellationToken ct)
-            {
-                try
-                {
-                    execution = await workflowExecutionService.ExecuteAsync(
-                        workflowId,
-                        uid,
-                        input,
-                        async (progress, token) =>
+                execution = await workflowExecutionService.ExecuteAsync(
+                    workflowId: request.WorkflowId!.Value,
+                    userId: user.Id,
+                    input: enrichedInput,
+                    onNodeProgress: async (progress, token) =>
+                    {
+                        // Keep callback as backup; notifier already writes "started" frames.
+                        if (!string.Equals(progress.Status, "started", StringComparison.OrdinalIgnoreCase))
                         {
-                            await writer.WriteAsync(new ChatStreamEventDto
+                            await emit(new ChatStreamEventDto
                             {
                                 Type = "node-progress",
                                 NodeId = progress.NodeId,
                                 NodeName = progress.NodeName,
                                 NodeType = progress.NodeType,
+                                Model = progress.Model,
                                 Status = progress.Status,
+                                Content = string.IsNullOrWhiteSpace(progress.Model)
+                                    ? progress.NodeName
+                                    : $"{progress.NodeName} · {progress.Model}",
                                 Message = progress.Error
                             }, token);
-                        },
-                        async (delta, token) =>
-                        {
-                            await writer.WriteAsync(new ChatStreamEventDto
-                            {
-                                Type = "delta",
-                                Content = delta
-                            }, token);
-                        },
-                        ct);
-                }
-                catch (Exception ex)
-                {
-                    produceFailed = true;
-                    await writer.WriteAsync(new ChatStreamEventDto
+                        }
+                    },
+                    onTokenDelta: async (delta, token) =>
                     {
-                        Type = "error",
-                        Message = ex.Message
-                    }, CancellationToken.None);
-                }
-                finally
-                {
-                    writer.TryComplete();
-                }
+                        await streamNotifier.TokenDeltaAsync(delta, token);
+                    },
+                    cancellationToken: cancellationToken);
             }
-
-            await foreach (var evt in channel.Reader.ReadAllAsync(cancellationToken))
-                yield return evt;
-
-            await produceTask;
-
-            if (produceFailed || execution == null)
-                yield break;
+            catch (Exception ex)
+            {
+                await emit(new ChatStreamEventDto
+                {
+                    Type = "error",
+                    Message = ex.Message
+                }, CancellationToken.None);
+                return;
+            }
+            finally
+            {
+                streamNotifier.Emit = null;
+            }
 
             var lastResult = execution.NodeResults.Values
                 .OrderBy(x => x.ExecutedAt)
@@ -619,12 +596,12 @@ namespace MultiAI.Services
 
             if (!lastResult.Success)
             {
-                yield return new ChatStreamEventDto
+                await emit(new ChatStreamEventDto
                 {
                     Type = "error",
                     Message = lastResult.Error ?? "Workflow execution failed."
-                };
-                yield break;
+                }, cancellationToken);
+                return;
             }
 
             var node = await context.WorkflowNodes
@@ -664,14 +641,14 @@ namespace MultiAI.Services
             conversation.UpdatedBy = user.UserName;
             await context.SaveChangesAsync(cancellationToken);
 
-            yield return new ChatStreamEventDto
+            await emit(new ChatStreamEventDto
             {
                 Type = "done",
                 ConversationId = conversation.Id,
                 Title = conversation.Title,
                 UserMessage = userMessageDto,
                 Response = MapResponse(aiResponse)
-            };
+            }, cancellationToken);
         }
 
         private static ChatMessageDto BuildProviderUserMessage(string message, List<MessageAttachment> attachments)

@@ -191,20 +191,31 @@
         }
       }
 
-      @if (sending() && activeNodeName()) {
-        <div class="node-pulse" role="status" aria-live="polite">
-          <span class="node-pulse__dot" aria-hidden="true"></span>
-          <span>{{ 'chat.processingNode' | translate: { name: activeNodeName() } }}</span>
-        </div>
-      }
+      @if (sending()) {
+        <article class="chat-bubble assistant pending streaming" [class.thinking-pulse]="!streamingContent()">
+          <header>
+            <strong>{{ 'chat.assistant' | translate }}</strong>
+            @if (processingLabel(); as label) {
+              <span>{{ label }}</span>
+            }
+          </header>
 
-      @if (sending() && (streamingContent() || !activeNodeName())) {
-        <article class="chat-bubble assistant pending streaming">
-          <header><strong>{{ 'chat.assistant' | translate }}</strong></header>
           @if (streamingContent()) {
             <pre>{{ streamingContent() }}<span class="stream-caret" aria-hidden="true"></span></pre>
           } @else {
-            <p>{{ 'chat.thinking' | translate }}</p>
+            <div class="thinking-status" role="status" aria-live="polite">
+              <span class="thinking-status__dots" aria-hidden="true">
+                <i></i><i></i><i></i>
+              </span>
+              <div class="thinking-status__copy">
+                @if (processingLabel(); as label) {
+                  <span>{{ 'chat.processingPrefix' | translate }}</span>
+                  <strong>{{ label }}</strong>
+                } @else {
+                  <span>{{ 'chat.thinking' | translate }}</span>
+                }
+              </div>
+            </div>
           }
         </article>
       }

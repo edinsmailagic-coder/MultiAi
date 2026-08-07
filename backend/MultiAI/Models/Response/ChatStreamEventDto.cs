@@ -9,6 +9,7 @@ namespace MultiAI.Models.Response
         public int? NodeId { get; set; }
         public string? NodeName { get; set; }
         public string? NodeType { get; set; }
+        public string? Model { get; set; }
         public string? Status { get; set; }
         public string? Content { get; set; }
         public ChatResponseDto? Response { get; set; }
